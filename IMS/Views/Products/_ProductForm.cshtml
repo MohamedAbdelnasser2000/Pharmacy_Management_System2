@@ -1,0 +1,322 @@
+@model IMS.Models.Product
+    <div class="col-md-12">
+        <div class="form-group">
+            <label class="control-label">صورة المنتج</label>
+            <div class="custom-file">
+                <input type="file" name="productImage" class="form-control" id="productImage" accept="image/*" onchange="previewImage(this)" />
+            </div>
+            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+            {
+                <div class="mt-2">
+                    <img id="imagePreview" src="@Model.ImageUrl" alt="Product Image" style="max-width: 150px; border-radius: 8px; border: 1px solid #ddd;" />
+                </div>
+            }
+            else
+            {
+                <div class="mt-2">
+                    <img id="imagePreview" src="#" alt="Preview" style="max-width: 150px; border-radius: 8px; border: 1px solid #ddd; display: none;" />
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="CategoryId" class="control-label"></label>
+            <div class="input-group">
+                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId" id="categorySelect">
+                    <option value="">-- اختر الفئة --</option>
+                </select>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="Name" class="control-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="Code" class="control-label"></label>
+            <input asp-for="Code" class="form-control" />
+            <span asp-validation-for="Code" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label asp-for="Description" class="control-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="Price" class="control-label"></label>
+            <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" />
+            <span asp-validation-for="Price" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="SalePrice" class="control-label"></label>
+            <input asp-for="SalePrice" class="form-control" type="number" step="0.01" min="0" />
+            <span asp-validation-for="SalePrice" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="Barcode" class="control-label"></label>
+            <div class="input-group">
+                <input asp-for="Barcode" class="form-control" readonly="@(ViewBag.BarcodeScanned == true ? "readonly" : null)" />
+                @if (ViewBag.BarcodeScanned == true)
+                {
+                    <span class="input-group-text bg-success text-white">
+                        <i class="fas fa-barcode"></i> ممسوح
+                    </span>
+                }
+            </div>
+            <span asp-validation-for="Barcode" class="text-danger"></span>
+            @if (ViewBag.BarcodeScanned != true)
+            {
+                <small class="text-muted">سيتم توليد باركود تلقائياً إذا تركته فارغاً</small>
+            }
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="Unit" class="control-label"></label>
+            <input asp-for="Unit" class="form-control" placeholder="مثال: علبة، شريط، حبة" />
+            <span asp-validation-for="Unit" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="Code" class="control-label"></label>
+            <input asp-for="Code" class="form-control" />
+            <span asp-validation-for="Code" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group">
+            <label asp-for="LowStockThreshold" class="control-label"></label>
+            <input asp-for="LowStockThreshold" class="form-control" />
+            <span asp-validation-for="LowStockThreshold" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="control-label">الكمية <span class="text-danger">*</span></label>
+            <input type="number" name="InitialQuantity" class="form-control" step="0.01" min="0" value="0" required />
+            <small class="text-muted">الكمية المتوفرة في المستودع</small>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label class="control-label">المستودع <span class="text-danger">*</span></label>
+            <select name="InitialWarehouseId" class="form-control" asp-items="ViewBag.WarehouseId">
+                <option value="">-- اختر المستودع --</option>
+            </select>
+            <small class="text-muted">اختر المستودع لإضافة الكمية</small>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="form-group">
+            <label asp-for="SupplierId" class="control-label"></label>
+            <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.SupplierId">
+                <option value="">-- اختر المورد --</option>
+            </select>
+            <span asp-validation-for="SupplierId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<!-- Pharmacy-specific fields -->
+<div class="card mt-3">
+    <div class="card-header bg-info">
+        <h5 class="mb-0"><i class="fas fa-pills"></i> المعلومات الدوائية (اختياري)</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="ScientificName" class="control-label"></label>
+                    <input asp-for="ScientificName" class="form-control" placeholder="مثال: Paracetamol" />
+                    <span asp-validation-for="ScientificName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="TradeName" class="control-label"></label>
+                    <input asp-for="TradeName" class="form-control" placeholder="مثال: بانادول" />
+                    <span asp-validation-for="TradeName" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="Manufacturer" class="control-label"></label>
+                    <input asp-for="Manufacturer" class="form-control" placeholder="مثال: GSK" />
+                    <span asp-validation-for="Manufacturer" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="ManufacturingDate" class="control-label"></label>
+                    <input asp-for="ManufacturingDate" class="form-control" type="date" />
+                    <span asp-validation-for="ManufacturingDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="ExpiryDate" class="control-label"></label>
+                    <input asp-for="ExpiryDate" class="form-control" type="date" />
+                    <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+                    <small class="text-muted">مهم لتنبيهات الصلاحية</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="BatchNumber" class="control-label"></label>
+                    <input asp-for="BatchNumber" class="form-control" placeholder="مثال: LOT-2025-001" />
+                    <span asp-validation-for="BatchNumber" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="form-group">
+                    <label asp-for="Concentration" class="control-label"></label>
+                    <input asp-for="Concentration" class="form-control" placeholder="مثال: 500mg" />
+                    <span asp-validation-for="Concentration" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="DosageForm" class="control-label"></label>
+                    <select asp-for="DosageForm" class="form-control">
+                        <option value="">-- اختر الشكل الدوائي --</option>
+                        <option value="أقراص">أقراص</option>
+                        <option value="كبسولات">كبسولات</option>
+                        <option value="شراب">شراب</option>
+                        <option value="حقن">حقن</option>
+                        <option value="مرهم">مرهم</option>
+                        <option value="كريم">كريم</option>
+                        <option value="قطرة">قطرة</option>
+                        <option value="بخاخ">بخاخ</option>
+                        <option value="لبوس">لبوس</option>
+                    </select>
+                    <span asp-validation-for="DosageForm" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="DrugClassification" class="control-label"></label>
+                    <input asp-for="DrugClassification" class="form-control" placeholder="مثال: مسكن وخافض حرارة" />
+                    <span asp-validation-for="DrugClassification" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="StorageTemperature" class="control-label"></label>
+                    <input asp-for="StorageTemperature" class="form-control" placeholder="مثال: 15-25°C" />
+                    <span asp-validation-for="StorageTemperature" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label asp-for="ActiveIngredient" class="control-label"></label>
+                    <input asp-for="ActiveIngredient" class="form-control" placeholder="المادة الفعالة الرئيسية" />
+                    <span asp-validation-for="ActiveIngredient" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="UsageInstructions" class="control-label"></label>
+                    <textarea asp-for="UsageInstructions" class="form-control" rows="2" placeholder="مثال: يؤخذ بعد الأكل مع كوب ماء"></textarea>
+                    <span asp-validation-for="UsageInstructions" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="SpecialWarnings" class="control-label"></label>
+                    <textarea asp-for="SpecialWarnings" class="form-control" rows="2" placeholder="أي تحذيرات خاصة"></textarea>
+                    <span asp-validation-for="SpecialWarnings" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="SideEffects" class="control-label"></label>
+                    <textarea asp-for="SideEffects" class="form-control" rows="3" placeholder="الآثار الجانبية المحتملة"></textarea>
+                    <span asp-validation-for="SideEffects" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label asp-for="Contraindications" class="control-label"></label>
+                    <textarea asp-for="Contraindications" class="form-control" rows="3" placeholder="موانع الاستخدام"></textarea>
+                    <span asp-validation-for="Contraindications" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="custom-control custom-checkbox">
+                        <input asp-for="RequiresPrescription" class="custom-control-input" type="checkbox" id="requiresPrescriptionCheck" />
+                        <label class="custom-control-label" for="requiresPrescriptionCheck">
+                            <i class="fas fa-prescription"></i> <strong>يتطلب وصفة طبية</strong>
+                        </label>
+                    </div>
+                    <small class="text-muted">حدد هذا الخيار إذا كان الدواء يتطلب وصفة طبية</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                var preview = document.getElementById('imagePreview');
+                if (preview) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>

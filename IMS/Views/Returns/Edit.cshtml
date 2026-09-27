@@ -1,0 +1,122 @@
+@model IMS.Models.Return
+@{
+    ViewData["Title"] = "تعديل مرتجع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">تعديل مرتجع #@Model.Id</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المرتجعات</a></li>
+                    <li class="breadcrumb-item active">تعديل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">تعديل بيانات المرتجع</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <input type="hidden" asp-for="Id" />
+                    <input type="hidden" asp-for="OrderId" />
+                    <input type="hidden" asp-for="CustomerId" />
+                    <input type="hidden" asp-for="ReturnDate" />
+                    <input type="hidden" asp-for="ProcessedBy" />
+                    <input type="hidden" asp-for="TotalRefundAmount" />
+                    <input type="hidden" asp-for="RefundedAmount" />
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="control-label">رقم الطلب</label>
+                                <input type="text" class="form-control" value="@Model.OrderId" readonly />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Status" class="control-label">الحالة</label>
+                                <select asp-for="Status" class="form-control">
+                                    <option value="معلق">معلق</option>
+                                    <option value="مقبول">مقبول</option>
+                                    <option value="مرفوض">مرفوض</option>
+                                    <option value="مكتمل">مكتمل</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ReturnType" class="control-label">نوع المرتجع</label>
+                                <select asp-for="ReturnType" class="form-control" required>
+                                    <option value="استرجاع كامل">استرجاع كامل</option>
+                                    <option value="استرجاع جزئي">استرجاع جزئي</option>
+                                </select>
+                                <span asp-validation-for="ReturnType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Reason" class="control-label">سبب المرتجع</label>
+                                <input asp-for="Reason" class="form-control" required />
+                                <span asp-validation-for="Reason" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="RefundMethod" class="control-label">طريقة الاسترداد</label>
+                                <select asp-for="RefundMethod" class="form-control">
+                                    <option value="">-- اختر الطريقة --</option>
+                                    <option value="نقدي">نقدي</option>
+                                    <option value="تحويل بنكي">تحويل بنكي</option>
+                                    <option value="رصيد في الحساب">رصيد في الحساب</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="RefundDate" class="control-label">تاريخ الاسترداد</label>
+                                <input asp-for="RefundDate" type="date" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Notes" class="control-label">ملاحظات</label>
+                        <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> حفظ التعديلات
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

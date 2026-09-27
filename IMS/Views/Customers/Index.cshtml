@@ -1,0 +1,148 @@
+@model IEnumerable<IMS.Models.Customer>
+@{
+    ViewData["Title"] = "إدارة العملاء/المرضى - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-users text-info"></i> العملاء / المرضى</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">العملاء</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-info text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-user-injured"></i> قائمة العملاء</h5>
+                <a asp-action="Create" class="btn btn-light">
+                    <i class="fas fa-user-plus me-1"></i> إضافة عميل/مريض
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <form asp-action="Index" method="get">
+                            <div class="input-group">
+                                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="ابحث عن عميل (الاسم، الهاتف، البريد)..." />
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                                {
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </a>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 60px;" class="text-center">#</th>
+                                <th style="width: 200px;">
+                                    <i class="fas fa-user me-2"></i>الاسم
+                                </th>
+                                <th style="width: 150px;">
+                                    <i class="fas fa-phone me-2"></i>الهاتف
+                                </th>
+                                <th style="width: 200px;">
+                                    <i class="fas fa-envelope me-2"></i>البريد الإلكتروني
+                                </th>
+                                <th>
+                                    <i class="fas fa-map-marker-alt me-2"></i>العنوان
+                                </th>
+                                <th style="width: 120px;" class="text-center">
+                                    <i class="fas fa-shopping-cart me-2"></i>الطلبات
+                                </th>
+                                <th style="width: 180px;" class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            <span class="badge bg-secondary">@item.Id</span>
+                                        </td>
+                                        <td>
+                                            <strong class="text-primary">@item.Name</strong>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-phone-alt text-success me-1"></i>
+                                            <span class="text-muted">@item.PhoneNumber</span>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-envelope text-info me-1"></i>
+                                            <small class="text-muted">@item.Email</small>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            <span class="text-muted">@item.Address</span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.Orders.Count > 0)
+                                            {
+                                                <span class="badge bg-success rounded-pill fs-6">
+                                                    @item.Orders.Count
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary rounded-pill">0</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Patient360" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="السجل الشامل (Patient 360)">
+                                                    <i class="fas fa-id-card-alt"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-primary" 
+                                                   title="تعديل">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-danger" 
+                                                   title="حذف"
+                                                   onclick="return confirm('هل أنت متأكد من حذف هذا العميل؟');">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">لا توجد عملاء</h5>
+                                        <p class="text-muted">قم بإضافة عميل جديد للبدء</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,115 @@
+@model IEnumerable<IMS.Models.DrugInteraction>
+
+@{
+    ViewData["Title"] = "التفاعلات الدوائية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-exclamation-circle text-danger"></i> التفاعلات الدوائية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">التفاعلات الدوائية</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form asp-action="Index" method="get" class="form-inline">
+                            <div class="input-group">
+                                <input type="text" name="searchString" value="@ViewData["SearchString"]" class="form-control" placeholder="البحث..." />
+                                <select name="severityLevel" class="form-control ms-2">
+                                    <option value="">جميع المستويات</option>
+                                    <option value="خطير">خطير</option>
+                                    <option value="متوسط">متوسط</option>
+                                    <option value="بسيط">بسيط</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary ms-2">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-4 text-start">
+                        <a asp-action="Create" class="btn btn-success">
+                            <i class="fas fa-plus"></i> إضافة تفاعل دوائي
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>الدواء الأول</th>
+                                    <th>الدواء الثاني</th>
+                                    <th>مستوى الخطورة</th>
+                                    <th>وصف التفاعل</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var interaction in Model)
+                                {
+                                    var badgeClass = interaction.SeverityLevel == "خطير" ? "bg-danger" : 
+                                                    interaction.SeverityLevel == "متوسط" ? "bg-warning" : "bg-info";
+                                    <tr>
+                                        <td><strong>@interaction.Product1.Name</strong></td>
+                                        <td><strong>@interaction.Product2.Name</strong></td>
+                                        <td><span class="badge @badgeClass">@interaction.SeverityLevel</span></td>
+                                        <td>@interaction.InteractionDescription</td>
+                                        <td>
+                                            @if (interaction.IsActive)
+                                            {
+                                                <span class="badge bg-success">نشط</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">غير نشط</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a asp-action="Details" asp-route-id="@interaction.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@interaction.Id" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@interaction.Id" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p class="mb-0">لا توجد تفاعلات دوائية مسجلة حالياً.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,210 @@
+@model IMS.Models.Product
+@{
+    ViewData["Title"] = Model.Name;
+    var price = Model.SalePrice ?? Model.Price ?? 0;
+    var availableQty = (decimal)ViewBag.AvailableQuantity;
+    var relatedProducts = ViewBag.RelatedProducts as List<IMS.Models.Product>;
+}
+
+<section class="ec-section">
+    <div class="container">
+        <!-- Breadcrumb -->
+        <nav class="ec-breadcrumb">
+            <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index">المتجر</a>
+            <i class="fas fa-chevron-left"></i>
+            @if (Model.Category != null)
+            {
+                <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" asp-route-categoryId="@Model.CategoryId">@Model.Category.Name</a>
+                <i class="fas fa-chevron-left"></i>
+            }
+            <span>@Model.Name</span>
+        </nav>
+
+        <div class="ec-product-detail">
+            <div class="row g-4">
+                <!-- Product Image -->
+                <div class="col-lg-5">
+                    <div class="ec-detail-image">
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
+                        }
+                        else
+                        {
+                            <i class="fas fa-pills"></i>
+                        }
+                        
+                        @if (Model.RequiresPrescription)
+                        {
+                            <div class="ec-rx-badge">
+                                <i class="fas fa-prescription"></i> يتطلب وصفة طبية
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="col-lg-7">
+                    <div class="ec-detail-info">
+                        @if (Model.Category != null)
+                        {
+                            <span class="ec-detail-category">@Model.Category.Name</span>
+                        }
+                        <h1 class="ec-detail-name">@Model.Name</h1>
+
+                        @if (!string.IsNullOrEmpty(Model.ScientificName))
+                        {
+                            <p class="ec-detail-scientific"><i class="fas fa-flask"></i> @Model.ScientificName</p>
+                        }
+
+                        <div class="ec-detail-price-box">
+                            <span class="ec-detail-price">@price.ToString("N2") ج.م</span>
+                            <span class="ec-detail-stock @(availableQty <= 5 ? "low" : "available")">
+                                <i class="fas fa-circle"></i>
+                                @(availableQty > 0 ? (availableQty <= 5 ? $"باقي {availableQty} فقط" : "متوفر في المخزون") : "غير متوفر")
+                            </span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="ec-detail-desc">@Model.Description</p>
+                        }
+
+                        <!-- Pharmacy Details -->
+                        <div class="ec-detail-specs">
+                            @if (!string.IsNullOrEmpty(Model.DosageForm))
+                            {
+                                <div class="ec-spec"><span class="ec-spec-label">الشكل الدوائي</span><span class="ec-spec-value">@Model.DosageForm</span></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Concentration))
+                            {
+                                <div class="ec-spec"><span class="ec-spec-label">التركيز</span><span class="ec-spec-value">@Model.Concentration</span></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Manufacturer))
+                            {
+                                <div class="ec-spec"><span class="ec-spec-label">الشركة المصنعة</span><span class="ec-spec-value">@Model.Manufacturer</span></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.ActiveIngredient))
+                            {
+                                <div class="ec-spec"><span class="ec-spec-label">المادة الفعالة</span><span class="ec-spec-value">@Model.ActiveIngredient</span></div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.DrugClassification))
+                            {
+                                <div class="ec-spec"><span class="ec-spec-label">التصنيف الدوائي</span><span class="ec-spec-value">@Model.DrugClassification</span></div>
+                            }
+                        </div>
+
+                        <!-- Add to Cart -->
+                        @if (availableQty > 0 && !Model.RequiresPrescription)
+                        {
+                            <div class="ec-detail-actions">
+                                <div class="ec-qty-selector">
+                                    <button type="button" class="ec-qty-btn" onclick="changeDetailQty(-1)">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <input type="number" id="detail-qty" value="1" min="1" max="@((int)availableQty)" class="ec-qty-input" />
+                                    <button type="button" class="ec-qty-btn" onclick="changeDetailQty(1)">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <button class="ec-btn ec-btn-primary ec-btn-lg" onclick="addToCartWithQty(@Model.Id)">
+                                    <i class="fas fa-cart-plus"></i> أضف إلى السلة
+                                </button>
+                            </div>
+                        }
+                        else if (Model.RequiresPrescription)
+                        {
+                            <div class="ec-rx-notice">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>هذا الدواء يتطلب وصفة طبية. يرجى زيارة الصيدلية أو التواصل معنا.</span>
+                            </div>
+                        }
+
+                        <!-- Additional Info Tabs -->
+                        @if (!string.IsNullOrEmpty(Model.UsageInstructions) || !string.IsNullOrEmpty(Model.SideEffects) || !string.IsNullOrEmpty(Model.Contraindications))
+                        {
+                            <div class="ec-detail-tabs">
+                                @if (!string.IsNullOrEmpty(Model.UsageInstructions))
+                                {
+                                    <div class="ec-tab-item">
+                                        <h6><i class="fas fa-info-circle text-primary"></i> طريقة الاستخدام</h6>
+                                        <p>@Model.UsageInstructions</p>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.SideEffects))
+                                {
+                                    <div class="ec-tab-item">
+                                        <h6><i class="fas fa-exclamation-circle text-warning"></i> الآثار الجانبية</h6>
+                                        <p>@Model.SideEffects</p>
+                                    </div>
+                                }
+                                @if (!string.IsNullOrEmpty(Model.Contraindications))
+                                {
+                                    <div class="ec-tab-item">
+                                        <h6><i class="fas fa-ban text-danger"></i> موانع الاستخدام</h6>
+                                        <p>@Model.Contraindications</p>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        @if (relatedProducts != null && relatedProducts.Any())
+        {
+            <div class="ec-related-section">
+                <h3 class="ec-section-title"><i class="fas fa-th-large"></i> منتجات مشابهة</h3>
+                <div class="ec-products-grid ec-related-grid">
+                    @foreach (var rp in relatedProducts)
+                    {
+                        var rpPrice = rp.SalePrice ?? rp.Price ?? 0;
+                        <div class="ec-product-card">
+                            <a asp-area="ECommerce" asp-controller="Shop" asp-action="Details" asp-route-id="@rp.Id" class="ec-product-link">
+                                <div class="ec-product-image">
+                                    @if (!string.IsNullOrEmpty(rp.ImageUrl))
+                                    {
+                                        <img src="@rp.ImageUrl" alt="@rp.Name" class="img-fluid" style="height: 100%; width: 100%; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-pills"></i>
+                                    }
+                                </div>
+                                <div class="ec-product-info">
+                                    <h6 class="ec-product-name">@rp.Name</h6>
+                                    <div class="ec-product-footer">
+                                        <span class="ec-product-price">@rpPrice.ToString("N2") ج.م</span>
+                                    </div>
+                                </div>
+                            </a>
+                            <button class="ec-add-to-cart-btn" onclick="addToCart(@rp.Id, event)">
+                                <i class="fas fa-cart-plus"></i> أضف للسلة
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function changeDetailQty(delta) {
+            var input = document.getElementById('detail-qty');
+            var newVal = parseInt(input.value) + delta;
+            var max = parseInt(input.max);
+            if (newVal >= 1 && newVal <= max) {
+                input.value = newVal;
+            }
+        }
+
+        function addToCartWithQty(productId) {
+            var qty = parseInt(document.getElementById('detail-qty').value);
+            addToCart(productId, null, qty);
+        }
+    </script>
+}

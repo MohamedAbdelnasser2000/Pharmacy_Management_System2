@@ -1,0 +1,109 @@
+@model DashboardViewModel
+
+<div class="content-header mb-4">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">لوحة إدارة المخزون</h2>
+                <p class="text-muted mb-0">مرحباً بك، تابع حالة المخزون والطلبيات</p>
+            </div>
+            <div class="glass-panel px-3 py-2 text-primary fw-semibold small d-none d-md-block">
+                <i class="fas fa-calendar-day me-2"></i> @IMS.AppClock.UtcNow.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mb-5">
+    <h5 class="fw-bold mb-4 ms-2">إجراءات المخازن</h5>
+    <div class="row g-4">
+        <div class="col-6 col-md-3">
+            <a asp-controller="Products" asp-action="Create" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-orange mx-auto"><i class="fas fa-plus-circle"></i></div>
+                <span class="fw-bold text-dark d-block">إضافة منتج</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="PurchaseOrders" asp-action="Create" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-blue mx-auto"><i class="fas fa-file-import"></i></div>
+                <span class="fw-bold text-dark d-block">طلب توريد</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="ExpiryAlerts" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-red mx-auto"><i class="fas fa-history"></i></div>
+                <span class="fw-bold text-dark d-block">الصلاحية</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Suppliers" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-purple mx-auto"><i class="fas fa-shipping-fast"></i></div>
+                <span class="fw-bold text-dark d-block">الموردين</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card border-start border-4 border-primary">
+                    <h6 class="text-muted small fw-bold mb-1">إجمالي الأصناف</h6>
+                    <h3 class="fw-bold mb-0">@Model.SummaryCards.FirstOrDefault(c => c.Title == "إجمالي المنتجات")?.Value</h3>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card border-start border-4 border-warning">
+                    <h6 class="text-muted small fw-bold mb-1">أصناف تحت الحد</h6>
+                    <h3 class="fw-bold mb-0 text-warning">@Model.LowStockProducts.Count</h3>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card border-start border-4 border-danger">
+                    <h6 class="text-muted small fw-bold mb-1">طلبيات شراء معلقة</h6>
+                    <h3 class="fw-bold mb-0 text-danger">@Model.PendingPurchaseOrders</h3>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card border-start border-4 border-success">
+                    <h6 class="text-muted small fw-bold mb-1">قيمة المخزون</h6>
+                    <h3 class="fw-bold mb-0 text-success">@Model.SummaryCards.FirstOrDefault(c => c.Title == "قيمة المخزون")?.Value</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="info-card h-100">
+                    <h5 class="fw-bold mb-4 text-warning"><i class="fas fa-exclamation-triangle me-2"></i>نواقص الأدوية</h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>الدواء</th>
+                                    <th>الكمية الحالية</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.LowStockProducts.Take(10))
+                                {
+                                    <tr>
+                                        <td>@item.Label</td>
+                                        <td class="text-danger fw-bold">@item.Value</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="info-card h-100">
+                    <h5 class="fw-bold mb-4 text-info"><i class="fas fa-truck me-2"></i>آخر طلبيات الشراء</h5>
+                    <p class="text-center text-muted py-5">سيتم عرض بيانات طلبيات الشراء هنا قريباً</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

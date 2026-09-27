@@ -1,0 +1,94 @@
+@model List<IMS.Services.CartItem>
+@{
+    ViewData["Title"] = "سلة التسوق";
+}
+
+<section class="ec-section">
+    <div class="container">
+        <div class="ec-page-header">
+            <h2><i class="fas fa-shopping-cart"></i> سلة التسوق</h2>
+            <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-btn ec-btn-outline">
+                <i class="fas fa-arrow-right"></i> متابعة التسوق
+            </a>
+        </div>
+
+        @if (Model.Any())
+        {
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="ec-cart-items" id="cart-items">
+                        @foreach (var item in Model)
+                        {
+                            <div class="ec-cart-item" id="cart-item-@item.ProductId">
+                                <div class="ec-cart-item-image">
+                                    @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.ProductName" class="img-fluid" style="height: 100%; width: 100%; object-fit: cover; border-radius: 4px;" />
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-pills"></i>
+                                    }
+                                </div>
+                                <div class="ec-cart-item-info">
+                                    <h6 class="ec-cart-item-name">
+                                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Details" asp-route-id="@item.ProductId">@item.ProductName</a>
+                                    </h6>
+                                    <span class="ec-cart-item-price">@item.UnitPrice.ToString("N2") ج.م</span>
+                                </div>
+                                <div class="ec-cart-item-qty">
+                                    <button class="ec-qty-btn" onclick="updateCartQty(@item.ProductId, @(item.Quantity - 1))">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <span class="ec-qty-value">@item.Quantity</span>
+                                    <button class="ec-qty-btn" onclick="updateCartQty(@item.ProductId, @(item.Quantity + 1))">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                                <div class="ec-cart-item-total">
+                                    <span id="item-total-@item.ProductId">@item.LineTotal.ToString("N2")</span> ج.م
+                                </div>
+                                <button class="ec-cart-item-remove" onclick="removeCartItem(@item.ProductId)">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="ec-cart-summary">
+                        <h5 class="ec-cart-summary-title">ملخص الطلب</h5>
+                        <div class="ec-cart-summary-row">
+                            <span>عدد المنتجات</span>
+                            <span id="summary-count">@Model.Count</span>
+                        </div>
+                        <div class="ec-cart-summary-row">
+                            <span>المجموع</span>
+                            <span id="summary-total">@ViewBag.CartTotal.ToString("N2") ج.م</span>
+                        </div>
+                        <div class="ec-cart-summary-divider"></div>
+                        <div class="ec-cart-summary-row total">
+                            <span>الإجمالي</span>
+                            <span id="summary-grand">@ViewBag.CartTotal.ToString("N2") ج.م</span>
+                        </div>
+                        <a asp-area="ECommerce" asp-controller="Checkout" asp-action="Index" class="ec-btn ec-btn-primary ec-btn-block">
+                            <i class="fas fa-credit-card"></i> إتمام الشراء
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="ec-empty-state">
+                <i class="fas fa-shopping-cart"></i>
+                <h4>سلة التسوق فارغة</h4>
+                <p>لم تقم بإضافة أي منتجات بعد</p>
+                <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-btn ec-btn-primary">
+                    <i class="fas fa-pills"></i> تصفح المنتجات
+                </a>
+            </div>
+        }
+    </div>
+</section>

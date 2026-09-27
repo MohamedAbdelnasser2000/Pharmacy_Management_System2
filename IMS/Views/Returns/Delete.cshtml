@@ -1,0 +1,93 @@
+@model IMS.Models.Return
+@{
+    ViewData["Title"] = "حذف مرتجع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">حذف مرتجع</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المرتجعات</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle"></i> تأكيد الحذف
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>تحذير:</strong> هل أنت متأكد من حذف هذا المرتجع؟ لا يمكن التراجع عن هذا الإجراء.
+                </div>
+
+                <h5 class="mb-3">تفاصيل المرتجع:</h5>
+                <dl class="row">
+                    <dt class="col-sm-3">رقم المرتجع:</dt>
+                    <dd class="col-sm-9">#@Model.Id</dd>
+
+                    <dt class="col-sm-3">رقم الطلب:</dt>
+                    <dd class="col-sm-9">#@Model.OrderId</dd>
+
+                    <dt class="col-sm-3">العميل:</dt>
+                    <dd class="col-sm-9">@Model.Customer?.Name</dd>
+
+                    <dt class="col-sm-3">تاريخ المرتجع:</dt>
+                    <dd class="col-sm-9">@Model.ReturnDate.ToString("yyyy/MM/dd HH:mm")</dd>
+
+                    <dt class="col-sm-3">نوع المرتجع:</dt>
+                    <dd class="col-sm-9">@Model.ReturnType</dd>
+
+                    <dt class="col-sm-3">الحالة:</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Status == "معلق")
+                        {
+                            <span class="badge bg-warning text-dark">@Model.Status</span>
+                        }
+                        else if (Model.Status == "مقبول")
+                        {
+                            <span class="badge bg-success">@Model.Status</span>
+                        }
+                        else if (Model.Status == "مرفوض")
+                        {
+                            <span class="badge bg-danger">@Model.Status</span>
+                        }
+                        else if (Model.Status == "مكتمل")
+                        {
+                            <span class="badge bg-info">@Model.Status</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">إجمالي المبلغ:</dt>
+                    <dd class="col-sm-9"><strong class="text-danger">@Model.TotalRefundAmount.ToString("N2") ج.م</strong></dd>
+
+                    <dt class="col-sm-3">سبب المرتجع:</dt>
+                    <dd class="col-sm-9">@Model.Reason</dd>
+                </dl>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> تأكيد الحذف
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

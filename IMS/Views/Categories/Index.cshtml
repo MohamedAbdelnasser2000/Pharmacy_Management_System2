@@ -1,0 +1,120 @@
+@model IEnumerable<IMS.Models.Category>
+
+@{
+    ViewData["Title"] = "تصنيفات الأدوية - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-tags text-success"></i> تصنيفات الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">التصنيفات</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-gradient-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-list-alt"></i> قائمة تصنيفات الأدوية</h5>
+                    <a asp-action="Create" class="btn btn-light">
+                        <i class="fas fa-plus"></i> إضافة تصنيف جديد
+                    </a>
+                </div>
+
+                <div class="card-body">
+                    <!-- Search Form -->
+                    <form asp-action="Index" method="get" class="mb-3">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" 
+                                       class="form-control" placeholder="البحث في الفئات..." />
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                            </div>
+                            <div class="col-md-2">
+                                <a asp-action="Index" class="btn btn-outline-info">
+                                    <i class="fas fa-sync"></i> إعادة تعيين
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Categories Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>اسم الفئة</th>
+                                    <th>الوصف</th>
+                                    <th>تاريخ الإنشاء</th>
+                                    <th>الحالة</th>
+                                    <th>عدد المنتجات</th>
+                                    <th>العمليات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model)
+                                {
+                                    <tr>
+                                        <td>@Html.DisplayFor(modelItem => category.Name)</td>
+                                        <td>@Html.DisplayFor(modelItem => category.Description)</td>
+                                        <td>@category.CreatedDate.ToString("dd/MM/yyyy")</td>
+                                        <td>
+                                            @if (category.IsActive)
+                                            {
+                                                <span class="badge badge-success">نشط</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge badge-danger">غير نشط</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info">@category.Products.Count</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@category.Id" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i> تفاصيل
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-warning btn-sm">
+                                                    <i class="fas fa-edit"></i> تعديل
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@category.Id" class="btn btn-danger btn-sm">
+                                                    <i class="fas fa-trash"></i> حذف
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (!Model.Any())
+                    {
+                        <div class="alert alert-info text-center">
+                            <h4>لا توجد فئات</h4>
+                            <p>لم يتم العثور على أي فئات. <a asp-action="Create">إضافة فئة جديدة</a></p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</section>

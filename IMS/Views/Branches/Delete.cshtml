@@ -1,0 +1,39 @@
+@model IMS.Models.Branch
+
+@{
+    ViewData["Title"] = "حذف الفرع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <h1 class="m-0 text-danger">حذف الفرع</h1>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0 col-md-6 mx-auto">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle text-warning fa-4x mb-4"></i>
+                <h3>هل أنت متأكد من حذف هذا الفرع؟</h3>
+                <p class="text-muted">هذا الإجراء قد يؤثر على البيانات المرتبطة بهذا الفرع (المستودعات، الموظفين، إلخ).</p>
+                
+                <div class="alert alert-light border text-start mt-4">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">اسم الفرع:</dt>
+                        <dd class="col-sm-8">@Model.Name</dd>
+                        
+                        <dt class="col-sm-4">الكود:</dt>
+                        <dd class="col-sm-8">@Model.Code</dd>
+                    </dl>
+                </div>
+
+                <form asp-action="Delete" class="mt-4">
+                    <input type="hidden" asp-for="Id" />
+                    <button type="submit" class="btn btn-danger px-5 rounded-pill">تأكيد الحذف</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary px-5 rounded-pill">إلغاء</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

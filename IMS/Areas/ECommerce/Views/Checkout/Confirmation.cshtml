@@ -1,0 +1,73 @@
+@model IMS.Models.ECommerceOrder
+@{
+    ViewData["Title"] = "تأكيد الطلب";
+}
+
+<section class="ec-section">
+    <div class="container">
+        <div class="ec-confirmation">
+            <div class="ec-confirmation-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="ec-confirmation-title">تم تأكيد طلبك بنجاح!</h2>
+            <p class="ec-confirmation-subtitle">شكراً لك. سيتم التواصل معك قريباً لتأكيد التوصيل</p>
+
+            <div class="ec-confirmation-card">
+                <div class="ec-confirmation-header">
+                    <div>
+                        <span class="ec-confirmation-label">رقم الطلب</span>
+                        <span class="ec-confirmation-value">@Model.OrderNumber</span>
+                    </div>
+                    <div>
+                        <span class="ec-confirmation-label">تاريخ الطلب</span>
+                        <span class="ec-confirmation-value">@Model.OrderDate.ToString("yyyy/MM/dd - HH:mm")</span>
+                    </div>
+                    <div>
+                        <span class="ec-confirmation-label">الحالة</span>
+                        <span class="badge @IMS.Models.ECommerceOrderStatus.GetBadgeClass(Model.Status) rounded-pill px-3 py-2">
+                            @IMS.Models.ECommerceOrderStatus.GetArabicName(Model.Status)
+                        </span>
+                    </div>
+                </div>
+
+                <div class="ec-confirmation-details">
+                    <h6><i class="fas fa-user"></i> معلومات العميل</h6>
+                    <p><strong>@Model.CustomerName</strong></p>
+                    <p><i class="fas fa-phone"></i> @Model.CustomerPhone</p>
+                    <p><i class="fas fa-envelope"></i> @Model.CustomerEmail</p>
+                    <p><i class="fas fa-map-marker-alt"></i> @Model.ShippingAddress @(!string.IsNullOrEmpty(Model.City) ? $", {Model.City}" : "")</p>
+                </div>
+
+                <div class="ec-confirmation-items">
+                    <h6><i class="fas fa-box"></i> المنتجات</h6>
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <div class="ec-confirmation-item">
+                            <span>@item.ProductName × @item.Quantity</span>
+                            <span>@item.LineTotal.ToString("N2") ج.م</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="ec-confirmation-totals">
+                    <div class="ec-confirmation-total-row">
+                        <span>المجموع الفرعي</span>
+                        <span>@Model.TotalAmount.ToString("N2") ج.م</span>
+                    </div>
+                    <div class="ec-confirmation-total-row">
+                        <span>رسوم الشحن</span>
+                        <span>@(Model.ShippingFee == 0 ? "مجاني" : $"{Model.ShippingFee:N2} ج.م")</span>
+                    </div>
+                    <div class="ec-confirmation-total-row grand">
+                        <span>الإجمالي</span>
+                        <span>@Model.GrandTotal.ToString("N2") ج.م</span>
+                    </div>
+                </div>
+            </div>
+
+            <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-btn ec-btn-primary">
+                <i class="fas fa-arrow-right"></i> العودة للمتجر
+            </a>
+        </div>
+    </div>
+</section>

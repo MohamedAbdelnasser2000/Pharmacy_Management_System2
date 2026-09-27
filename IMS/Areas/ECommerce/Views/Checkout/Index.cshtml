@@ -1,0 +1,164 @@
+@{
+    ViewData["Title"] = "إتمام الشراء";
+    var cart = ViewBag.Cart as List<IMS.Services.CartItem>;
+}
+
+<section class="ec-section">
+    <div class="container">
+        <div class="ec-page-header">
+            <h2><i class="fas fa-credit-card"></i> إتمام الشراء</h2>
+        </div>
+
+        @if (TempData["Error"] != null)
+        {
+            <div class="ec-alert ec-alert-danger">
+                <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            </div>
+        }
+
+        <form asp-area="ECommerce" asp-controller="Checkout" asp-action="PlaceOrder" method="post">
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <!-- Customer Info -->
+                    <div class="ec-checkout-card">
+                        <h5 class="ec-checkout-card-title"><i class="fas fa-user"></i> معلومات العميل</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="ec-label">الاسم الكامل <span class="text-danger">*</span></label>
+                                <input type="text" name="customerName" class="ec-input" required placeholder="أدخل اسمك الكامل" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="ec-label">البريد الإلكتروني <span class="text-danger">*</span></label>
+                                <input type="email" name="customerEmail" class="ec-input" required placeholder="example@email.com" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="ec-label">رقم الهاتف <span class="text-danger">*</span></label>
+                                <input type="tel" name="customerPhone" class="ec-input" required placeholder="01xxxxxxxxx" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="ec-checkout-card">
+                        <h5 class="ec-checkout-card-title"><i class="fas fa-shipping-fast"></i> عنوان التوصيل</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="ec-label">العنوان التفصيلي <span class="text-danger">*</span></label>
+                                <textarea name="shippingAddress" class="ec-input ec-textarea" rows="3" required placeholder="الشارع، رقم المبنى، الطابق..."></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="ec-label">المدينة</label>
+                                <input type="text" name="city" class="ec-input" placeholder="المدينة" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="ec-label">المنطقة</label>
+                                <input type="text" name="region" class="ec-input" placeholder="المنطقة" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="ec-label">الرمز البريدي</label>
+                                <input type="text" name="postalCode" class="ec-input" placeholder="الرمز البريدي" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="ec-checkout-card">
+                        <h5 class="ec-checkout-card-title"><i class="fas fa-sticky-note"></i> ملاحظات إضافية</h5>
+                        <textarea name="notes" class="ec-input ec-textarea" rows="2" placeholder="أي ملاحظات خاصة بالتوصيل..."></textarea>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="ec-checkout-card">
+                        <h5 class="ec-checkout-card-title"><i class="fas fa-wallet"></i> طريقة الدفع</h5>
+                        <div class="ec-payment-options">
+                            <label class="ec-payment-option selected">
+                                <input type="radio" name="paymentMethod" value="CashOnDelivery" checked />
+                                <div class="ec-payment-content">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                    <span>الدفع عند الاستلام</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="col-lg-5">
+                    <div class="ec-checkout-summary">
+                        <h5 class="ec-checkout-summary-title">ملخص الطلب</h5>
+                        <div class="ec-checkout-items">
+                            @if (cart != null)
+                            {
+                                @foreach (var item in cart)
+                                {
+                                    <div class="ec-checkout-item">
+                                        <div class="ec-checkout-item-image">
+                                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                            {
+                                                <img src="@item.ImageUrl" alt="@item.ProductName" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" />
+                                            }
+                                            else
+                                            {
+                                                <i class="fas fa-pills text-muted" style="font-size: 1.2rem;"></i>
+                                            }
+                                        </div>
+                                        <div class="ec-checkout-item-info">
+                                            <span class="ec-checkout-item-name">@item.ProductName</span>
+                                            <span class="ec-checkout-item-qty">× @item.Quantity</span>
+                                        </div>
+                                        <span class="ec-checkout-item-price">@item.LineTotal.ToString("N2") ج.م</span>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <div class="ec-checkout-totals">
+                            <div class="ec-checkout-total-row">
+                                <span>المجموع الفرعي</span>
+                                <span>@(((decimal)ViewBag.CartTotal).ToString("N2")) ج.م</span>
+                            </div>
+                            <div class="ec-checkout-total-row">
+                                <span>رسوم الشحن</span>
+                                <span>
+                                    @if ((decimal)ViewBag.ShippingFee == 0)
+                                    {
+                                        <span class="ec-free-shipping">مجاني</span>
+                                    }
+                                    else
+                                    {
+                                        @(((decimal)ViewBag.ShippingFee).ToString("N2"))@: ج.م
+                                    }
+                                </span>
+                            </div>
+                            @if ((decimal)ViewBag.ShippingFee > 0)
+                            {
+                                <div class="ec-shipping-notice">
+                                    <i class="fas fa-info-circle"></i>
+                                    شحن مجاني للطلبات أكثر من @(((decimal)ViewBag.FreeShippingThreshold).ToString("N0")) ج.م
+                                </div>
+                            }
+                            <div class="ec-checkout-total-row grand">
+                                <span>الإجمالي</span>
+                                <span>@(((decimal)ViewBag.GrandTotal).ToString("N2")) ج.م</span>
+                            </div>
+                        </div>
+                        <button type="submit" class="ec-btn ec-btn-primary ec-btn-block ec-btn-lg">
+                            <i class="fas fa-check-circle"></i> تأكيد الطلب
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.ec-payment-option').forEach(function(opt) {
+            opt.addEventListener('click', function() {
+                document.querySelectorAll('.ec-payment-option').forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+    </script>
+}

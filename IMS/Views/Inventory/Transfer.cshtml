@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "تحويل بين المستودعات";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">
+                    <i class="fas fa-exchange-alt"></i>
+                    تحويل بين المستودعات
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Movements">المخزون</a></li>
+                    <li class="breadcrumb-item active">تحويل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">نقل المنتجات بين المستودعات</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Transfer" method="post">
+                    <div class="form-group">
+                        <label class="control-label">المنتج</label>
+                        <select name="productId" class="form-control" asp-items="ViewBag.ProductId" required>
+                            <option value="">-- اختر المنتج --</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">من مستودع</label>
+                                <select name="fromWarehouseId" class="form-control" asp-items="ViewBag.FromWarehouseId" required>
+                                    <option value="">-- اختر المستودع المصدر --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">إلى مستودع</label>
+                                <select name="toWarehouseId" class="form-control" asp-items="ViewBag.ToWarehouseId" required>
+                                    <option value="">-- اختر المستودع الهدف --</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">الكمية</label>
+                        <input name="quantity" type="number" class="form-control" step="0.01" min="0.01" required />
+                        <small class="text-muted">تأكد من توفر الكمية في المستودع المصدر</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label">ملاحظات (اختياري)</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="أضف أي ملاحظات حول عملية التحويل..."></textarea>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>تنبيه:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>سيتم خصم الكمية من المستودع المصدر</li>
+                            <li>سيتم إضافة الكمية إلى المستودع الهدف</li>
+                            <li>سيتم تسجيل حركتين في سجل المخزون</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group mt-3 text-end">
+                        <a asp-action="Movements" class="btn btn-outline-secondary">إلغاء</a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-exchange-alt"></i> تنفيذ التحويل
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="card-title">نصائح للتحويل الناجح</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><i class="fas fa-check text-success"></i> تأكد من اختيار مستودعين مختلفين</li>
+                    <li><i class="fas fa-check text-success"></i> تحقق من توفر الكمية المطلوبة في المستودع المصدر</li>
+                    <li><i class="fas fa-check text-success"></i> أضف ملاحظات واضحة لتسهيل التتبع</li>
+                    <li><i class="fas fa-check text-success"></i> راجع سجل الحركات بعد التحويل للتأكد</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>

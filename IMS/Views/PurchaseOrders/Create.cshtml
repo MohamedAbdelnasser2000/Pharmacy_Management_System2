@@ -1,0 +1,432 @@
+@model IMS.Models.PurchaseOrder
+@{
+    ViewData["Title"] = "طلب شراء أدوية جديد - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-cart-plus text-warning"></i> طلب شراء أدوية جديد</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">طلبات الشراء</a></li>
+                    <li class="breadcrumb-item active">إضافة</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-warning text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-file-invoice"></i> بيانات طلب شراء الأدوية</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" id="purchaseOrderForm">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    
+                    <div class="form-group">
+                        <label asp-for="SupplierId" class="control-label">المورد</label>
+                        <select asp-for="SupplierId" class="form-control" asp-items="ViewBag.SupplierId" required>
+                            <option value="">-- اختر المورد --</option>
+                        </select>
+                        <span asp-validation-for="SupplierId" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4" />
+                    <h5 class="text-primary"><i class="fas fa-boxes"></i> المنتجات</h5>
+                    
+                    <!-- Barcode Scanner -->
+                    <div class="alert alert-info mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <label for="barcodeInput" class="form-label mb-2">
+                                    <i class="fas fa-barcode"></i>
+                                    <strong>مسح الباركود السريع</strong>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-barcode"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="barcodeInput" 
+                                           placeholder="امسح الباركود أو أدخله يدوياً واضغط Enter..."
+                                           autocomplete="off">
+                                    <button class="btn btn-primary" type="button" id="searchBarcodeBtn">
+                                        <i class="fas fa-search"></i>
+                                        بحث
+                                    </button>
+                                </div>
+                                <small class="text-muted">سيتم إضافة المنتج تلقائياً عند المسح</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div id="barcodeStatus" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="productsContainer">
+                        <div class="product-row mb-3" data-index="0">
+                            <div class="row">
+                                <div class="col-md-5">
+                                    <label class="control-label">المنتج</label>
+                                    <select name="PurchaseOrderItems[0].ProductId" class="form-control product-select" required>
+                                        <option value="">-- اختر المنتج --</option>
+                                        @foreach (var product in ViewBag.Products)
+                                        {
+                                            <option value="@product.Value" data-price="@product.Text.Split('|')[1]">@product.Text.Split('|')[0]</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="control-label">الكمية</label>
+                                    <input type="number" name="PurchaseOrderItems[0].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="control-label">سعر الوحدة</label>
+                                    <input type="number" name="PurchaseOrderItems[0].UnitPrice" class="form-control price-input" step="0.01" min="0" required data-original-price="0" />
+                                    <small class="text-muted price-note" style="display:none;"><i class="fas fa-exclamation-triangle text-warning"></i> السعر مختلف</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="control-label">الإجمالي</label>
+                                    <input type="text" class="form-control item-total" readonly />
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="control-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-block remove-product" style="display:none;"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-success mb-3" id="addProduct"><i class="fas fa-plus"></i> إضافة منتج</button>
+
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <strong>المبلغ الإجمالي:</strong>
+                                        <span id="totalAmount">0.00</span>
+                                    </div>
+                                    <div class="form-group mb-0">
+                                        <label>المبلغ المدفوع</label>
+                                        <input asp-for="PaidAmount" class="form-control" type="number" step="0.01" min="0" value="0" />
+                                    </div>
+                                    <input type="hidden" asp-for="TotalAmount" id="hiddenTotalAmount" />
+                                    <div class="alert alert-info mt-2 mb-0">
+                                        <small><i class="fas fa-info-circle"></i> سيتم تحديث حساب المورد تلقائياً</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-3 text-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                        <button type="submit" class="btn btn-primary">حفظ أمر الشراء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let productIndex = 1;
+
+        // Barcode Scanner Functions
+        $(document).ready(function() {
+            // Search on Enter key
+            $('#barcodeInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    searchProductByBarcode();
+                }
+            });
+
+            // Search button click
+            $('#searchBarcodeBtn').on('click', function() {
+                searchProductByBarcode();
+            });
+        });
+
+        function searchProductByBarcode() {
+            const barcode = $('#barcodeInput').val().trim();
+            
+            if (!barcode) {
+                showBarcodeStatus('warning', 'الرجاء إدخال الباركود');
+                return;
+            }
+
+            // Show loading
+            $('#searchBarcodeBtn').html('<span class="spinner-border spinner-border-sm"></span> جاري البحث...');
+            $('#searchBarcodeBtn').prop('disabled', true);
+
+            $.post('@Url.Action("SearchByBarcode", "BarcodeScan")', { barcode: barcode })
+                .done(function(response) {
+                    if (response.success) {
+                        addProductFromBarcode(response.product);
+                        showBarcodeStatus('success', '✓ تمت الإضافة: ' + response.product.name);
+                        playBeep();
+                    } else {
+                        showBarcodeStatus('danger', '✗ ' + response.message);
+                    }
+                })
+                .fail(function() {
+                    showBarcodeStatus('danger', '✗ حدث خطأ أثناء البحث');
+                })
+                .always(function() {
+                    $('#searchBarcodeBtn').html('<i class="fas fa-search"></i> بحث');
+                    $('#searchBarcodeBtn').prop('disabled', false);
+                    $('#barcodeInput').val('').focus();
+                });
+        }
+
+        function addProductFromBarcode(product) {
+            // Check if the first row is empty (default row)
+            const firstRow = $('.product-row').first();
+            const firstSelect = firstRow.find('.product-select');
+            const isFirstRowEmpty = !firstSelect.val() || firstSelect.val() === '';
+
+            if (isFirstRowEmpty) {
+                // Fill the first empty row with product data
+                firstSelect.empty().append(`<option value="${product.id}" selected data-price="${product.price}">${product.name}</option>`);
+                firstRow.find('.quantity-input').val(1);
+                firstRow.find('.price-input').val(product.price).attr('data-original-price', product.price);
+                firstRow.find('.item-total').val(product.price);
+                calculateTotals();
+                // Highlight the row briefly
+                firstRow.addClass('bg-success bg-opacity-25');
+                setTimeout(() => firstRow.removeClass('bg-success bg-opacity-25'), 1000);
+                return;
+            }
+
+            // Check if product already exists in the list
+            let existingRow = null;
+            $('.product-row').each(function() {
+                const select = $(this).find('.product-select');
+                if (select.val() == product.id) {
+                    existingRow = $(this);
+                    return false;
+                }
+            });
+
+            if (existingRow) {
+                // Increment quantity if product already exists
+                const qtyInput = existingRow.find('.quantity-input');
+                const currentQty = parseFloat(qtyInput.val()) || 0;
+                qtyInput.val(currentQty + 1);
+                calculateTotals();
+                // Highlight the row briefly
+                existingRow.addClass('bg-warning bg-opacity-25');
+                setTimeout(() => existingRow.removeClass('bg-warning bg-opacity-25'), 1000);
+            } else {
+                // Add new product row (use purchase price for purchase orders)
+                const newRow = `
+                    <div class="product-row mb-3" data-index="${productIndex}">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label class="control-label">المنتج</label>
+                                <select name="PurchaseOrderItems[${productIndex}].ProductId" class="form-control product-select" required>
+                                    <option value="${product.id}" selected data-price="${product.price}">${product.name}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="control-label">الكمية</label>
+                                <input type="number" name="PurchaseOrderItems[${productIndex}].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="control-label">سعر الوحدة</label>
+                                <input type="number" name="PurchaseOrderItems[${productIndex}].UnitPrice" class="form-control price-input" step="0.01" min="0" value="${product.price}" required data-original-price="${product.price}" />
+                                <small class="text-muted price-note" style="display:none;"><i class="fas fa-exclamation-triangle text-warning"></i> السعر مختلف</small>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="control-label">الإجمالي</label>
+                                <input type="text" class="form-control item-total" readonly value="${product.price}" />
+                            </div>
+                            <div class="col-md-1">
+                                <label class="control-label">&nbsp;</label>
+                                <button type="button" class="btn btn-danger btn-block remove-product"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#productsContainer').append(newRow);
+                productIndex++;
+                updateRemoveButtons();
+                calculateTotals();
+            }
+        }
+
+        function showBarcodeStatus(type, message) {
+            const iconClass = type === 'success' ? 'fa-check-circle' : type === 'danger' ? 'fa-times-circle' : 'fa-exclamation-triangle';
+            const alertClass = type === 'success' ? 'alert-success' : type === 'danger' ? 'alert-danger' : 'alert-warning';
+            
+            $('#barcodeStatus').html(`
+                <div class="alert ${alertClass} py-2 mb-0">
+                    <i class="fas ${iconClass}"></i> ${message}
+                </div>
+            `);
+            
+            setTimeout(function() {
+                $('#barcodeStatus').fadeOut(function() {
+                    $(this).html('').show();
+                });
+            }, 3000);
+        }
+
+        function playBeep() {
+            // Simple beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                // Silently fail if audio not supported
+            }
+        }
+
+        // Calculate totals
+        function calculateTotals() {
+            let total = 0;
+            $('.product-row').each(function() {
+                const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                const price = parseFloat($(this).find('.price-input').val()) || 0;
+                const itemTotal = quantity * price;
+                $(this).find('.item-total').val(itemTotal.toFixed(2));
+                total += itemTotal;
+            });
+            $('#totalAmount').text(total.toFixed(2));
+            $('#hiddenTotalAmount').val(total.toFixed(2));
+        }
+
+        // Product selection change
+        $(document).on('change', '.product-select', function() {
+            const selectedOption = $(this).find('option:selected');
+            const price = selectedOption.data('price') || 0;
+            const priceInput = $(this).closest('.product-row').find('.price-input');
+            priceInput.val(price);
+            priceInput.attr('data-original-price', price);
+            priceInput.removeClass('border-warning');
+            $(this).closest('.product-row').find('.price-note').hide();
+            calculateTotals();
+        });
+
+        // Quantity change
+        $(document).on('input', '.quantity-input', function() {
+            calculateTotals();
+        });
+
+        // Price change - show warning if different from original
+        $(document).on('input', '.price-input', function() {
+            const currentPrice = parseFloat($(this).val()) || 0;
+            const originalPrice = parseFloat($(this).attr('data-original-price')) || 0;
+            const priceNote = $(this).closest('.col-md-2').find('.price-note');
+            
+            if (currentPrice !== originalPrice && originalPrice > 0) {
+                $(this).addClass('border-warning');
+                priceNote.show();
+            } else {
+                $(this).removeClass('border-warning');
+                priceNote.hide();
+            }
+            calculateTotals();
+        });
+
+        // Add product
+        $('#addProduct').click(function() {
+            const newRow = `
+                <div class="product-row mb-3" data-index="${productIndex}">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <label class="control-label">المنتج</label>
+                            <select name="PurchaseOrderItems[${productIndex}].ProductId" class="form-control product-select" required>
+                                <option value="">-- اختر المنتج --</option>
+                                @foreach (var product in ViewBag.Products)
+                                {
+                                    <option value="@product.Value" data-price="@product.Text.Split('|')[1]">@product.Text.Split('|')[0]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">الكمية</label>
+                            <input type="number" name="PurchaseOrderItems[${productIndex}].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">سعر الوحدة</label>
+                            <input type="number" name="PurchaseOrderItems[${productIndex}].UnitPrice" class="form-control price-input" step="0.01" min="0" required data-original-price="0" />
+                            <small class="text-muted price-note" style="display:none;"><i class="fas fa-exclamation-triangle text-warning"></i> السعر مختلف</small>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">الإجمالي</label>
+                            <input type="text" class="form-control item-total" readonly />
+                        </div>
+                        <div class="col-md-1">
+                            <label class="control-label">&nbsp;</label>
+                            <button type="button" class="btn btn-danger btn-block remove-product"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#productsContainer').append(newRow);
+            productIndex++;
+            updateRemoveButtons();
+        });
+
+        // Remove product
+        $(document).on('click', '.remove-product', function() {
+            $(this).closest('.product-row').remove();
+            calculateTotals();
+            updateRemoveButtons();
+        });
+
+        // Update remove buttons visibility
+        function updateRemoveButtons() {
+            const rowCount = $('.product-row').length;
+            if (rowCount > 1) {
+                $('.remove-product').show();
+            } else {
+                $('.remove-product').hide();
+            }
+        }
+
+        // Form submission
+        $('#purchaseOrderForm').submit(function(e) {
+            const rowCount = $('.product-row').length;
+            console.log('عدد المنتجات:', rowCount);
+            
+            if (rowCount === 0) {
+                e.preventDefault();
+                alert('يجب إضافة منتج واحد على الأقل');
+                return false;
+            }
+            
+            // Log form data for debugging
+            const formData = $(this).serializeArray();
+            console.log('بيانات النموذج:', formData);
+            
+            return true;
+        });
+    </script>
+}

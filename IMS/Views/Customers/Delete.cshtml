@@ -1,0 +1,61 @@
+@model IMS.Models.Customer
+@{
+    ViewData["Title"] = "حذف عميل/مريض - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-user-times text-danger"></i> حذف عميل/مريض</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">العملاء</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-danger text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-exclamation-triangle"></i> تأكيد حذف العميل/المريض</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <strong>تحذير:</strong> هل أنت متأكد من رغبتك في حذف العميل/المريض التالي؟
+                </div>
+                <dl class="row">
+                    <dt class="col-sm-3"><i class="fas fa-user"></i> الاسم:</dt>
+                    <dd class="col-sm-9"><strong>@Model.Name</strong></dd>
+                    
+                    <dt class="col-sm-3"><i class="fas fa-phone"></i> الهاتف:</dt>
+                    <dd class="col-sm-9">@Model.PhoneNumber</dd>
+                    
+                    <dt class="col-sm-3"><i class="fas fa-shopping-basket"></i> عدد المشتريات:</dt>
+                    <dd class="col-sm-9"><span class="badge bg-info">@Model.Orders.Count</span></dd>
+                </dl>
+                @if (Model.Orders.Any())
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-pills"></i>
+                        <strong>ملاحظة:</strong> هذا العميل/المريض لديه @Model.Orders.Count عملية شراء مسجلة. حذف الملف قد يؤثر على البيانات المرتبطة.
+                    </div>
+                }
+            </div>
+            <div class="card-footer text-end">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="Id" />
+                    <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

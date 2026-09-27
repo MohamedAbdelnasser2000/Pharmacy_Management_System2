@@ -1,0 +1,284 @@
+@model IMS.Models.Order
+@{
+    ViewData["Title"] = "فاتورة البيع - الصيدلية";
+    var subtotalBeforeDiscount = Model.OrderItems?.Sum(i => i.Quantity * i.UnitPrice) ?? 0;
+    var totalDiscounts = Model.OrderItems?.Sum(i => (i.Quantity * i.UnitPrice) * (i.DiscountPercentage / 100)) ?? 0;
+    var remaining = Model.TotalAmount - Model.PaidAmount;
+    var paymentSchedule = ViewBag.PaymentSchedule as IEnumerable<Transaction>;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-file-invoice text-info"></i> فاتورة البيع #@Model.Id</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المبيعات</a></li>
+                    <li class="breadcrumb-item active">الفاتورة</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-gradient-info text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-receipt"></i> معلومات عملية البيع</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3"><i class="fas fa-hashtag"></i> رقم الفاتورة</dt>
+                            <dd class="col-sm-9"><strong>#@Model.Id</strong></dd>
+
+                            <dt class="col-sm-3"><i class="fas fa-user-injured"></i> العميل/المريض</dt>
+                            <dd class="col-sm-9">@Model.Customer?.Name</dd>
+
+                            <dt class="col-sm-3"><i class="fas fa-calendar"></i> تاريخ البيع</dt>
+                            <dd class="col-sm-9">@Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</dd>
+
+                            <dt class="col-sm-3"><i class="fas fa-info-circle"></i> الحالة</dt>
+                            <dd class="col-sm-9">
+                                @if (Model.Status == "جديد")
+                                {
+                                    <span class="badge bg-primary">@Model.Status</span>
+                                }
+                                else if (Model.Status == "قيد الشحن")
+                                {
+                                    <span class="badge bg-warning">@Model.Status</span>
+                                }
+                                else if (Model.Status == "مكتمل")
+                                {
+                                    <span class="badge bg-success">@Model.Status</span>
+                                }
+                                else if (Model.Status == "مرتجع")
+                                {
+                                    <span class="badge bg-danger">@Model.Status</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@Model.Status</span>
+                                }
+                            </dd>
+                        </dl>
+
+                        <hr />
+
+                        <h6 class="text-primary">عناصر الطلب</h6>
+                        @if (Model.OrderItems != null && Model.OrderItems.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>المنتج</th>
+                                            <th>الكمية</th>
+                                            <th>السعر</th>
+                                            <th>خصم %</th>
+                                            <th>قبل الخصم</th>
+                                            <th>بعد الخصم</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var item in Model.OrderItems)
+                                        {
+                                            var subtotal = item.Quantity * item.UnitPrice;
+                                            var discount = subtotal * (item.DiscountPercentage / 100);
+                                            var total = subtotal - discount;
+                                            <tr>
+                                                <td>@item.Product?.Name</td>
+                                                <td>@item.Quantity</td>
+                                                <td>@item.UnitPrice.ToString("C")</td>
+                                                <td>
+                                                    @if (item.DiscountPercentage > 0)
+                                                    {
+                                                        <span class="badge bg-success">@item.DiscountPercentage%</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td>@subtotal.ToString("C")</td>
+                                                <td><strong>@total.ToString("C")</strong></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted">لا توجد عناصر في هذا الطلب</p>
+                        }
+                    </div>
+                    <div class="card-footer text-end">
+                        <a asp-controller="Returns" asp-action="Create" asp-route-orderId="@Model.Id" class="btn btn-danger">
+                            <i class="fas fa-undo-alt"></i> إنشاء مرتجع
+                        </a>
+                        <a asp-action="DownloadInvoice" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                            <i class="fas fa-file-pdf"></i> تحميل PDF
+                        </a>
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">تعديل</a>
+                        <a asp-action="Index" class="btn btn-outline-secondary">عودة</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">الملخص المالي</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-6">الإجمالي قبل الخصم:</dt>
+                            <dd class="col-6 text-end">@subtotalBeforeDiscount.ToString("C")</dd>
+
+                            @if (totalDiscounts > 0)
+                            {
+                                <dt class="col-6">خصومات الروشتة:</dt>
+                                <dd class="col-6 text-end text-success">-@totalDiscounts.ToString("C")</dd>
+                            }
+
+                            @if (Model.DiscountAmount > 0)
+                            {
+                                <dt class="col-6 text-success">
+                                    <i class="fas fa-ticket-alt"></i> كود الخصم:
+                                </dt>
+                                <dd class="col-6 text-end text-success">
+                                    -@Model.DiscountAmount.ToString("C")
+                                    @if (Model.DiscountCode != null)
+                                    {
+                                        <br /><small class="text-muted">(@Model.DiscountCode.Code)</small>
+                                    }
+                                </dd>
+                            }
+
+                            <dt class="col-6 border-top pt-2">المبلغ الإجمالي:</dt>
+                            <dd class="col-6 text-end fw-bold border-top pt-2">@Model.TotalAmount.ToString("C")</dd>
+
+                            @if (Model.InsurancePolicyId.HasValue && Model.InsuranceCoverageAmount > 0)
+                            {
+                                <dt class="col-6 text-primary">
+                                    <i class="fas fa-shield-alt"></i> التغطية التأمينية:
+                                </dt>
+                                <dd class="col-6 text-end text-primary">
+                                    -@Model.InsuranceCoverageAmount.ToString("C")
+                                    @if (Model.AppliedCoveragePercentage.HasValue)
+                                    {
+                                        <small>(@Model.AppliedCoveragePercentage.Value%)</small>
+                                    }
+                                </dd>
+
+                                <dt class="col-6">
+                                    <i class="fas fa-file-contract"></i> البوليصة:
+                                </dt>
+                                <dd class="col-6 text-end">
+                                    <small>@Model.InsurancePolicy?.PolicyNumber</small><br/>
+                                    <small class="text-muted">@Model.InsurancePolicy?.Insurance?.Name</small>
+                                </dd>
+
+                                <dt class="col-6 border-top pt-2 fw-bold">المبلغ على العميل:</dt>
+                                <dd class="col-6 text-end fw-bold border-top pt-2">@Model.CustomerPayableAmount.ToString("C")</dd>
+                            }
+
+                            <dt class="col-6">المدفوع:</dt>
+                            <dd class="col-6 text-end text-success">@Model.PaidAmount.ToString("C")</dd>
+
+                            <dt class="col-6">المتبقي:</dt>
+                            <dd class="col-6 text-end @(remaining > 0 ? "text-danger" : "text-success") fw-bold">
+                                @remaining.ToString("C")
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">جدول سداد المبالغ</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (paymentSchedule != null && paymentSchedule.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>التاريخ</th>
+                                            <th class="text-end">المبلغ</th>
+                                            <th>الوصف</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var payment in paymentSchedule)
+                                        {
+                                            <tr>
+                                                <td>@payment.TransactionDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                                <td class="text-end">@payment.Amount.ToString("C")</td>
+                                                <td>@payment.Description</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted mb-0">لا توجد مدفوعات مسجلة لهذا الطلب.</p>
+                        }
+                    </div>
+                </div>
+
+                @if (remaining > 0)
+                {
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">إضافة دفعة</h5>
+                        </div>
+                        <div class="card-body">
+                            <form asp-action="AddPayment" method="post">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <div class="form-group">
+                                    <label>المبلغ</label>
+                                    <input type="number" name="amount" class="form-control" step="0.01" max="@remaining" required />
+                                </div>
+                                <button type="submit" class="btn btn-success w-100 mt-2">
+                                    <i class="fas fa-money-bill"></i> إضافة دفعة
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">تغيير الحالة</h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="UpdateStatus" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <div class="form-group">
+                                <select name="status" class="form-control">
+                                    <option value="جديد">جديد</option>
+                                    <option value="قيد الشحن">قيد الشحن</option>
+                                    <option value="مكتمل">مكتمل</option>
+                                    <option value="مرتجع">مرتجع</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mt-2">
+                                <i class="fas fa-sync"></i> تحديث الحالة
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

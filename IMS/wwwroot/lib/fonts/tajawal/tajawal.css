@@ -1,0 +1,28 @@
+/* Tajawal Font - Local Version */
+
+@font-face {
+    font-family: 'Tajawal';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: local('Tajawal Regular'), local('Tajawal-Regular'),
+         url('Tajawal-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Tajawal';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: local('Tajawal Medium'), local('Tajawal-Medium'),
+         url('Tajawal-Medium.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Tajawal';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: local('Tajawal Bold'), local('Tajawal-Bold'),
+         url('Tajawal-Bold.woff2') format('woff2');
+}

@@ -1,0 +1,176 @@
+@model IEnumerable<IMS.Models.PurchaseOrder>
+@{
+    ViewData["Title"] = "تقرير مشتريات الأدوية - الصيدلية";
+    var currentFilter = ViewBag.Filter ?? "all";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-truck-medical text-warning"></i> تقرير مشتريات الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">التقارير</a></li>
+                    <li class="breadcrumb-item active">المشتريات</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-filter"></i> فلترة التقرير</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">من تاريخ</label>
+                        <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">إلى تاريخ</label>
+                        <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary d-block w-100">
+                            <i class="fas fa-search"></i> بحث
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <a href="?startDate=@ViewBag.StartDate.ToString("yyyy-MM-dd")&endDate=@ViewBag.EndDate.ToString("yyyy-MM-dd")&filter=all" 
+                   class="text-decoration-none">
+                    <div class="card bg-gradient-warning text-white clickable-card @(currentFilter == "all" ? "active-filter" : "") shadow-sm">
+                        <div class="card-body">
+                            <h5><i class="fas fa-pills"></i> إجمالي مشتريات الأدوية</h5>
+                            <h2>@ViewBag.TotalPurchases.ToString("N2") جنيه</h2>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="?startDate=@ViewBag.StartDate.ToString("yyyy-MM-dd")&endDate=@ViewBag.EndDate.ToString("yyyy-MM-dd")&filter=all" 
+                   class="text-decoration-none">
+                    <div class="card bg-gradient-info text-white clickable-card @(currentFilter == "all" ? "active-filter" : "") shadow-sm">
+                        <div class="card-body">
+                            <h5><i class="fas fa-money-bill-wave"></i> المبالغ المدفوعة</h5>
+                            <h2>@ViewBag.TotalPaid.ToString("N2") جنيه</h2>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="?startDate=@ViewBag.StartDate.ToString("yyyy-MM-dd")&endDate=@ViewBag.EndDate.ToString("yyyy-MM-dd")&filter=unpaid" 
+                   class="text-decoration-none">
+                    <div class="card bg-gradient-danger text-white clickable-card @(currentFilter == "unpaid" ? "active-filter" : "") shadow-sm">
+                        <div class="card-body">
+                            <h5><i class="fas fa-exclamation-circle"></i> المبالغ المتبقية</h5>
+                            <h2>@((ViewBag.TotalPurchases - ViewBag.TotalPaid).ToString("N2")) جنيه</h2>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <div class="card mt-3 shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> تفاصيل مشتريات الأدوية
+                    @if (currentFilter == "unpaid")
+                    {
+                        <span class="badge bg-danger">الطلبات غير المدفوعة بالكامل</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-light text-dark">جميع الطلبات</span>
+                    }
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> لا توجد مشتريات أدوية في الفترة المحددة
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>رقم الأمر</th>
+                                    <th>التاريخ</th>
+                                    <th>المورد</th>
+                                    <th>الأدوية</th>
+                                    <th>المبلغ الإجمالي</th>
+                                    <th>المدفوع</th>
+                                    <th>المتبقي</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model)
+                                {
+                                    var remaining = order.TotalAmount - order.PaidAmount;
+                                    <tr>
+                                        <td>#@order.Id</td>
+                                        <td>@order.OrderDate.ToString("yyyy/MM/dd")</td>
+                                        <td>@order.Supplier?.Name</td>
+                                        <td>
+                                            @if (order.PurchaseOrderItems != null && order.PurchaseOrderItems.Any())
+                                            {
+                                                <small>
+                                                    @string.Join(", ", order.PurchaseOrderItems.Select(poi => $"{poi.Product?.Name} ({poi.Quantity})"))
+                                                </small>
+                                            }
+                                        </td>
+                                        <td>@order.TotalAmount.ToString("N2")</td>
+                                        <td class="text-success">@order.PaidAmount.ToString("N2")</td>
+                                        <td class="@(remaining > 0 ? "text-danger" : "text-success")">
+                                            @remaining.ToString("N2")
+                                        </td>
+                                        <td><span class="badge bg-info">@order.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .clickable-card {
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 3px solid transparent;
+    }
+    
+    .clickable-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    
+    .clickable-card.active-filter {
+        border: 3px solid #fff;
+        box-shadow: 0 0 15px rgba(255,255,255,0.5);
+    }
+    
+    .text-decoration-none:hover {
+        text-decoration: none !important;
+    }
+</style>

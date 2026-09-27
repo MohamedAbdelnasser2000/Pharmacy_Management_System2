@@ -1,0 +1,102 @@
+@model IMS.Models.StockMovement
+@{
+    ViewData["Title"] = "إضافة حركة مخزون";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">إضافة حركة مخزون</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Movements">المخزون</a></li>
+                    <li class="breadcrumb-item active">إضافة حركة</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">تسجيل حركة جديدة</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="AddMovement" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ProductId" class="control-label">المنتج</label>
+                                <select asp-for="ProductId" class="form-control" asp-items="ViewBag.ProductId">
+                                    <option value="">-- اختر المنتج --</option>
+                                </select>
+                                <span asp-validation-for="ProductId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="WarehouseId" class="control-label">المستودع</label>
+                                <select asp-for="WarehouseId" class="form-control" asp-items="ViewBag.WarehouseId">
+                                    <option value="">-- اختر المستودع --</option>
+                                </select>
+                                <span asp-validation-for="WarehouseId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="MovementType" class="control-label">نوع الحركة</label>
+                                <select asp-for="MovementType" class="form-control">
+                                    <option value="إدخال">إدخال</option>
+                                    <option value="إخراج">إخراج</option>
+                                </select>
+                                <span asp-validation-for="MovementType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Quantity" class="control-label">الكمية</label>
+                                <input asp-for="Quantity" class="form-control" type="number" step="0.01" />
+                                <span asp-validation-for="Quantity" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Reason" class="control-label">السبب</label>
+                        <input asp-for="Reason" class="form-control" />
+                        <span asp-validation-for="Reason" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="ReferenceNumber" class="control-label">رقم المرجع (اختياري)</label>
+                        <input asp-for="ReferenceNumber" class="form-control" />
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>ملاحظة:</strong> سيتم تحديث كمية المنتج في المستودع تلقائياً بناءً على نوع الحركة.
+                    </div>
+
+                    <div class="form-group mt-3 text-end">
+                        <a asp-action="Movements" class="btn btn-outline-secondary">إلغاء</a>
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

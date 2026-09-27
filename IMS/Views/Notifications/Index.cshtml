@@ -1,0 +1,77 @@
+@model IEnumerable<IMS.Models.Notification>
+
+@{
+    ViewData["Title"] = "مركز الإشعارات - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-bell text-warning"></i> مركز الإشعارات</h1>
+            </div>
+            <div class="col-sm-6">
+                <div class="float-sm-end">
+                    <button id="btnMarkAllRead" class="btn btn-outline-primary rounded-pill px-4">
+                        <i class="fas fa-check-double me-1"></i> تحديد الكل كمقروء
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="list-group list-group-flush">
+                    @foreach (var n in Model)
+                    {
+                        var iconClass = n.Type switch
+                        {
+                            "Warning" => "fa-exclamation-triangle text-warning",
+                            "Error" => "fa-times-circle text-danger",
+                            "Success" => "fa-check-circle text-success",
+                            _ => "fa-info-circle text-info"
+                        };
+
+                        <div class="list-group-item p-4 border-bottom @(n.IsRead ? "" : "bg-light")">
+                            <div class="d-flex align-items-center">
+                                <i class="fas @iconClass fa-2x me-3"></i>
+                                <div class="flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <h5 class="mb-0 fw-bold">@n.Title</h5>
+                                        <small class="text-muted">@n.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small>
+                                    </div>
+                                    <p class="mb-2 text-dark">@n.Message</p>
+                                    @if (!string.IsNullOrEmpty(n.Link))
+                                    {
+                                        <a href="@n.Link" class="btn btn-sm btn-primary rounded-pill">انتقال إلى الصفحة</a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                            <h4 class="text-muted">لا توجد إشعارات حالياً</h4>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $('#btnMarkAllRead').click(function() {
+            $.post('/Notifications/MarkAllAsRead', function() {
+                location.reload();
+            });
+        });
+    </script>
+}

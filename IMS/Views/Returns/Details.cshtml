@@ -1,0 +1,339 @@
+@model IMS.Models.Return
+@{
+    ViewData["Title"] = "تفاصيل المرتجع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">تفاصيل المرتجع #@Model.Id</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المرتجعات</a></li>
+                    <li class="breadcrumb-item active">تفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-8">
+                <!-- معلومات المرتجع -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-info-circle"></i> معلومات المرتجع
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>رقم المرتجع:</strong> #@Model.Id</p>
+                                <p><strong>رقم الطلب:</strong> 
+                                    <a asp-controller="Orders" asp-action="Details" asp-route-id="@Model.OrderId">
+                                        #@Model.OrderId
+                                    </a>
+                                </p>
+                                <p><strong>العميل:</strong> @Model.Customer?.Name</p>
+                                <p><strong>تاريخ المرتجع:</strong> @Model.ReturnDate.ToString("yyyy/MM/dd HH:mm")</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>نوع المرتجع:</strong> 
+                                    @if (Model.ReturnType == "استرجاع كامل")
+                                    {
+                                        <span class="badge bg-danger">@Model.ReturnType</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark">@Model.ReturnType</span>
+                                    }
+                                </p>
+                                <p><strong>الحالة:</strong> 
+                                    @if (Model.Status == "معلق")
+                                    {
+                                        <span class="badge bg-warning text-dark">@Model.Status</span>
+                                    }
+                                    else if (Model.Status == "مقبول")
+                                    {
+                                        <span class="badge bg-success">@Model.Status</span>
+                                    }
+                                    else if (Model.Status == "مرفوض")
+                                    {
+                                        <span class="badge bg-danger">@Model.Status</span>
+                                    }
+                                    else if (Model.Status == "مكتمل")
+                                    {
+                                        <span class="badge bg-info">@Model.Status</span>
+                                    }
+                                </p>
+                                <p><strong>تم بواسطة:</strong> @Model.ProcessedBy</p>
+                                @if (!string.IsNullOrEmpty(Model.ApprovedBy))
+                                {
+                                    <p><strong>تمت الموافقة بواسطة:</strong> @Model.ApprovedBy</p>
+                                    <p><strong>تاريخ الموافقة:</strong> @Model.ApprovedDate?.ToString("yyyy/MM/dd HH:mm")</p>
+                                }
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <p><strong>سبب المرتجع:</strong></p>
+                                <p class="text-muted">@Model.Reason</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <div class="col-12">
+                                    <p><strong>ملاحظات:</strong></p>
+                                    <p class="text-muted">@Model.Notes</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المنتجات المرتجعة -->
+                <div class="card mt-3">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-boxes"></i> المنتجات المرتجعة
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>المنتج</th>
+                                        <th class="text-center">الكمية</th>
+                                        <th class="text-center">سعر الوحدة</th>
+                                        <th class="text-center">الخصم</th>
+                                        <th class="text-center">المبلغ</th>
+                                        <th class="text-center">الحالة</th>
+                                        <th class="text-center">إعادة للمخزن</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.ReturnItems != null && Model.ReturnItems.Any())
+                                    {
+                                        @foreach (var item in Model.ReturnItems)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@item.Product?.Name</strong>
+                                                    @if (!string.IsNullOrEmpty(item.ItemReason))
+                                                    {
+                                                        <br /><small class="text-muted">السبب: @item.ItemReason</small>
+                                                    }
+                                                </td>
+                                                <td class="text-center">@item.ReturnedQuantity</td>
+                                                <td class="text-center">@item.UnitPrice.ToString("N2") ج.م</td>
+                                                <td class="text-center">@item.DiscountPercentage.ToString("N2")%</td>
+                                                <td class="text-center"><strong>@item.RefundAmount.ToString("N2") ج.م</strong></td>
+                                                <td class="text-center">
+                                                    @if (item.Condition == "جديد")
+                                                    {
+                                                        <span class="badge bg-success">@item.Condition</span>
+                                                    }
+                                                    else if (item.Condition == "مستخدم")
+                                                    {
+                                                        <span class="badge bg-warning text-dark">@item.Condition</span>
+                                                    }
+                                                    else if (item.Condition == "تالف")
+                                                    {
+                                                        <span class="badge bg-danger">@item.Condition</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">@item.Condition</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (item.RestockItem)
+                                                    {
+                                                        <i class="fas fa-check-circle text-success"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="fas fa-times-circle text-danger"></i>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">لا توجد منتجات</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <!-- الملخص المالي -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-money-bill-wave"></i> الملخص المالي
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>إجمالي المبلغ المسترجع:</span>
+                            <strong class="text-danger">@Model.TotalRefundAmount.ToString("N2") ج.م</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>المبلغ المسترد:</span>
+                            <strong class="text-success">@Model.RefundedAmount.ToString("N2") ج.م</strong>
+                        </div>
+                        <hr />
+                        <div class="d-flex justify-content-between">
+                            <span><strong>المتبقي:</strong></span>
+                            <strong class="text-warning">@((Model.TotalRefundAmount - Model.RefundedAmount).ToString("N2")) ج.م</strong>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.RefundMethod))
+                        {
+                            <hr />
+                            <p><strong>طريقة الاسترداد:</strong> @Model.RefundMethod</p>
+                            @if (Model.RefundDate.HasValue)
+                            {
+                                <p><strong>تاريخ الاسترداد:</strong> @Model.RefundDate.Value.ToString("yyyy/MM/dd")</p>
+                            }
+                        }
+                    </div>
+                </div>
+
+                <!-- الإجراءات -->
+                <div class="card mt-3">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-cog"></i> الإجراءات
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Status == "معلق" && User.IsInRole("Admin"))
+                        {
+                            <form asp-action="Approve" method="post" class="mb-2">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-success w-100" onclick="return confirm('هل أنت متأكد من الموافقة على هذا المرتجع؟');">
+                                    <i class="fas fa-check"></i> الموافقة على المرتجع
+                                </button>
+                            </form>
+                            
+                            <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                <i class="fas fa-times"></i> رفض المرتجع
+                            </button>
+                        }
+
+                        @if (Model.Status == "مقبول" && Model.RefundedAmount < Model.TotalRefundAmount)
+                        {
+                            <button type="button" class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#refundModal">
+                                <i class="fas fa-money-bill-wave"></i> معالجة استرداد
+                            </button>
+                        }
+
+                        @if (Model.Status == "معلق")
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning w-100 mb-2">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                        }
+
+                        <a asp-action="Print" asp-route-id="@Model.Id" class="btn btn-info w-100 mb-2" target="_blank">
+                            <i class="fas fa-print"></i> طباعة الفاتورة
+                        </a>
+
+                        <a asp-action="Index" class="btn btn-secondary w-100">
+                            <i class="fas fa-arrow-left"></i> العودة للقائمة
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="Reject" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">رفض المرتجع</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="form-group">
+                        <label>سبب الرفض</label>
+                        <textarea name="rejectionReason" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-danger">رفض المرتجع</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Refund Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-action="ProcessRefund" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">معالجة استرداد</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div class="form-group mb-3">
+                        <label>المبلغ المسترد</label>
+                        <input type="number" name="refundAmount" class="form-control" step="0.01" 
+                               max="@(Model.TotalRefundAmount - Model.RefundedAmount)" required />
+                        <small class="text-muted">المتبقي: @((Model.TotalRefundAmount - Model.RefundedAmount).ToString("N2")) ج.م</small>
+                    </div>
+                    <div class="form-group">
+                        <label>طريقة الاسترداد</label>
+                        <select name="refundMethod" class="form-control" required>
+                            <option value="">-- اختر الطريقة --</option>
+                            <option value="نقدي">نقدي</option>
+                            <option value="تحويل بنكي">تحويل بنكي</option>
+                            <option value="رصيد في الحساب">رصيد في الحساب</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">معالجة الاسترداد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+@model DashboardViewModel
+
+<div class="content-header mb-4">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">لوحة التحكم المالية</h2>
+                <p class="text-muted mb-0">مرحباً بك، تتبع الأداء المالي والمدفوعات</p>
+            </div>
+            <div class="glass-panel px-3 py-2 text-primary fw-semibold small d-none d-md-block">
+                <i class="fas fa-calendar-day me-2"></i> @IMS.AppClock.UtcNow.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mb-5">
+    <h5 class="fw-bold mb-4 ms-2">إجراءات مالية سريعة</h5>
+    <div class="row g-4">
+        <div class="col-6 col-md-3">
+            <a asp-controller="Reports" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-blue mx-auto"><i class="fas fa-file-invoice-dollar"></i></div>
+                <span class="fw-bold text-dark d-block">تقارير المبيعات</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Reports" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-green mx-auto"><i class="fas fa-chart-pie"></i></div>
+                <span class="fw-bold text-dark d-block">تقرير الأرباح</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Suppliers" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-orange mx-auto"><i class="fas fa-truck-loading"></i></div>
+                <span class="fw-bold text-dark d-block">حسابات الموردين</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Customers" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-purple mx-auto"><i class="fas fa-user-tag"></i></div>
+                <span class="fw-bold text-dark d-block">مديونيات العملاء</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card bg-success text-white">
+                    <h6 class="small fw-bold opacity-75 mb-2">مبيعات اليوم</h6>
+                    <h3 class="fw-bold mb-0">@Model.SummaryCards.FirstOrDefault(c => c.Title == "مبيعات اليوم")?.Value</h3>
+                    <i class="fas fa-cash-register position-absolute end-0 bottom-0 m-3 opacity-25 fa-2x"></i>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card bg-info text-white">
+                    <h6 class="small fw-bold opacity-75 mb-2">مبيعات الشهر</h6>
+                    <h3 class="fw-bold mb-0">@Model.SummaryCards.FirstOrDefault(c => c.Title == "مبيعات الشهر")?.Value</h3>
+                    <i class="fas fa-calendar-alt position-absolute end-0 bottom-0 m-3 opacity-25 fa-2x"></i>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card bg-warning text-white">
+                    <h6 class="small fw-bold opacity-75 mb-2">ديون العملاء</h6>
+                    <h3 class="fw-bold mb-0">@Model.PendingPayments.ToString("N0") ج.م</h3>
+                    <i class="fas fa-hand-holding-usd position-absolute end-0 bottom-0 m-3 opacity-25 fa-2x"></i>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="info-card bg-danger text-white">
+                    <h6 class="small fw-bold opacity-75 mb-2">مستحقات الموردين</h6>
+                    <h3 class="fw-bold mb-0">@Model.SupplierPendingPayments.ToString("N0") ج.م</h3>
+                    <i class="fas fa-file-invoice position-absolute end-0 bottom-0 m-3 opacity-25 fa-2x"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="info-card h-100">
+                    <h5 class="fw-bold mb-4">أداء المبيعات الأخير</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>رقم الطلب</th>
+                                    <th>العميل</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.RecentOrders)
+                                {
+                                    <tr>
+                                        <td>#@order.Id</td>
+                                        <td>@order.CustomerName</td>
+                                        <td class="fw-bold text-success">@order.TotalAmount.ToString("N0") ج.م</td>
+                                        <td>
+                                            <span class="badge @(order.Status == "Completed" ? "bg-success" : "bg-warning") rounded-pill">
+                                                @order.Status
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="info-card h-100">
+                    <h5 class="fw-bold mb-4">المنتجات الأكثر ربحية</h5>
+                    @foreach (var prod in Model.TopProducts.OrderByDescending(p => p.Revenue).Take(5))
+                    {
+                        <div class="d-flex align-items-center mb-3 p-2 bg-light rounded-3">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-bold small">@prod.ProductName</h6>
+                                <small class="text-muted">المبيعات: @prod.Quantity</small>
+                            </div>
+                            <div class="text-success fw-bold">@prod.Revenue.ToString("N0") ج.م</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

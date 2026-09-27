@@ -1,0 +1,141 @@
+@model IMS.Models.Prescription
+
+@{
+    ViewData["Title"] = "إضافة وصفة طبية جديدة";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-prescription text-success"></i> إضافة وصفة طبية جديدة</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">الوصفات الطبية</a></li>
+                    <li class="breadcrumb-item active">إضافة جديد</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-plus"></i> معلومات الوصفة الطبية</h3>
+                    </div>
+                    <form asp-action="Create" method="post">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="PrescriptionNumber" class="control-label">
+                                            <i class="fas fa-hashtag"></i> رقم الوصفة <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="PrescriptionNumber" class="form-control" placeholder="مثال: RX-2025-001" />
+                                        <span asp-validation-for="PrescriptionNumber" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="PrescriptionDate" class="control-label">
+                                            <i class="fas fa-calendar"></i> تاريخ الوصفة <span class="text-danger">*</span>
+                                        </label>
+                                        <input asp-for="PrescriptionDate" class="form-control" type="date" />
+                                        <span asp-validation-for="PrescriptionDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="DoctorId" class="control-label">
+                                            <i class="fas fa-user-md"></i> الطبيب
+                                        </label>
+                                        <select asp-for="DoctorId" class="form-control" asp-items="ViewBag.DoctorId">
+                                            <option value="">-- اختر الطبيب --</option>
+                                        </select>
+                                        <span asp-validation-for="DoctorId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="CustomerId" class="control-label">
+                                            <i class="fas fa-user"></i> العميل
+                                        </label>
+                                        <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId">
+                                            <option value="">-- اختر العميل --</option>
+                                        </select>
+                                        <span asp-validation-for="CustomerId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>معلومات المريض:</strong> أدخل بيانات المريض إذا كان مختلفاً عن العميل
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <div class="form-group">
+                                        <label asp-for="PatientName" class="control-label">
+                                            <i class="fas fa-user-injured"></i> اسم المريض
+                                        </label>
+                                        <input asp-for="PatientName" class="form-control" placeholder="اسم المريض الكامل" />
+                                        <span asp-validation-for="PatientName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="PatientAge" class="control-label">
+                                            <i class="fas fa-birthday-cake"></i> العمر
+                                        </label>
+                                        <input asp-for="PatientAge" class="form-control" type="number" min="0" max="150" placeholder="العمر بالسنوات" />
+                                        <span asp-validation-for="PatientAge" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Diagnosis" class="control-label">
+                                    <i class="fas fa-diagnoses"></i> التشخيص
+                                </label>
+                                <textarea asp-for="Diagnosis" class="form-control" rows="2" placeholder="التشخيص الطبي"></textarea>
+                                <span asp-validation-for="Diagnosis" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="DoctorNotes" class="control-label">
+                                    <i class="fas fa-notes-medical"></i> ملاحظات الطبيب
+                                </label>
+                                <textarea asp-for="DoctorNotes" class="form-control" rows="3" placeholder="أي ملاحظات أو تعليمات من الطبيب"></textarea>
+                                <span asp-validation-for="DoctorNotes" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> حفظ والمتابعة لإضافة الأدوية
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

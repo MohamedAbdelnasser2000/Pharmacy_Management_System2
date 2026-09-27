@@ -1,0 +1,75 @@
+@model IMS.Models.InsurancePolicy
+
+@{
+    ViewData["Title"] = "حذف البوليصة";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-trash text-danger"></i> حذف البوليصة</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">بوليصات التأمين</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> تأكيد الحذف</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            <h5><i class="icon fas fa-ban"></i> تحذير!</h5>
+                            هل أنت متأكد من حذف هذه البوليصة؟ هذا الإجراء لا يمكن التراجع عنه.
+                        </div>
+
+                        <dl class="row">
+                            <dt class="col-sm-4">رقم البوليصة:</dt>
+                            <dd class="col-sm-8"><strong>@Model.PolicyNumber</strong></dd>
+
+                            <dt class="col-sm-4">شركة التأمين:</dt>
+                            <dd class="col-sm-8">@Model.Insurance.Name</dd>
+
+                            @if (Model.Customer != null)
+                            {
+                                <dt class="col-sm-4">العميل:</dt>
+                                <dd class="col-sm-8">@Model.Customer.Name</dd>
+                            }
+
+                            <dt class="col-sm-4">الصلاحية:</dt>
+                            <dd class="col-sm-8">
+                                @Model.StartDate.ToString("yyyy-MM-dd") - @Model.EndDate.ToString("yyyy-MM-dd")
+                            </dd>
+
+                            <dt class="col-sm-4">المبلغ المتبقي:</dt>
+                            <dd class="col-sm-8"><strong class="text-success">@Model.RemainingAmount.ToString("N2") ج.م</strong></dd>
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> نعم، احذف
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

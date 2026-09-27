@@ -1,0 +1,173 @@
+@model IMS.Models.ECommerceOrder
+@{
+    ViewData["Title"] = $"تفاصيل الطلب - {Model.OrderNumber}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1><i class="fas fa-file-invoice text-primary"></i> تفاصيل الطلب: @Model.OrderNumber</h1>
+            </div>
+            <div class="col-sm-6 text-end">
+                <a asp-area="ECommerce" asp-controller="ECommerceOrders" asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i> العودة للقائمة
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <div class="row g-3">
+            <!-- Order Info -->
+            <div class="col-lg-8">
+                <div class="card card-outline card-primary">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-box"></i> المنتجات</h5>
+                    </div>
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>المنتج</th>
+                                    <th>الكمية</th>
+                                    <th>سعر الوحدة</th>
+                                    <th>الإجمالي</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.OrderItems)
+                                {
+                                    <tr>
+                                        <td style="width: 60px;">
+                                            @if (item.Product != null && !string.IsNullOrEmpty(item.Product.ImageUrl))
+                                            {
+                                                <img src="@item.Product.ImageUrl" alt="@item.ProductName" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;" />
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center p-2 bg-light rounded" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-pills text-muted"></i>
+                                                </div>
+                                            }
+                                        </td>
+                                        <td>
+                                            <strong>@item.ProductName</strong>
+                                            @if (item.Product != null)
+                                            {
+                                                <br />
+                                                <a asp-area="" asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" class="text-muted small">
+                                                    <i class="fas fa-external-link-alt"></i> عرض في المخزون
+                                                </a>
+                                            }
+                                        </td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.UnitPrice.ToString("N2") ج.م</td>
+                                        <td><strong>@item.LineTotal.ToString("N2") ج.م</strong></td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="3" class="text-start fw-bold">المجموع الفرعي</td>
+                                    <td class="fw-bold">@Model.TotalAmount.ToString("N2") ج.م</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="3" class="text-start">رسوم الشحن</td>
+                                    <td>@(Model.ShippingFee == 0 ? "مجاني" : $"{Model.ShippingFee:N2} ج.م")</td>
+                                </tr>
+                                <tr class="table-primary">
+                                    <td colspan="3" class="text-start fw-bold fs-5">الإجمالي النهائي</td>
+                                    <td class="fw-bold fs-5">@Model.GrandTotal.ToString("N2") ج.م</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Status -->
+                <div class="card card-outline card-info mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-info-circle"></i> حالة الطلب</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <span class="badge @IMS.Models.ECommerceOrderStatus.GetBadgeClass(Model.Status) rounded-pill px-4 py-2 fs-6 mb-3">
+                            @IMS.Models.ECommerceOrderStatus.GetArabicName(Model.Status)
+                        </span>
+
+                        <form asp-area="ECommerce" asp-controller="ECommerceOrders" asp-action="UpdateStatus" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <select name="status" class="form-select mb-2">
+                                <option value="Pending" selected="@(Model.Status == "Pending")">قيد الانتظار</option>
+                                <option value="Processing" selected="@(Model.Status == "Processing")">قيد التجهيز</option>
+                                <option value="Shipped" selected="@(Model.Status == "Shipped")">تم الشحن</option>
+                                <option value="Delivered" selected="@(Model.Status == "Delivered")">تم التوصيل</option>
+                                <option value="Cancelled" selected="@(Model.Status == "Cancelled")">ملغي</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-sync-alt"></i> تحديث الحالة
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Customer Info -->
+                <div class="card card-outline card-success mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-user"></i> معلومات العميل</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong><i class="fas fa-user"></i></strong> @Model.CustomerName</p>
+                        <p><strong><i class="fas fa-phone"></i></strong> @Model.CustomerPhone</p>
+                        <p><strong><i class="fas fa-envelope"></i></strong> @Model.CustomerEmail</p>
+                        <hr />
+                        <p><strong><i class="fas fa-map-marker-alt"></i> عنوان التوصيل:</strong></p>
+                        <p>@Model.ShippingAddress</p>
+                        @if (!string.IsNullOrEmpty(Model.City))
+                        {
+                            <p>المدينة: @Model.City</p>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Region))
+                        {
+                            <p>المنطقة: @Model.Region</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Order Meta -->
+                <div class="card card-outline card-secondary">
+                    <div class="card-header">
+                        <h5 class="card-title"><i class="fas fa-clock"></i> معلومات إضافية</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>تاريخ الطلب:</strong> @Model.OrderDate.ToString("yyyy/MM/dd HH:mm")</p>
+                        @if (Model.UpdatedDate.HasValue)
+                        {
+                            <p><strong>آخر تحديث:</strong> @Model.UpdatedDate.Value.ToString("yyyy/MM/dd HH:mm")</p>
+                        }
+                        <p><strong>طريقة الدفع:</strong> @(Model.PaymentMethod == "CashOnDelivery" ? "الدفع عند الاستلام" : Model.PaymentMethod)</p>
+                        @if (!string.IsNullOrEmpty(Model.Notes))
+                        {
+                            <p><strong>ملاحظات:</strong> @Model.Notes</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

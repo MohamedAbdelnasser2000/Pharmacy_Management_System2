@@ -1,0 +1,197 @@
+@model List<IMS.Models.Product>
+@{
+    ViewData["Title"] = "المتجر";
+    var categories = ViewBag.Categories as List<IMS.Models.Category>;
+    var settings = ViewBag.Settings as IMS.Models.ECommerceSettings;
+}
+
+<!-- Hero Banner -->
+<section class="ec-hero">
+    <div class="ec-hero-bg"></div>
+    <div class="container position-relative">
+        <div class="ec-hero-content">
+            <h1 class="ec-hero-title">@(settings?.BannerTitle ?? "صيدليتك أونلاين")</h1>
+            <p class="ec-hero-subtitle">@(settings?.BannerSubtitle ?? "احصل على أدويتك ومستلزماتك الطبية بسهولة من منزلك")</p>
+            <div class="ec-hero-search">
+                <form asp-area="ECommerce" asp-controller="Shop" asp-action="Index" method="get" class="ec-search-form">
+                    <div class="ec-search-wrapper">
+                        <i class="fas fa-search ec-search-icon"></i>
+                        <input type="text" name="search" class="ec-search-input" placeholder="ابحث عن دواء، مستلزمات طبية..." value="@ViewBag.CurrentSearch" />
+                        <button type="submit" class="ec-search-btn">بحث</button>
+                    </div>
+                </form>
+            </div>
+            <div class="ec-hero-stats">
+                <div class="ec-stat">
+                    <i class="fas fa-pills"></i>
+                    <span>@ViewBag.TotalItems منتج</span>
+                </div>
+                <div class="ec-stat">
+                    <i class="fas fa-shipping-fast"></i>
+                    <span>توصيل سريع</span>
+                </div>
+                <div class="ec-stat">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>منتجات أصلية</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Main Content -->
+<section class="ec-section">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3">
+                <div class="ec-filter-card">
+                    <h5 class="ec-filter-title">
+                        <i class="fas fa-filter"></i> تصفية
+                    </h5>
+
+                    <!-- Categories -->
+                    <div class="ec-filter-group">
+                        <h6 class="ec-filter-label">التصنيفات</h6>
+                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"
+                           asp-route-search="@ViewBag.CurrentSearch"
+                           class="ec-category-link @(ViewBag.CurrentCategory == null ? "active" : "")">
+                            <i class="fas fa-th-large"></i> جميع المنتجات
+                        </a>
+                        @if (categories != null)
+                        {
+                            @foreach (var cat in categories)
+                            {
+                                <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"
+                                   asp-route-categoryId="@cat.Id"
+                                   asp-route-search="@ViewBag.CurrentSearch"
+                                   class="ec-category-link @(ViewBag.CurrentCategory != null && (int)ViewBag.CurrentCategory == cat.Id ? "active" : "")">
+                                    <i class="fas fa-tag"></i> @cat.Name
+                                </a>
+                            }
+                        }
+                    </div>
+
+                    <!-- Sort -->
+                    <div class="ec-filter-group">
+                        <h6 class="ec-filter-label">ترتيب حسب</h6>
+                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"
+                           asp-route-sortBy="name" asp-route-categoryId="@ViewBag.CurrentCategory" asp-route-search="@ViewBag.CurrentSearch"
+                           class="ec-sort-link @(ViewBag.CurrentSort == "name" || ViewBag.CurrentSort == null ? "active" : "")">
+                            <i class="fas fa-sort-alpha-down"></i> الاسم
+                        </a>
+                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"
+                           asp-route-sortBy="price_asc" asp-route-categoryId="@ViewBag.CurrentCategory" asp-route-search="@ViewBag.CurrentSearch"
+                           class="ec-sort-link @(ViewBag.CurrentSort == "price_asc" ? "active" : "")">
+                            <i class="fas fa-sort-amount-down-alt"></i> السعر: الأقل
+                        </a>
+                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"
+                           asp-route-sortBy="price_desc" asp-route-categoryId="@ViewBag.CurrentCategory" asp-route-search="@ViewBag.CurrentSearch"
+                           class="ec-sort-link @(ViewBag.CurrentSort == "price_desc" ? "active" : "")">
+                            <i class="fas fa-sort-amount-up"></i> السعر: الأعلى
+                        </a>
+                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"
+                           asp-route-sortBy="newest" asp-route-categoryId="@ViewBag.CurrentCategory" asp-route-search="@ViewBag.CurrentSearch"
+                           class="ec-sort-link @(ViewBag.CurrentSort == "newest" ? "active" : "")">
+                            <i class="fas fa-clock"></i> الأحدث
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="col-lg-9">
+                @if (!string.IsNullOrEmpty(ViewBag.CurrentSearch as string))
+                {
+                    <div class="ec-search-results-info">
+                        <span>نتائج البحث عن: <strong>"@ViewBag.CurrentSearch"</strong></span>
+                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-clear-search">
+                            <i class="fas fa-times"></i> مسح البحث
+                        </a>
+                    </div>
+                }
+
+                @if (Model.Any())
+                {
+                    <div class="ec-products-grid">
+                        @foreach (var product in Model)
+                        {
+                            var price = product.SalePrice ?? product.Price ?? 0;
+                            var availableQty = product.Inventories?.Sum(i => i.OnHandQuantity) ?? 0;
+                            <div class="ec-product-card">
+                                <a asp-area="ECommerce" asp-controller="Shop" asp-action="Details" asp-route-id="@product.Id" class="ec-product-link">
+                                    <div class="ec-product-image">
+                                        @if (!string.IsNullOrEmpty(product.ImageUrl))
+                                        {
+                                            <img src="@product.ImageUrl" alt="@product.Name" class="img-fluid" style="height: 100%; width: 100%; object-fit: cover;" />
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-pills"></i>
+                                        }
+                                        
+                                        @if (product.Category != null)
+                                        {
+                                            <span class="ec-product-category">@product.Category.Name</span>
+                                        }
+                                        @if (product.RequiresPrescription)
+                                        {
+                                            <span class="ec-product-rx"><i class="fas fa-prescription"></i></span>
+                                        }
+                                    </div>
+                                    <div class="ec-product-info">
+                                        <h6 class="ec-product-name">@product.Name</h6>
+                                        @if (!string.IsNullOrEmpty(product.DosageForm))
+                                        {
+                                            <span class="ec-product-dosage">@product.DosageForm @(!string.IsNullOrEmpty(product.Concentration) ? $"- {product.Concentration}" : "")</span>
+                                        }
+                                        @if (!string.IsNullOrEmpty(product.Manufacturer))
+                                        {
+                                            <span class="ec-product-manufacturer"><i class="fas fa-industry"></i> @product.Manufacturer</span>
+                                        }
+                                        <div class="ec-product-footer">
+                                            <span class="ec-product-price">@price.ToString("N2") ج.م</span>
+                                            <span class="ec-product-stock @(availableQty <= 5 ? "low" : "")">
+                                                @(availableQty <= 5 ? $"باقي {availableQty} فقط" : "متوفر")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </a>
+                                <button class="ec-add-to-cart-btn" onclick="addToCart(@product.Id, event)" @(product.RequiresPrescription ? "disabled title=يتطلب وصفة طبية" : "")>
+                                    <i class="fas fa-cart-plus"></i> أضف للسلة
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Pagination -->
+                    @if ((int)ViewBag.TotalPages > 1)
+                    {
+                        <nav class="ec-pagination">
+                            @for (int i = 1; i <= (int)ViewBag.TotalPages; i++)
+                            {
+                                <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"
+                                   asp-route-page="@i" asp-route-categoryId="@ViewBag.CurrentCategory"
+                                   asp-route-search="@ViewBag.CurrentSearch" asp-route-sortBy="@ViewBag.CurrentSort"
+                                   class="ec-page-link @(i == (int)ViewBag.CurrentPage ? "active" : "")">
+                                    @i
+                                </a>
+                            }
+                        </nav>
+                    }
+                }
+                else
+                {
+                    <div class="ec-empty-state">
+                        <i class="fas fa-search"></i>
+                        <h4>لا توجد منتجات</h4>
+                        <p>حاول تغيير معايير البحث أو التصفية</p>
+                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-btn ec-btn-primary">
+                            عرض جميع المنتجات
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

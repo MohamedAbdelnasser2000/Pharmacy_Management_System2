@@ -1,0 +1,122 @@
+@model IEnumerable<IMS.Models.InsurancePolicy>
+
+@{
+    ViewData["Title"] = "بوليصات التأمين";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-file-contract text-primary"></i> بوليصات التأمين</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">بوليصات التأمين</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form asp-action="Index" method="get" class="form-inline">
+                            <div class="input-group">
+                                <input type="text" name="searchString" value="@ViewData["SearchString"]" class="form-control" placeholder="البحث برقم البوليصة..." />
+                                <select name="insuranceId" class="form-control ms-2" asp-items="ViewBag.InsuranceId">
+                                    <option value="">جميع الشركات</option>
+                                </select>
+                                <select name="isValid" class="form-control ms-2">
+                                    <option value="">الكل</option>
+                                    <option value="true">صالح</option>
+                                    <option value="false">منتهي</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary ms-2">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-4 text-start">
+                        <a asp-action="Create" class="btn btn-success">
+                            <i class="fas fa-plus"></i> إضافة بوليصة جديدة
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>رقم البوليصة</th>
+                                    <th>شركة التأمين</th>
+                                    <th>العميل</th>
+                                    <th>الصلاحية</th>
+                                    <th>التغطية</th>
+                                    <th>المتبقي</th>
+                                    <th>الحالة</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var policy in Model)
+                                {
+                                    <tr class="@(policy.IsValid ? "" : "table-danger")">
+                                        <td><strong>@policy.PolicyNumber</strong></td>
+                                        <td>@policy.Insurance.Name</td>
+                                        <td>@policy.Customer?.Name</td>
+                                        <td>
+                                            <small>@policy.StartDate.ToString("yyyy-MM-dd")</small><br/>
+                                            <small>@policy.EndDate.ToString("yyyy-MM-dd")</small>
+                                        </td>
+                                        <td><span class="badge bg-info">@policy.CoveragePercentage%</span></td>
+                                        <td><strong class="text-success">@policy.RemainingAmount.ToString("N2")</strong></td>
+                                        <td>
+                                            @if (policy.IsValid)
+                                            {
+                                                <span class="badge bg-success">صالح</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">منتهي</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a asp-action="Details" asp-route-id="@policy.Id" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@policy.Id" class="btn btn-sm btn-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@policy.Id" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p class="mb-0">لا توجد بوليصات تأمين حالياً.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

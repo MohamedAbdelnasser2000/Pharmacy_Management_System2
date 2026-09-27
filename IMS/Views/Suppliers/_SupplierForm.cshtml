@@ -1,0 +1,43 @@
+@model IMS.Models.Supplier
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="Name" class="control-label"></label>
+            <input asp-for="Name" class="form-control" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="PhoneNumber" class="control-label"></label>
+            <input asp-for="PhoneNumber" class="form-control" />
+            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="Email" class="control-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="form-group">
+            <label asp-for="BankAccount" class="control-label"></label>
+            <input asp-for="BankAccount" class="form-control" />
+            <span asp-validation-for="BankAccount" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <div class="form-group">
+            <label asp-for="Address" class="control-label"></label>
+            <textarea asp-for="Address" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Address" class="text-danger"></span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,222 @@
+@model IEnumerable<IMS.Models.PurchaseOrder>
+@{
+    ViewData["Title"] = "طلبات شراء الأدوية - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-shopping-cart text-warning"></i> طلبات شراء الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">طلبات الشراء</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-warning text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-file-invoice"></i> قائمة طلبات شراء الأدوية</h5>
+                <a asp-action="Create" class="btn btn-light">
+                    <i class="fas fa-plus-circle me-1"></i> طلب شراء جديد
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Search Box -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <form asp-action="Index" method="get" class="d-flex">
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="searchTerm" 
+                                       class="form-control" 
+                                       placeholder="ابحث برقم الأمر، اسم المورد، رقم الهاتف، أو الحالة..." 
+                                       value="@ViewBag.SearchTerm"
+                                       autocomplete="off">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                                @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                                {
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </a>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                    {
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-0 py-2">
+                                <i class="fas fa-info-circle"></i> 
+                                نتائج البحث عن: <strong>@ViewBag.SearchTerm</strong>
+                                (@Model.Count() نتيجة)
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 100px;" class="text-center">
+                                    <i class="fas fa-hashtag me-2"></i>رقم الأمر
+                                </th>
+                                <th style="width: 200px;">
+                                    <i class="fas fa-truck me-2"></i>المورد
+                                </th>
+                                <th style="width: 140px;">
+                                    <i class="fas fa-calendar me-2"></i>التاريخ
+                                </th>
+                                <th style="width: 130px;" class="text-center">
+                                    <i class="fas fa-money-bill-wave me-2"></i>الإجمالي
+                                </th>
+                                <th style="width: 130px;" class="text-center">
+                                    <i class="fas fa-check-circle me-2"></i>المدفوع
+                                </th>
+                                <th style="width: 130px;" class="text-center">
+                                    <i class="fas fa-exclamation-circle me-2"></i>المتبقي
+                                </th>
+                                <th style="width: 120px;" class="text-center">
+                                    <i class="fas fa-info-circle me-2"></i>الحالة
+                                </th>
+                                <th style="width: 240px;" class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var item in Model)
+                                {
+                                    var remaining = item.TotalAmount - item.PaidAmount;
+                                    <tr>
+                                        <td class="text-center">
+                                            <span class="badge bg-dark fs-6">#@item.Id</span>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-building text-primary me-2"></i>
+                                            <strong class="text-primary">@item.Supplier?.Name</strong>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-clock text-info me-1"></i>
+                                            <span class="text-muted">@item.OrderDate.ToString("yyyy/MM/dd")</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-dark">@item.TotalAmount.ToString("N0") ج.م</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success rounded-pill fs-6">
+                                                @item.PaidAmount.ToString("N0") ج.م
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (remaining > 0)
+                                            {
+                                                <span class="badge bg-danger rounded-pill fs-6">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                                    @remaining.ToString("N0") ج.م
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success rounded-pill">
+                                                    <i class="fas fa-check me-1"></i>مدفوع
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.Status == "جديد")
+                                            {
+                                                <span class="badge bg-primary fs-6">
+                                                    <i class="fas fa-star me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "قيد التوريد")
+                                            {
+                                                <span class="badge bg-warning text-dark fs-6">
+                                                    <i class="fas fa-shipping-fast me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "مستلم")
+                                            {
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-check-double me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary fs-6">@item.Status</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="عرض التفاصيل">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="PrintInvoice" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-success" 
+                                                   target="_blank" 
+                                                   title="طباعة الفاتورة">
+                                                    <i class="fas fa-print"></i>
+                                                </a>
+                                                @if (item.Status == "جديد")
+                                                {
+                                                    <form asp-action="Receive" asp-route-id="@item.Id" method="post" class="d-inline">
+                                                        <button type="submit" 
+                                                                class="btn btn-sm btn-warning" 
+                                                                title="استلام البضاعة"
+                                                                onclick="return confirm('هل تم استلام البضاعة؟');">
+                                                            <i class="fas fa-box-open"></i>
+                                                        </button>
+                                                    </form>
+                                                }
+                                                <a asp-action="Edit" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-primary" 
+                                                   title="تعديل">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-danger" 
+                                                   title="حذف"
+                                                   onclick="return confirm('هل أنت متأكد من حذف هذا الأمر؟');">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="fas fa-file-invoice fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">لا توجد أوامر شراء</h5>
+                                        <p class="text-muted">قم بإضافة أمر شراء جديد للبدء</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

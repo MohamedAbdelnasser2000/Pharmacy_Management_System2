@@ -1,0 +1,341 @@
+@model IMS.Models.MedicationRequest
+
+@{
+    ViewData["Title"] = "تفاصيل طلب الدواء";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-info-circle"></i> تفاصيل طلب الدواء</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">طلبات الأدوية</a></li>
+                    <li class="breadcrumb-item active">التفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header bg-info">
+                        <h3 class="card-title">معلومات الطلب #@Model.Id</h3>
+                        <div class="card-tools">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-right"></i> رجوع
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Status and Priority Badges -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <h5>الحالة:</h5>
+                                @switch (Model.Status)
+                                {
+                                    case IMS.Models.RequestStatus.Pending:
+                                        <span class="badge badge-warning badge-lg">قيد الانتظار</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Ordered:
+                                        <span class="badge badge-info badge-lg">تم الطلب من المورد</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Received:
+                                        <span class="badge badge-primary badge-lg">تم الاستلام</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Delivered:
+                                        <span class="badge badge-success badge-lg">تم التسليم للمريض</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Cancelled:
+                                        <span class="badge badge-danger badge-lg">ملغي</span>
+                                        break;
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <h5>الأولوية:</h5>
+                                @switch (Model.Priority)
+                                {
+                                    case IMS.Models.Priority.Emergency:
+                                        <span class="badge badge-danger badge-lg"><i class="fas fa-exclamation-triangle"></i> طارئ</span>
+                                        break;
+                                    case IMS.Models.Priority.Urgent:
+                                        <span class="badge badge-warning badge-lg"><i class="fas fa-exclamation"></i> عاجل</span>
+                                        break;
+                                    default:
+                                        <span class="badge badge-secondary badge-lg">عادي</span>
+                                        break;
+                                }
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Medication Information -->
+                        <h5 class="mb-3"><i class="fas fa-pills text-primary"></i> معلومات الدواء</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-5">اسم الدواء:</dt>
+                                    <dd class="col-sm-7"><strong>@Model.MedicationName</strong></dd>
+
+                                    <dt class="col-sm-5">الاسم العلمي:</dt>
+                                    <dd class="col-sm-7">@(Model.ScientificName ?? "غير محدد")</dd>
+
+                                    <dt class="col-sm-5">التركيز:</dt>
+                                    <dd class="col-sm-7">@(Model.Strength ?? "غير محدد")</dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-5">الشكل الدوائي:</dt>
+                                    <dd class="col-sm-7">@(Model.DosageForm ?? "غير محدد")</dd>
+
+                                    <dt class="col-sm-5">الكمية المطلوبة:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (Model.RequestedQuantity.HasValue)
+                                        {
+                                            <span class="badge badge-info">@Model.RequestedQuantity</span>
+                                        }
+                                        else
+                                        {
+                                            <span>غير محدد</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Patient Information -->
+                        <h5 class="mb-3"><i class="fas fa-user text-success"></i> معلومات المريض</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-5">اسم المريض:</dt>
+                                    <dd class="col-sm-7">@(Model.PatientName ?? "غير محدد")</dd>
+
+                                    <dt class="col-sm-5">رقم الهاتف:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (!string.IsNullOrEmpty(Model.PatientPhone))
+                                        {
+                                            <a href="tel:@Model.PatientPhone" class="btn btn-sm btn-success">
+                                                <i class="fas fa-phone"></i> @Model.PatientPhone
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span>غير محدد</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    <dt class="col-sm-5">تم الإبلاغ:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (Model.PatientNotified)
+                                        {
+                                            <span class="badge badge-success">
+                                                <i class="fas fa-check-circle"></i> نعم
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-danger">
+                                                <i class="fas fa-times-circle"></i> لا
+                                            </span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Timeline -->
+                        <h5 class="mb-3"><i class="fas fa-clock text-warning"></i> التواريخ المهمة</h5>
+                        <div class="timeline">
+                            <div class="time-label">
+                                <span class="bg-primary">@Model.RequestDate.ToString("dd/MM/yyyy")</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-plus-circle bg-primary"></i>
+                                <div class="timeline-item">
+                                    <h3 class="timeline-header">تم إنشاء الطلب</h3>
+                                    <div class="timeline-body">
+                                        تاريخ الطلب: @Model.RequestDate.ToString("dd/MM/yyyy hh:mm tt")
+                                        @if (!string.IsNullOrEmpty(Model.CreatedBy))
+                                        {
+                                            <text><br />بواسطة: @Model.CreatedBy</text>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (Model.OrderedDate.HasValue)
+                            {
+                                <div class="time-label">
+                                    <span class="bg-info">@Model.OrderedDate.Value.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-shopping-cart bg-info"></i>
+                                    <div class="timeline-item">
+                                        <h3 class="timeline-header">تم الطلب من المورد</h3>
+                                        <div class="timeline-body">
+                                            تاريخ الطلب: @Model.OrderedDate.Value.ToString("dd/MM/yyyy hh:mm tt")
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.ReceivedDate.HasValue)
+                            {
+                                <div class="time-label">
+                                    <span class="bg-success">@Model.ReceivedDate.Value.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-box bg-success"></i>
+                                    <div class="timeline-item">
+                                        <h3 class="timeline-header">تم استلام الدواء</h3>
+                                        <div class="timeline-body">
+                                            تاريخ الاستلام: @Model.ReceivedDate.Value.ToString("dd/MM/yyyy hh:mm tt")
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            <div>
+                                <i class="fas fa-clock bg-gray"></i>
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Additional Information -->
+                        <h5 class="mb-3"><i class="fas fa-info-circle text-info"></i> معلومات إضافية</h5>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <dl class="row">
+                                    <dt class="col-sm-2">الفرع:</dt>
+                                    <dd class="col-sm-10">@(Model.Branch?.Name ?? "غير محدد")</dd>
+
+                                    <dt class="col-sm-2">ملاحظات:</dt>
+                                    <dd class="col-sm-10">
+                                        @if (!string.IsNullOrEmpty(Model.Notes))
+                                        {
+                                            <div class="alert alert-info">
+                                                @Model.Notes
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">لا توجد ملاحظات</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                    <i class="fas fa-edit"></i> تعديل
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> حذف
+                                </a>
+                            </div>
+                            <div class="col-md-6 text-left">
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-right"></i> رجوع للقائمة
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .badge-lg {
+        font-size: 1.1em;
+        padding: 0.5em 1em;
+    }
+    
+    .timeline {
+        position: relative;
+        margin: 0 0 30px 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .timeline:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #ddd;
+        right: 31px;
+        margin: 0;
+    }
+    
+    .timeline > div {
+        margin-bottom: 15px;
+        position: relative;
+    }
+    
+    .timeline .timeline-item {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        margin-right: 60px;
+        margin-left: 0;
+        padding: 10px;
+    }
+    
+    .timeline > div > .fa,
+    .timeline > div > .fas,
+    .timeline > div > .far,
+    .timeline > div > .fab,
+    .timeline > div > .fal,
+    .timeline > div > .fad,
+    .timeline > div > .svg-inline--fa,
+    .timeline > div > .ion {
+        width: 30px;
+        height: 30px;
+        font-size: 15px;
+        line-height: 30px;
+        position: absolute;
+        color: #666;
+        background: #d2d6de;
+        border-radius: 50%;
+        text-align: center;
+        right: 18px;
+        top: 0;
+    }
+    
+    .timeline > .time-label > span {
+        font-weight: 600;
+        padding: 5px;
+        display: inline-block;
+        background-color: #fff;
+        border-radius: 4px;
+    }
+</style>

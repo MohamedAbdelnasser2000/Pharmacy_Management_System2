@@ -1,0 +1,42 @@
+@model IMS.Models.Branch
+
+@{
+    ViewData["Title"] = "إضافة فرع جديد";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <h1 class="m-0">إضافة فرع جديد</h1>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0 col-md-6 mx-auto">
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Name" class="control-label">اسم الفرع</label>
+                        <input asp-for="Name" class="form-control" placeholder="مثال: فرع القاهرة الرئيسي" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Code" class="control-label">كود الفرع</label>
+                        <input asp-for="Code" class="form-control" placeholder="مثال: BR-01" />
+                        <span asp-validation-for="Code" class="text-danger"></span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label asp-for="Location" class="control-label">الموقع / العنوان</label>
+                        <input asp-for="Location" class="form-control" />
+                        <span asp-validation-for="Location" class="text-danger"></span>
+                    </div>
+                    <div class="form-group text-center mt-4">
+                        <button type="submit" class="btn btn-primary px-5 rounded-pill">حفظ</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-5 rounded-pill">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

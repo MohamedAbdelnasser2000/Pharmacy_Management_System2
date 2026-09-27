@@ -1,0 +1,112 @@
+@model IMS.Models.ECommerceSettings
+@{
+    ViewData["Title"] = "إعدادات المتجر الإلكتروني";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1><i class="fas fa-cog text-primary"></i> إعدادات المتجر الإلكتروني</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        <form asp-area="ECommerce" asp-controller="ECommerceSettings" asp-action="Index" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="row g-3">
+                <div class="col-lg-8">
+                    <!-- Banner -->
+                    <div class="card card-outline card-primary mb-3">
+                        <div class="card-header"><h5 class="card-title"><i class="fas fa-image"></i> البانر الرئيسي</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label asp-for="BannerTitle" class="form-label"></label>
+                                <input asp-for="BannerTitle" class="form-control" />
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="BannerSubtitle" class="form-label"></label>
+                                <textarea asp-for="BannerSubtitle" class="form-control" rows="2"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label asp-for="AnnouncementMessage" class="form-label"></label>
+                                <input asp-for="AnnouncementMessage" class="form-control" placeholder="رسالة تظهر أعلى المتجر (اتركه فارغاً لعدم الإظهار)" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shipping -->
+                    <div class="card card-outline card-info mb-3">
+                        <div class="card-header"><h5 class="card-title"><i class="fas fa-shipping-fast"></i> الشحن والتوصيل</h5></div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="DefaultShippingFee" class="form-label"></label>
+                                    <div class="input-group">
+                                        <input asp-for="DefaultShippingFee" class="form-control" type="number" step="0.01" />
+                                        <span class="input-group-text">ج.م</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="FreeShippingThreshold" class="form-label"></label>
+                                    <div class="input-group">
+                                        <input asp-for="FreeShippingThreshold" class="form-control" type="number" step="0.01" />
+                                        <span class="input-group-text">ج.م</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="card card-outline card-secondary mb-3">
+                        <div class="card-header"><h5 class="card-title"><i class="fas fa-file-contract"></i> شروط الخدمة</h5></div>
+                        <div class="card-body">
+                            <textarea asp-for="TermsOfService" class="form-control" rows="4" placeholder="اكتب شروط الخدمة هنا..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card card-outline card-success mb-3">
+                        <div class="card-header"><h5 class="card-title"><i class="fas fa-toggle-on"></i> التحكم</h5></div>
+                        <div class="card-body">
+                            <div class="form-check form-switch mb-3">
+                                <input asp-for="IsStoreActive" class="form-check-input" />
+                                <label asp-for="IsStoreActive" class="form-check-label"></label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input asp-for="RequireLoginToPurchase" class="form-check-input" />
+                                <label asp-for="RequireLoginToPurchase" class="form-check-label"></label>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input asp-for="ShowPrescriptionProducts" class="form-check-input" />
+                                <label asp-for="ShowPrescriptionProducts" class="form-check-label"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <i class="fas fa-save"></i> حفظ الإعدادات
+                    </button>
+
+                    <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="btn btn-outline-info mt-2 w-100" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> معاينة المتجر
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</section>

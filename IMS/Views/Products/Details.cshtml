@@ -1,0 +1,623 @@
+@model IMS.Models.Product
+@{
+    ViewData["Title"] = "تفاصيل الدواء - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-pills text-primary"></i> تفاصيل الدواء</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">الأدوية</a></li>
+                    <li class="breadcrumb-item active">تفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> المعلومات الأساسية</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- معلومات التعريف -->
+                    <div class="col-md-6">
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-primary"><i class="fas fa-id-card"></i> معلومات التعريف</h6>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-barcode text-primary"></i> الكود:</dt>
+                                    <dd class="col-sm-8"><code class="fs-5">@Model.Code</code></dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-prescription-bottle text-primary"></i> اسم الدواء:</dt>
+                                    <dd class="col-sm-8"><strong class="fs-5 text-primary">@Model.Name</strong></dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-tags text-primary"></i> الفئة:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.Category != null)
+                                        {
+                                            <span class="badge bg-info fs-6"><i class="fas fa-tag"></i> @Model.Category.Name</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">بدون فئة</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- معلومات المورد والمخزن -->
+                    <div class="col-md-6">
+                        <div class="card border-success mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-success"><i class="fas fa-warehouse"></i> المورد والمخزن</h6>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-truck-medical text-primary"></i> المورد:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.Supplier != null)
+                                        {
+                                            <span class="badge bg-info fs-6"><i class="fas fa-building"></i> @Model.Supplier.Name</span>
+                                            @if (!string.IsNullOrEmpty(Model.Supplier.PhoneNumber))
+                                            {
+                                                <br/><small class="text-muted"><i class="fas fa-phone"></i> @Model.Supplier.PhoneNumber</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-cube text-primary"></i> الوحدة:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.Unit))
+                                        {
+                                            <span class="badge bg-secondary fs-6">@Model.Unit</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الوصف -->
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="alert alert-light border">
+                        <h6 class="text-primary"><i class="fas fa-align-left"></i> الوصف:</h6>
+                        <p class="mb-0">@Model.Description</p>
+                    </div>
+                }
+
+                <div class="row">
+
+                    <!-- معلومات الأسعار -->
+                    <div class="col-md-6">
+                        <div class="card border-info mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-info"><i class="fas fa-dollar-sign"></i> معلومات الأسعار</h6>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-dollar-sign text-info"></i> سعر الشراء:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.Price.HasValue)
+                                        {
+                                            <strong class="text-info fs-5">@Model.Price.Value.ToString("N2") جنيه</strong>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-tag text-success"></i> سعر البيع:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.SalePrice.HasValue)
+                                        {
+                                            <strong class="text-success fs-5">@Model.SalePrice.Value.ToString("N2") جنيه</strong>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </dd>
+
+                                    @if (Model.Price.HasValue && Model.SalePrice.HasValue)
+                                    {
+                                        var profit = Model.SalePrice.Value - Model.Price.Value;
+                                        var profitPercent = (profit / Model.Price.Value) * 100;
+                                        <dt class="col-sm-4"><i class="fas fa-chart-line text-success"></i> الربح:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge bg-success fs-6">@profit.ToString("N2") جنيه (@profitPercent.ToString("N1")%)</span>
+                                        </dd>
+                                    }
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- معلومات المخزون -->
+                    <div class="col-md-6">
+                        <div class="card border-warning mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-warning"><i class="fas fa-boxes"></i> معلومات المخزون</h6>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-boxes text-primary"></i> إجمالي الكمية:</dt>
+                                    <dd class="col-sm-8">
+                                        @{
+                                            var stockStatus = Model.LowStockThreshold.HasValue && Model.TotalQuantity <= Model.LowStockThreshold.Value ? "low" : "normal";
+                                            var stockClass = Model.TotalQuantity == 0 ? "bg-danger" : stockStatus == "low" ? "bg-warning" : "bg-success";
+                                        }
+                                        <span class="badge @stockClass fs-5">
+                                            <i class="fas fa-box"></i> @Model.TotalQuantity وحدة
+                                        </span>
+                                        @if (Model.TotalQuantity == 0)
+                                        {
+                                            <br/><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> نفد المخزون</small>
+                                        }
+                                        else if (stockStatus == "low")
+                                        {
+                                            <br/><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> مخزون منخفض</small>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-bell text-warning"></i> حد التنبيه:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (Model.LowStockThreshold.HasValue)
+                                        {
+                                            <span class="badge bg-warning text-dark fs-6">@Model.LowStockThreshold.Value وحدة</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الباركود -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card border-secondary mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-secondary"><i class="fas fa-barcode"></i> الباركود</h6>
+                            </div>
+                            <div class="card-body">
+                                @if (!string.IsNullOrWhiteSpace(Model.Barcode))
+                                {
+                                    <div class="d-flex align-items-center gap-2 mb-3">
+                                        <code class="fs-5">@Model.Barcode</code>
+                                        <a href="@Url.Action("DownloadBarcodes", new { id = Model.Id, quantity = (int)Model.TotalQuantity })" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="تحميل الباركودات">
+                                            <i class="bi bi-upc-scan"></i> تحميل PDF
+                                        </a>
+                                    </div>
+                                    <div class="text-center">
+                                        <img src="@Url.Action("GenerateBarcodeImage", new { id = Model.Id })" 
+                                             alt="Barcode" 
+                                             class="img-thumbnail"
+                                             style="max-width: 300px;">
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-info text-center mb-0">
+                                        <i class="fas fa-info-circle"></i> لا يوجد باركود لهذا الدواء
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- المستودعات -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card border-primary mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0 text-primary"><i class="fas fa-warehouse"></i> توزيع المخزون في المستودعات</h6>
+                            </div>
+                            <div class="card-body">
+                                @if (Model.Inventories != null && Model.Inventories.Any())
+                                {
+                                    <div class="row g-3">
+                                        @foreach (var inv in Model.Inventories)
+                                        {
+                                            <div class="col-md-4">
+                                                <div class="card border-primary h-100">
+                                                    <div class="card-body text-center">
+                                                        <i class="fas fa-warehouse fa-2x text-primary mb-2"></i>
+                                                        <h6 class="mb-2">@inv.Warehouse?.Name</h6>
+                                                        <span class="badge bg-primary fs-5">@inv.OnHandQuantity وحدة</span>
+                                                        @if (inv.ReservedQuantity > 0)
+                                                        {
+                                                            <br/>
+                                                            <small class="text-muted mt-2 d-block">
+                                                                <i class="fas fa-lock"></i> محجوز: @inv.ReservedQuantity
+                                                            </small>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning text-center mb-0">
+                                        <i class="fas fa-exclamation-triangle"></i> لا يوجد مخزون لهذا الدواء
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            @* Pharmacy Information Card *@
+            @if (!string.IsNullOrEmpty(Model.ScientificName) || !string.IsNullOrEmpty(Model.TradeName) ||
+                        !string.IsNullOrEmpty(Model.Manufacturer) || Model.ExpiryDate.HasValue || Model.ManufacturingDate.HasValue ||
+                        !string.IsNullOrEmpty(Model.DosageForm) || !string.IsNullOrEmpty(Model.BatchNumber) ||
+                        !string.IsNullOrEmpty(Model.Concentration) || !string.IsNullOrEmpty(Model.DrugClassification) ||
+                        !string.IsNullOrEmpty(Model.ActiveIngredient) || !string.IsNullOrEmpty(Model.StorageTemperature) ||
+                        !string.IsNullOrEmpty(Model.UsageInstructions) || !string.IsNullOrEmpty(Model.SideEffects) ||
+                        !string.IsNullOrEmpty(Model.Contraindications) || !string.IsNullOrEmpty(Model.SpecialWarnings) ||
+                        Model.RequiresPrescription)
+            {
+                <div class="card mt-3 shadow-sm border-0">
+                    <div class="card-header bg-gradient-info text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-pills"></i> المعلومات الدوائية التفصيلية
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    @if (!string.IsNullOrEmpty(Model.ScientificName))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-flask"></i> الاسم العلمي:</dt>
+                                        <dd class="col-sm-7"><strong>@Model.ScientificName</strong></dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.TradeName))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-tag"></i> الاسم التجاري:</dt>
+                                        <dd class="col-sm-7">@Model.TradeName</dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.Manufacturer))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-industry"></i> الشركة المصنعة:</dt>
+                                        <dd class="col-sm-7">@Model.Manufacturer</dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.BatchNumber))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-barcode"></i> رقم التشغيلة:</dt>
+                                        <dd class="col-sm-7"><code>@Model.BatchNumber</code></dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.Concentration))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-vial"></i> التركيز:</dt>
+                                        <dd class="col-sm-7"><span class="badge bg-primary">@Model.Concentration</span></dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.DosageForm))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-capsules"></i> الشكل الدوائي:</dt>
+                                        <dd class="col-sm-7"><span class="badge bg-info">@Model.DosageForm</span></dd>
+                                    }
+                                </dl>
+                            </div>
+
+                            <div class="col-md-6">
+                                <dl class="row">
+                                    @if (Model.ManufacturingDate.HasValue)
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-calendar-check"></i> تاريخ الإنتاج:</dt>
+                                        <dd class="col-sm-7">@Model.ManufacturingDate.Value.ToString("yyyy-MM-dd")</dd>
+                                    }
+
+                                    @if (Model.ExpiryDate.HasValue)
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-calendar-times"></i> تاريخ الانتهاء:</dt>
+                                        <dd class="col-sm-7">
+                                            <strong class="@(Model.ExpiryStatus == "منتهي" ? "text-danger" : Model.ExpiryStatus == "قريب من الانتهاء" ? "text-warning" : "text-success")">
+                                                @Model.ExpiryDate.Value.ToString("yyyy-MM-dd")
+                                            </strong>
+                                            <br />
+                                            <span class="badge @(Model.ExpiryStatus == "منتهي" ? "bg-danger" : Model.ExpiryStatus == "قريب من الانتهاء" ? "bg-warning" : "bg-success")">
+                                                @Model.ExpiryStatus
+                                            </span>
+                                        </dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.DrugClassification))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-list-alt"></i> التصنيف الدوائي:</dt>
+                                        <dd class="col-sm-7">@Model.DrugClassification</dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.ActiveIngredient))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-atom"></i> المادة الفعالة:</dt>
+                                        <dd class="col-sm-7">@Model.ActiveIngredient</dd>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.StorageTemperature))
+                                    {
+                                        <dt class="col-sm-5"><i class="fas fa-thermometer-half"></i> درجة التخزين:</dt>
+                                        <dd class="col-sm-7">@Model.StorageTemperature</dd>
+                                    }
+
+                                    <dt class="col-sm-5"><i class="fas fa-prescription"></i> يتطلب وصفة:</dt>
+                                    <dd class="col-sm-7">
+                                        @if (Model.RequiresPrescription)
+                                        {
+                                            <span class="badge bg-danger"><i class="fas fa-check"></i> نعم</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success"><i class="fas fa-times"></i> لا</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.UsageInstructions))
+                        {
+                            <div class="alert alert-info mt-3">
+                                <h6><i class="fas fa-info-circle"></i> طريقة الاستخدام:</h6>
+                                <p class="mb-0">@Model.UsageInstructions</p>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.SideEffects))
+                        {
+                            <div class="alert alert-warning mt-3">
+                                <h6><i class="fas fa-exclamation-triangle"></i> الآثار الجانبية:</h6>
+                                <p class="mb-0">@Model.SideEffects</p>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.Contraindications))
+                        {
+                            <div class="alert alert-danger mt-3">
+                                <h6><i class="fas fa-ban"></i> موانع الاستخدام:</h6>
+                                <p class="mb-0">@Model.Contraindications</p>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(Model.SpecialWarnings))
+                        {
+                            <div class="alert alert-dark mt-3">
+                                <h6><i class="fas fa-shield-alt"></i> تحذيرات خاصة:</h6>
+                                <p class="mb-0">@Model.SpecialWarnings</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (ViewBag.PriceHistory != null && ((IEnumerable<dynamic>)ViewBag.PriceHistory).Any())
+            {
+                var priceHistory = (IEnumerable<dynamic>)ViewBag.PriceHistory;
+                var prices = priceHistory.Select(p => (decimal)p.UnitPrice).ToList();
+                var avgPrice = prices.Average();
+                var minPrice = prices.Min();
+                var maxPrice = prices.Max();
+                var currentPrice = Model.Price;
+
+                <div class="card mt-3 shadow-sm border-0">
+                    <div class="card-header bg-gradient-success text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-chart-line"></i> تاريخ أسعار الشراء والإحصائيات
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Price Statistics -->
+                        <div class="row mb-3">
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-primary"><i class="fas fa-tag"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">السعر الحالي</span>
+                                        <span class="info-box-number">@(currentPrice?.ToString("N2") ?? "-") جنيه</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-success"><i class="fas fa-chart-bar"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">متوسط السعر</span>
+                                        <span class="info-box-number">@avgPrice.ToString("N2") جنيه</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-warning"><i class="fas fa-arrow-down"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">أقل سعر</span>
+                                        <span class="info-box-number">@minPrice.ToString("N2") جنيه</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="info-box bg-light">
+                                    <span class="info-box-icon bg-danger"><i class="fas fa-arrow-up"></i></span>
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">أعلى سعر</span>
+                                        <span class="info-box-number">@maxPrice.ToString("N2") جنيه</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Price History Table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-striped">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th><i class="fas fa-calendar"></i> تاريخ الشراء</th>
+                                        <th><i class="fas fa-money-bill-wave"></i> سعر الوحدة</th>
+                                        <th><i class="fas fa-boxes"></i> الكمية</th>
+                                        <th><i class="fas fa-calculator"></i> الإجمالي</th>
+                                        <th><i class="fas fa-truck"></i> المورد</th>
+                                        <th><i class="fas fa-info-circle"></i> الحالة</th>
+                                        <th><i class="fas fa-chart-line"></i> التغير</th>
+                                        <th><i class="fas fa-link"></i> الأمر</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        decimal? previousPrice = null;
+                                    }
+                                    @foreach (var item in priceHistory)
+                                    {
+                                        var total = item.UnitPrice * item.Quantity;
+                                        var priceChange = previousPrice.HasValue ? item.UnitPrice - previousPrice.Value : 0;
+                                        var priceChangePercent = previousPrice.HasValue && previousPrice.Value > 0
+                                        ? ((item.UnitPrice - previousPrice.Value) / previousPrice.Value) * 100
+                                        : 0;
+
+                                        <tr>
+                                            <td>
+                                                <i class="far fa-calendar-alt text-muted"></i>
+                                                @item.OrderDate.ToString("dd/MM/yyyy")
+                                            </td>
+                                            <td>
+                                                <strong class="text-primary">@item.UnitPrice.ToString("N2")</strong> جنيه
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">@item.Quantity</span>
+                                            </td>
+                                            <td>
+                                                <strong>@total.ToString("N2")</strong> جنيه
+                                            </td>
+                                            <td>
+                                                <i class="fas fa-building text-info"></i>
+                                                @item.SupplierName
+                                            </td>
+                                            <td>
+                                                @if (item.Status == "مستلم")
+                                                {
+                                                    <span class="badge bg-success"><i class="fas fa-check"></i> @item.Status</span>
+                                                }
+                                                else if (item.Status == "جديد")
+                                                {
+                                                    <span class="badge bg-primary"><i class="fas fa-clock"></i> @item.Status</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-warning"><i class="fas fa-hourglass-half"></i> @item.Status</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (previousPrice.HasValue)
+                                                {
+                                                    if (priceChange > 0)
+                                                    {
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-arrow-up"></i>
+                                                            +@priceChange.ToString("N2")
+                                                            (@priceChangePercent.ToString("N1")%)
+                                                        </span>
+                                                    }
+                                                    else if (priceChange < 0)
+                                                    {
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-arrow-down"></i>
+                                                            @priceChange.ToString("N2")
+                                                            (@priceChangePercent.ToString("N1")%)
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary">
+                                                            <i class="fas fa-minus"></i> بدون تغيير
+                                                        </span>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="PurchaseOrders" asp-action="Details" asp-route-id="@item.OrderId"
+                                                   class="btn btn-sm btn-outline-info" title="عرض تفاصيل الأمر">
+                                                    <i class="fas fa-eye"></i> #@item.OrderId
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        previousPrice = item.UnitPrice;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @if (priceHistory.Count() >= 10)
+                        {
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>ملاحظة:</strong> يتم عرض آخر 10 عمليات شراء فقط.
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card mt-3">
+                    <div class="card-body text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p>لا يوجد تاريخ لأسعار الشراء لهذا المنتج بعد</p>
+                        <small>سيتم عرض تاريخ الأسعار بعد إضافة أول أمر شراء</small>
+                    </div>
+                </div>
+            }
+        </div>
+
+            <div class="card-footer text-end bg-light">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg">
+                    <i class="fas fa-edit"></i> تعديل البيانات
+                </a>
+                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> عودة للقائمة
+                </a>
+            </div>
+        </div>
+
+</section>

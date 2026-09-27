@@ -1,0 +1,73 @@
+@model IMS.Models.PurchaseOrder
+@{
+    ViewData["Title"] = "حذف طلب شراء الأدوية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-trash text-danger"></i> حذف طلب شراء الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">طلبات الشراء</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-danger text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-exclamation-triangle"></i> تأكيد حذف طلب شراء الأدوية</h5>
+            </div>
+            <div class="card-body">
+                <p>هل أنت متأكد من رغبتك في حذف أمر الشراء التالي؟</p>
+                <dl class="row">
+                    <dt class="col-sm-3">رقم الأمر:</dt>
+                    <dd class="col-sm-9">#@Model.Id</dd>
+
+                    <dt class="col-sm-3">المورد:</dt>
+                    <dd class="col-sm-9">@Model.Supplier?.Name</dd>
+
+                    <dt class="col-sm-3">التاريخ:</dt>
+                    <dd class="col-sm-9">@Model.OrderDate.ToString("yyyy/MM/dd")</dd>
+
+                    <dt class="col-sm-3">المبلغ الإجمالي:</dt>
+                    <dd class="col-sm-9">@Model.TotalAmount.ToString("C")</dd>
+
+                    <dt class="col-sm-3">الحالة:</dt>
+                    <dd class="col-sm-9"><span class="badge bg-info">@Model.Status</span></dd>
+                </dl>
+
+                @if (Model.PurchaseOrderItems != null && Model.PurchaseOrderItems.Any())
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>تحذير:</strong> هذا الأمر يحتوي على @Model.PurchaseOrderItems.Count عنصر. حذف الأمر سيحذف جميع العناصر المرتبطة.
+                    </div>
+                }
+
+                @if (Model.Status == "مستلم")
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>تحذير:</strong> هذا الأمر تم استلامه وتحديث المخزون. حذفه لن يؤثر على المخزون الحالي.
+                    </div>
+                }
+            </div>
+            <div class="card-footer text-end">
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="Id" />
+                    <a asp-action="Index" class="btn btn-outline-secondary">إلغاء</a>
+                    <button type="submit" class="btn btn-danger">حذف</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

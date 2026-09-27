@@ -1,0 +1,93 @@
+@model IMS.Models.Product
+@{
+    ViewData["Title"] = "حذف الدواء - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-danger"><i class="fas fa-trash-alt"></i> حذف الدواء</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">الأدوية</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["WarningMessage"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading">
+                    <i class="fas fa-exclamation-triangle"></i> تحذير هام!
+                </h5>
+                <p>@TempData["WarningMessage"]</p>
+                <hr>
+                <p class="mb-0">
+                    <strong>هل أنت متأكد من رغبتك في المتابعة؟</strong> 
+                    سيتم حذف جميع البيانات المرتبطة بهذا المنتج بشكل نهائي ولا يمكن التراجع عن هذا الإجراء.
+                </p>
+            </div>
+        }
+        
+        <div class="card card-danger">
+            <div class="card-header">
+                <h5 class="card-title text-white">
+                    <i class="fas fa-trash-alt"></i> تأكيد حذف المنتج
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="lead"><i class="fas fa-exclamation-triangle text-danger"></i> هل أنت متأكد من رغبتك في حذف الدواء التالي؟</p>
+                <div class="alert alert-light border">
+                    <ul class="mb-0">
+                        <li><strong>الكود:</strong> @Model.Code</li>
+                        <li><strong>الاسم:</strong> @Model.Name</li>
+                        <li><strong>إجمالي الكمية:</strong> @Model.TotalQuantity</li>
+                        @if (Model.Category != null)
+                        {
+                            <li><strong>الفئة:</strong> @Model.Category.Name</li>
+                        }
+                    </ul>
+                </div>
+                
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-danger mt-3">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <strong>تنبيه:</strong> حذف هذا المنتج سيؤدي إلى حذف جميع البيانات التاريخية المرتبطة به من الطلبات وحركات المخزون.
+                    </div>
+                }
+            </div>
+            <div class="card-footer text-end">
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    @if (TempData["WarningMessage"] != null)
+                    {
+                        <input type="hidden" name="forceDelete" value="true" />
+                    }
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-times"></i> إلغاء
+                    </a>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> 
+                        @if (TempData["WarningMessage"] != null)
+                        {
+                            <text>تأكيد الحذف النهائي</text>
+                        }
+                        else
+                        {
+                            <text>حذف</text>
+                        }
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

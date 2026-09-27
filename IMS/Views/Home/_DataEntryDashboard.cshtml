@@ -1,0 +1,99 @@
+@model DashboardViewModel
+
+<div class="content-header mb-4">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">لوحة مدخل البيانات</h2>
+                <p class="text-muted mb-0">مرحباً بك، قم بتحديث بيانات المنتجات والموردين</p>
+            </div>
+            <div class="glass-panel px-3 py-2 text-primary fw-semibold small d-none d-md-block">
+                <i class="fas fa-calendar-day me-2"></i> @IMS.AppClock.UtcNow.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mb-5">
+    <h5 class="fw-bold mb-4 ms-2">إجراءات البيانات</h5>
+    <div class="row g-4">
+        <div class="col-6 col-md-3">
+            <a asp-controller="Products" asp-action="Create" class="info-card d-block text-center text-decoration-none bg-orange bg-opacity-10">
+                <div class="info-card-icon mx-auto" style="background: orange; color: white;"><i class="fas fa-pills"></i></div>
+                <span class="fw-bold text-dark d-block">إضافة دواء</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Categories" asp-action="Create" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-blue mx-auto"><i class="fas fa-tags"></i></div>
+                <span class="fw-bold text-dark d-block">إضافة تصنيف</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="Suppliers" asp-action="Create" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-green mx-auto"><i class="fas fa-truck"></i></div>
+                <span class="fw-bold text-dark d-block">إضافة مورد</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a asp-controller="BarCodeScan" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-purple mx-auto"><i class="fas fa-barcode"></i></div>
+                <span class="fw-bold text-dark d-block">فحص الباركود</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="info-card h-100">
+                    <h5 class="fw-bold mb-4">آخر المنتجات المضافة</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>اسم المنتج</th>
+                                    <th>السعر</th>
+                                    <th>الكمية</th>
+                                    <th>الإجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var prod in Model.TopProducts.Take(5))
+                                {
+                                    <tr>
+                                        <td class="fw-bold">@prod.ProductName</td>
+                                        <td>@prod.Revenue.ToString("N0") ج.م</td>
+                                        <td>@prod.Quantity</td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-outline-primary rounded-pill px-3">تعديل</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="info-card h-100 border-0 bg-light">
+                    <h5 class="fw-bold mb-4">إحصائيات سريعة</h5>
+                    <div class="p-3 bg-white rounded-3 shadow-sm mb-3">
+                        <h6 class="text-muted small">إجمالي الأصناف</h6>
+                        <h3 class="fw-bold mb-0">@Model.SummaryCards.FirstOrDefault(c => c.Title == "إجمالي المنتجات")?.Value</h3>
+                    </div>
+                    <div class="p-3 bg-white rounded-3 shadow-sm mb-3">
+                        <h6 class="text-muted small">إجمالي الموردين</h6>
+                        <h3 class="fw-bold mb-0">@Model.SummaryCards.FirstOrDefault(c => c.Title == "إجمالي الموردين")?.Value</h3>
+                    </div>
+                    <div class="p-3 bg-white rounded-3 shadow-sm">
+                        <h6 class="text-muted small">تصنيفات نشطة</h6>
+                        <h3 class="fw-bold mb-0">12</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

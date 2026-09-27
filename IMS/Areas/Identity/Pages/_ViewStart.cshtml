@@ -1,0 +1,34 @@
+@using Microsoft.AspNetCore.Identity
+@using IMS.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    bool isStaff = false;
+    if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        if (user != null)
+        {
+            var roles = await UserManager.GetRolesAsync(user);
+            var staffRoles = new[] { 
+                RoleNamesConstants.Admin, 
+                RoleNamesConstants.Accountant, 
+                RoleNamesConstants.WarehouseStaff, 
+                RoleNamesConstants.Pharmacist, 
+                RoleNamesConstants.Cashier, 
+                RoleNamesConstants.DataEntry 
+            };
+            isStaff = roles.Any(r => staffRoles.Contains(r));
+        }
+    }
+
+    if (isStaff)
+    {
+        Layout = "/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "/Areas/ECommerce/Views/Shared/_ECommerceLayout.cshtml";
+    }
+}

@@ -1,0 +1,131 @@
+@model List<IMS.Models.Product>
+@{
+    ViewData["Title"] = "إدارة منتجات المتجر";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categories = ViewBag.Categories as List<IMS.Models.Category>;
+}
+
+<section class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1><i class="fas fa-pills text-primary"></i> إدارة منتجات المتجر الإلكتروني</h1>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Search and Filter -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-5">
+                        <input type="text" name="search" class="form-control" placeholder="بحث باسم المنتج أو الباركود..." value="@Context.Request.Query["search"]" />
+                    </div>
+                    <div class="col-md-4">
+                        <select name="categoryId" class="form-select">
+                            <option value="">-- كل التصنيفات --</option>
+                            @foreach (var cat in categories)
+                            {
+                                <option value="@cat.Id" selected="@(Context.Request.Query["categoryId"] == cat.Id.ToString())">@cat.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-search"></i> بحث</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Products Table -->
+        <div class="card card-outline card-primary">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th></th>
+                                <th>المنتج</th>
+                                <th>التصنيف</th>
+                                <th>السعر</th>
+                                <th>الحالة في المتجر</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td style="width: 50px;">
+                                        @if (!string.IsNullOrEmpty(item.ImageUrl))
+                                        {
+                                            <img src="@item.ImageUrl" style="width: 40px; height: 40px; object-fit: cover; border-radius: 4px;" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light text-center rounded" style="width: 40px; height: 40px; line-height: 40px;">
+                                                <i class="fas fa-pills text-muted"></i>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <strong>@item.Name</strong><br />
+                                        <small class="text-muted">@item.Barcode</small>
+                                    </td>
+                                    <td>@item.Category?.Name</td>
+                                    <td>@(item.SalePrice?.ToString("N2") ?? item.Price?.ToString("N2") ?? "0.00") ج.م</td>
+                                    <td>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" role="switch" id="switch-@item.Id" 
+                                                   checked="@item.ShowInEcommerce" onchange="toggleProductVisibility(@item.Id, this)">
+                                            <label class="form-check-label" for="switch-@item.Id">
+                                                @(item.ShowInEcommerce ? "ظاهر" : "مخفي")
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function toggleProductVisibility(id, element) {
+            const label = element.nextElementSibling;
+            
+            $.post('/ECommerce/ECommerceProducts/ToggleVisibility/' + id, function(data) {
+                if (data.success) {
+                    label.innerText = data.isVisible ? "ظاهر" : "مخفي";
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'تم التحديث',
+                        text: data.isVisible ? 'المنتج الآن ظاهر في المتجر' : 'تم إخفاء المنتج من المتجر',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                } else {
+                    element.checked = !element.checked;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'خطأ',
+                        text: data.message
+                    });
+                }
+            }).fail(function() {
+                element.checked = !element.checked;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'حدث خطأ أثناء التواصل مع الخادم'
+                });
+            });
+        }
+    </script>
+}

@@ -1,0 +1,101 @@
+@model IEnumerable<IMS.Controllers.InactiveItemViewModel>
+@{
+    ViewData["Title"] = "تقرير الأصناف الراكدة - الصيدلية";
+    var days = ViewBag.Days;
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-boxes text-muted"></i> الأصناف الراكدة</h1>
+                <p class="text-muted">الأصناف التي لم يتم بيعها خلال الـ @days يوم الماضية</p>
+            </div>
+            <div class="col-sm-6 text-end">
+                <div class="btn-group">
+                    <a asp-action="InactiveItems" asp-route-days="30" class="btn btn-outline-primary @(days == 30 ? "active" : "")">30 يوم</a>
+                    <a asp-action="InactiveItems" asp-route-days="60" class="btn btn-outline-primary @(days == 60 ? "active" : "")">60 يوم</a>
+                    <a asp-action="InactiveItems" asp-route-days="90" class="btn btn-outline-primary @(days == 90 ? "active" : "")">90 يوم</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-navy text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-list"></i> قائمة الأصناف المحتمل ركودها</h5>
+                <span class="badge bg-light text-navy">عدد الأصناف: @Model.Count()</span>
+            </div>
+            <div class="card-body">
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-success text-center py-5">
+                        <i class="fas fa-check-circle fa-3x mb-3"></i>
+                        <h5>جميع الأصناف في حالة حركة جيدة!</h5>
+                        <p>لا توجد أصناف راكدة خلال المدة المحددة.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered" id="inactiveTable">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>اسم المنتج</th>
+                                    <th>التصنيف</th>
+                                    <th class="text-center">الكمية الحالية</th>
+                                    <th class="text-center">سعر الوحدة</th>
+                                    <th class="text-center">إجمالي القيمة المادية</th>
+                                    <th class="text-center">إجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td><strong>@item.ProductName</strong></td>
+                                        <td><span class="badge bg-info">@item.CategoryName</span></td>
+                                        <td class="text-center fs-5">@item.StockQuantity.ToString("N2")</td>
+                                        <td class="text-center">@item.Price.ToString("N2") جنيه</td>
+                                        <td class="text-center fw-bold text-danger">@item.TotalValue.ToString("N2") جنيه</td>
+                                        <td class="text-center">
+                                            <a asp-controller="Products" asp-action="Details" asp-route-id="@item.ProductId" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-eye"></i> تفاصيل المنتج
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="table-light fw-bold">
+                                <tr>
+                                    <td colspan="4" class="text-end">الإجمالي الكلي للقيمة الراكدة:</td>
+                                    <td class="text-center text-danger fs-5">@Model.Sum(x => x.TotalValue).ToString("N2") جنيه</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                }
+            </div>
+            <div class="card-footer text-muted">
+                <i class="fas fa-info-circle"></i> يساعد هذا التقرير في تحديد الأدوية التي تقترب من انتهاء الصلاحية أو التي تشغل حيزاً تخزينياً دون عائد مادي سريع.
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#inactiveTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json"
+                },
+                "order": [[2, "desc"]]
+            });
+        });
+    </script>
+}

@@ -1,0 +1,148 @@
+@model IEnumerable<IMS.Models.AuditLog>
+
+@{
+    ViewData["Title"] = "سجل النشاط - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-history text-secondary"></i> سجل النشاط</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">سجل النشاط</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">بحث</label>
+                        <input type="text" name="searchTerm" class="form-control" placeholder="اسم المستخدم أو الكيان..." value="@Context.Request.Query["searchTerm"]">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">العملية</label>
+                        <select name="actionFilter" class="form-select">
+                            <option value="">الكل</option>
+                            @foreach (var action in (List<string>)ViewBag.Actions)
+                            {
+                                <option value="@action" selected="@(Context.Request.Query["actionFilter"] == action)">@action</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">من تاريخ</label>
+                        <input type="date" name="fromDate" class="form-control" value="@Context.Request.Query["fromDate"]">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">إلى تاريخ</label>
+                        <input type="date" name="toDate" class="form-control" value="@Context.Request.Query["toDate"]">
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i> تصفية
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>التاريخ والوقت</th>
+                                <th>المستخدم</th>
+                                <th>العملية</th>
+                                <th>الكيان</th>
+                                <th>المعرف</th>
+                                <th>عنوان IP</th>
+                                <th class="text-center">التفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-nowrap text-muted">@item.DateTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                    <td>
+                                        <div class="fw-bold">@item.UserName</div>
+                                        <small class="text-muted">@item.UserId</small>
+                                    </td>
+                                    <td>
+                                        @{
+                                            var badgeClass = item.Action switch {
+                                                "Create" => "bg-success",
+                                                "Update" => "bg-warning text-dark",
+                                                "Delete" => "bg-danger",
+                                                "ChangePassword" => "bg-info",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @badgeClass">@item.Action</span>
+                                    </td>
+                                    <td>@item.EntityName</td>
+                                    <td><code>@item.EntityId</code></td>
+                                    <td><small class="text-muted">@item.IpAddress</small></td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill px-3" 
+                                                data-bs-toggle="modal" data-bs-target="#modal-@item.Id">
+                                            عرض
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal for Details -->
+                                <div class="modal fade" id="modal-@item.Id" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg border-0">
+                                        <div class="modal-content shadow-lg">
+                                            <div class="modal-header bg-light">
+                                                <h5 class="modal-title">تفاصيل العملية #@item.Id</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <div class="row mb-4">
+                                                    <div class="col-md-6 border-end">
+                                                        <h6 class="text-danger fw-bold mb-3"><i class="fas fa-history me-1"></i> القيم القديمة</h6>
+                                                        <div class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+                                                            <pre class="mb-0 overflow-auto">@(string.IsNullOrEmpty(item.OldValues) ? "لا توجد بيانات قديمة" : item.OldValues)</pre>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="text-success fw-bold mb-3"><i class="fas fa-plus-circle me-1"></i> القيم الجديدة</h6>
+                                                        <div class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+                                                            <pre class="mb-0 overflow-auto">@(string.IsNullOrEmpty(item.NewValues) ? "لا توجد بيانات جديدة" : item.NewValues)</pre>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light border-top-0">
+                                                <button type="button" class="btn btn-secondary px-4 rounded-pill" data-bs-toggle="modal">إغلاق</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    pre { white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', Courier, monospace; font-size: 13px; }
+    .table th { border-top: none; }
+</style>

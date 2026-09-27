@@ -1,0 +1,135 @@
+@model IMS.Models.Insurance
+
+@{
+    ViewData["Title"] = "تفاصيل شركة التأمين";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-shield-alt text-info"></i> تفاصيل شركة التأمين</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">شركات التأمين</a></li>
+                    <li class="breadcrumb-item active">التفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> معلومات الشركة</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4"><i class="fas fa-building"></i> اسم الشركة:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Name</strong></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-code"></i> رمز الشركة:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-secondary">@Model.Code</span></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-phone"></i> رقم الهاتف:</dt>
+                            <dd class="col-sm-8">@Model.Phone</dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-envelope"></i> البريد الإلكتروني:</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-map-marker-alt"></i> العنوان:</dt>
+                            <dd class="col-sm-8">@Model.Address</dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-percentage"></i> نسبة التغطية الافتراضية:</dt>
+                            <dd class="col-sm-8">
+                                <span class="badge bg-info">@Model.DefaultCoveragePercentage%</span>
+                            </dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-money-bill"></i> الحد الأقصى للتغطية:</dt>
+                            <dd class="col-sm-8">
+                                <h5 class="text-success mb-0">@Model.MaxCoverageAmount.ToString("N2") ج.م</h5>
+                            </dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-toggle-on"></i> الحالة:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> نشط</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-times"></i> غير نشط</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-calendar"></i> تاريخ الإضافة:</dt>
+                            <dd class="col-sm-8">@Model.CreatedDate.ToString("yyyy-MM-dd hh:mm tt")</dd>
+
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-sticky-note"></i> ملاحظات:</dt>
+                                <dd class="col-sm-8">
+                                    <div class="alert alert-info">@Model.Notes</div>
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> حذف
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> رجوع للقائمة
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-file-contract"></i> البوليصات</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.Policies != null && Model.Policies.Any())
+                        {
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-file-contract"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">إجمالي البوليصات</span>
+                                    <span class="info-box-number">@Model.Policies.Count()</span>
+                                </div>
+                            </div>
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">البوليصات النشطة</span>
+                                    <span class="info-box-number">@Model.Policies.Count(p => p.IsActive)</span>
+                                </div>
+                            </div>
+                            <a asp-controller="InsurancePolicies" asp-action="Index" asp-route-insuranceId="@Model.Id" class="btn btn-primary btn-block">
+                                <i class="fas fa-list"></i> عرض جميع البوليصات
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle"></i>
+                                <p class="mb-0">لا توجد بوليصات لهذه الشركة حتى الآن</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,93 @@
+@model IMS.Models.Warehouse
+@{
+    ViewData["Title"] = "تعديل مستودع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark"><i class="fas fa-edit"></i> تعديل المستودع</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المستودعات</a></li>
+                    <li class="breadcrumb-item active">تعديل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="card-title mb-0"><i class="fas fa-edit"></i> تعديل بيانات المستودع</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Name" class="form-label">
+                                    <i class="fas fa-warehouse text-primary"></i>
+                                    <strong>اسم المستودع</strong>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Name" class="form-control" placeholder="أدخل اسم المستودع" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="BranchId" class="form-label">
+                                    <i class="fas fa-building text-info"></i>
+                                    <strong>الفرع</strong>
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="BranchId" class="form-select" asp-items="ViewBag.BranchId">
+                                    <option value="">-- اختر الفرع --</option>
+                                </select>
+                                <span asp-validation-for="BranchId" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group mb-3">
+                                <label asp-for="Location" class="form-label">
+                                    <i class="fas fa-map-marker-alt text-danger"></i>
+                                    <strong>الموقع</strong>
+                                </label>
+                                <textarea asp-for="Location" class="form-control" rows="3" placeholder="أدخل موقع المستودع (اختياري)"></textarea>
+                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="form-group text-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> إلغاء
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> حفظ التعديلات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

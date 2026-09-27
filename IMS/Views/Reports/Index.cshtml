@@ -1,0 +1,308 @@
+@{
+    ViewData["Title"] = "التقارير الطبية والمالية - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="fas fa-chart-line text-info"></i>
+                    التقارير الطبية والمالية
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">التقارير</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Summary Cards -->
+        <div class="row">
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-success">
+                    <div class="inner">
+                        <h3>@ViewBag.TotalSales.ToString("C")</h3>
+                        <p>إجمالي مبيعات الأدوية</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-pills"></i>
+                    </div>
+                    <a asp-action="Sales" class="small-box-footer">
+                        المزيد <i class="fas fa-arrow-circle-left"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-warning">
+                    <div class="inner">
+                        <h3>@ViewBag.TotalPurchases.ToString("C")</h3>
+                        <p>إجمالي المشتريات</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <a asp-action="Purchases" class="small-box-footer">
+                        المزيد <i class="fas fa-arrow-circle-left"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-info">
+                    <div class="inner">
+                        <h3>@ViewBag.Profit.ToString("C")</h3>
+                        <p>صافي الربح</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <a asp-action="Profit" class="small-box-footer">
+                        المزيد <i class="fas fa-arrow-circle-left"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-6">
+                <div class="small-box bg-danger">
+                    <div class="inner">
+                        <h3>@ViewBag.LowStockCount</h3>
+                        <p>منتجات منخفضة</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <a asp-controller="Inventory" asp-action="LowStock" class="small-box-footer">
+                        المزيد <i class="fas fa-arrow-circle-left"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="text-primary">الطلبات</h5>
+                        <h2>@ViewBag.TotalOrders</h2>
+                        <p class="text-muted">مكتمل: @ViewBag.CompletedOrders</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="text-warning">أوامر الشراء</h5>
+                        <h2>@ViewBag.TotalPurchaseOrders</h2>
+                        <p class="text-muted">إجمالي الأوامر</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="text-success">العملاء</h5>
+                        <h2>@ViewBag.TotalCustomers</h2>
+                        <p class="text-muted">نشط: @ViewBag.ActiveCustomers</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="text-info">الموردين</h5>
+                        <h2>@ViewBag.TotalSuppliers</h2>
+                        <p class="text-muted">نشط: @ViewBag.ActiveSuppliers</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">المبيعات الشهرية (آخر 6 أشهر)</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="monthlySalesChart" height="100"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">قيمة المخزون</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        <h2 class="text-primary">@ViewBag.InventoryValue.ToString("C")</h2>
+                        <p class="text-muted">إجمالي قيمة المخزون الحالي</p>
+                        <a asp-controller="Inventory" asp-action="Report" class="btn btn-primary">
+                            <i class="fas fa-chart-bar"></i> عرض التقرير
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title">أكثر المنتجات مبيعاً</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="topProductsChart" height="80"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">تقارير سريعة</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <a asp-action="Sales" class="btn btn-outline-success btn-block w-100 mb-2">
+                                    <i class="fas fa-file-invoice-dollar"></i><br />
+                                    تقرير المبيعات
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-action="Purchases" class="btn btn-outline-warning btn-block w-100 mb-2">
+                                    <i class="fas fa-shopping-cart"></i><br />
+                                    تقرير المشتريات
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-action="Profit" class="btn btn-outline-info btn-block w-100 mb-2">
+                                    <i class="fas fa-chart-line"></i><br />
+                                    تقرير الأرباح
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-controller="Inventory" asp-action="Report" class="btn btn-outline-primary btn-block w-100 mb-2">
+                                    <i class="fas fa-warehouse"></i><br />
+                                    تقرير المخزون
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-action="InventoryMovement" class="btn btn-outline-warning btn-block w-100 mb-2">
+                                    <i class="fas fa-exchange-alt"></i><br />
+                                    حركة المخزون
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-action="ExpiryReport" class="btn btn-outline-danger btn-block w-100 mb-2">
+                                    <i class="fas fa-hourglass-end"></i><br />
+                                    تواريخ الصلاحية
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-action="InactiveItems" class="btn btn-outline-secondary btn-block w-100 mb-2">
+                                    <i class="fas fa-boxes"></i><br />
+                                    الأصناف الراكدة
+                                </a>
+                            </div>
+                            <div class="col-md-3">
+                                <a asp-action="BranchPerformance" class="btn btn-outline-dark btn-block w-100 mb-2">
+                                    <i class="fas fa-city"></i><br />
+                                    أداء الفروع
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Monthly Sales Chart
+        var monthlySalesCtx = document.getElementById('monthlySalesChart').getContext('2d');
+        var monthlySalesData = @Html.Raw(Json.Serialize(ViewBag.MonthlySales));
+        var monthlySalesChart = new Chart(monthlySalesCtx, {
+            type: 'line',
+            data: {
+                labels: monthlySalesData.map(m => m.month),
+                datasets: [{
+                    label: 'المبيعات',
+                    data: monthlySalesData.map(m => m.total),
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('ar-EG', {style: 'currency', currency: 'EGP'});
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            }
+        });
+
+        // Top Products Chart
+        var topProductsCtx = document.getElementById('topProductsChart').getContext('2d');
+        var topProductsData = @Html.Raw(Json.Serialize(ViewBag.TopProducts));
+        var topProductsChart = new Chart(topProductsCtx, {
+            type: 'bar',
+            data: {
+                labels: topProductsData.map(p => p.product),
+                datasets: [{
+                    label: 'الكمية المباعة',
+                    data: topProductsData.map(p => p.totalSold),
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    </script>
+}

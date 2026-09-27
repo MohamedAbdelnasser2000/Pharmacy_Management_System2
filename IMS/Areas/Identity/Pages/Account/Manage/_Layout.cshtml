@@ -1,0 +1,173 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using IMS.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    bool isStaff = false;
+    if (SignInManager.IsSignedIn(User))
+    {
+        var user = await UserManager.GetUserAsync(User);
+        if (user != null)
+        {
+            var roles = await UserManager.GetRolesAsync(user);
+            var staffRoles = new[] { 
+                RoleNamesConstants.Admin, 
+                RoleNamesConstants.Accountant, 
+                RoleNamesConstants.WarehouseStaff, 
+                RoleNamesConstants.Pharmacist, 
+                RoleNamesConstants.Cashier, 
+                RoleNamesConstants.DataEntry 
+            };
+            isStaff = roles.Any(r => staffRoles.Contains(r));
+        }
+    }
+
+    if (isStaff)
+    {
+        Layout = "/Views/Shared/_Layout.cshtml";
+    }
+    else
+    {
+        Layout = "/Areas/ECommerce/Views/Shared/_ECommerceLayout.cshtml";
+    }
+}
+
+<div class="container py-5">
+    <div class="row g-4 justify-content-center">
+        <!-- Page Header -->
+        <div class="col-12 text-center mb-2">
+            <h2 class="fw-bold text-dark mb-2">إعدادات الحساب</h2>
+            <p class="text-muted">قم بإدارة ملفك الشخصي وإعدادات الأمان الخاصة بك</p>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3">
+            <div class="manage-card p-3 h-100">
+                <div class="text-center mb-4 d-none d-lg-block">
+                    <div class="manage-avatar-circle mx-auto mb-3">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <h5 class="fw-bold mb-0">لوحة التحكم</h5>
+                    <small class="text-muted">خيارات الحساب</small>
+                </div>
+                <div class="manage-nav-wrapper">
+                    <partial name="_ManageNav" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Body -->
+        <div class="col-lg-8">
+            <div class="manage-card p-4 p-md-5">
+                <div class="manage-content-body">
+                    @RenderBody()
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        :root {
+            --primary-medical: #2E8B57;
+            --primary-soft: #eaf4ef;
+            --accent-blue: #4FC3F7;
+        }
+
+        .manage-card {
+            background: white;
+            border-radius: 24px;
+            border: 1px solid #f1f5f9;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .manage-avatar-circle {
+            width: 70px;
+            height: 70px;
+            background: var(--primary-soft);
+            color: var(--primary-medical);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        /* Styling the partial navigation */
+        .manage-nav-wrapper .nav-pills .nav-link {
+            border-radius: 12px;
+            padding: 12px 18px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid transparent;
+        }
+
+        .manage-nav-wrapper .nav-pills .nav-link:hover {
+            background: #f8fafc;
+            color: var(--primary-medical);
+            border-color: #e2e8f0;
+        }
+
+        .manage-nav-wrapper .nav-pills .nav-link.active {
+            background: var(--primary-medical);
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(46, 139, 87, 0.2);
+        }
+
+        /* Specific styles for the manage forms */
+        .manage-content-body h3 {
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 25px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--primary-soft);
+            padding-bottom: 15px;
+        }
+
+        .manage-content-body .form-label {
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 10px;
+        }
+
+        .manage-content-body .form-control {
+            border-radius: 12px;
+            padding: 12px 15px;
+            border: 2px solid #f1f5f9;
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        .manage-content-body .form-control:focus {
+            border-color: var(--primary-medical);
+            box-shadow: 0 0 0 4px rgba(46, 139, 87, 0.1);
+        }
+
+        .manage-content-body .btn-primary {
+            background: var(--primary-medical);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 30px;
+            font-weight: 800;
+            box-shadow: 0 4px 12px rgba(46, 139, 87, 0.2);
+        }
+
+        .manage-content-body .btn-primary:hover {
+            background: #246e45;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(46, 139, 87, 0.3);
+        }
+    </style>
+}
+
+@section Scripts {
+    @RenderSection("Scripts", required: false)
+}

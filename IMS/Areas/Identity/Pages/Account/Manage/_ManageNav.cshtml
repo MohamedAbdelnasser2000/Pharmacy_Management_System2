@@ -1,0 +1,25 @@
+@inject SignInManager<ApplicationUser> SignInManager
+@{
+    var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
+}
+<div class="manage-nav">
+    <a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">
+        <i class="fas fa-user-circle"></i>
+        <span>الملف الشخصي</span>
+    </a>
+    <a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">
+        <i class="fas fa-envelope"></i>
+        <span>البريد الإلكتروني</span>
+    </a>
+    <a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">
+        <i class="fas fa-key"></i>
+        <span>كلمة المرور</span>
+    </a>
+    @if (hasExternalLogins)
+    {
+        <a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">
+            <i class="fas fa-globe"></i>
+            <span>تسجيلات خارجية</span>
+        </a>
+    }
+</div>

@@ -1,0 +1,289 @@
+@model IMS.Models.Prescription
+
+@{
+    ViewData["Title"] = "إضافة أدوية للوصفة";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-pills text-primary"></i> إضافة أدوية للوصفة</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">الوصفات الطبية</a></li>
+                    <li class="breadcrumb-item active">إضافة أدوية</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <!-- معلومات الوصفة -->
+            <div class="col-md-4">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> معلومات الوصفة</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-5">رقم الوصفة:</dt>
+                            <dd class="col-sm-7"><strong>@Model.PrescriptionNumber</strong></dd>
+
+                            <dt class="col-sm-5">التاريخ:</dt>
+                            <dd class="col-sm-7">@Model.PrescriptionDate.ToString("yyyy-MM-dd")</dd>
+
+                            @if (Model.Doctor != null)
+                            {
+                                <dt class="col-sm-5">الطبيب:</dt>
+                                <dd class="col-sm-7"><i class="fas fa-user-md"></i> @Model.Doctor.Name</dd>
+                            }
+
+                            <dt class="col-sm-5">المريض:</dt>
+                            <dd class="col-sm-7">@Model.PatientName</dd>
+
+                            @if (Model.PatientAge.HasValue)
+                            {
+                                <dt class="col-sm-5">العمر:</dt>
+                                <dd class="col-sm-7">@Model.PatientAge سنة</dd>
+                            }
+                        </dl>
+
+                        @if (!string.IsNullOrEmpty(Model.Diagnosis))
+                        {
+                            <div class="alert alert-info">
+                                <strong>التشخيص:</strong><br />
+                                @Model.Diagnosis
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- إضافة دواء جديد -->
+            <div class="col-md-8">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-plus"></i> إضافة دواء جديد</h3>
+                    </div>
+                    <form asp-action="AddItem" method="post">
+                        <div class="card-body">
+                            <input type="hidden" name="prescriptionId" value="@Model.Id" />
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-pills"></i> الدواء <span class="text-danger">*</span></label>
+                                        <select name="productId" class="form-control" required>
+                                            <option value="">-- اختر الدواء --</option>
+                                            @foreach (var item in ViewBag.Products as SelectList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-sort-numeric-up"></i> الكمية <span class="text-danger">*</span></label>
+                                        <input type="number" name="quantity" class="form-control" min="1" value="1" required />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-clock"></i> المدة (أيام)</label>
+                                        <input type="number" name="duration" class="form-control" min="1" placeholder="7" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-prescription-bottle"></i> الجرعة</label>
+                                        <input type="text" name="dosage" class="form-control" placeholder="مثال: قرص واحد" />
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label><i class="fas fa-redo"></i> التكرار</label>
+                                        <select name="frequency" class="form-control">
+                                            <option value="">-- اختر --</option>
+                                            <option value="مرة واحدة يومياً">مرة واحدة يومياً</option>
+                                            <option value="مرتين يومياً">مرتين يومياً</option>
+                                            <option value="ثلاث مرات يومياً">ثلاث مرات يومياً</option>
+                                            <option value="أربع مرات يومياً">أربع مرات يومياً</option>
+                                            <option value="كل 6 ساعات">كل 6 ساعات</option>
+                                            <option value="كل 8 ساعات">كل 8 ساعات</option>
+                                            <option value="كل 12 ساعة">كل 12 ساعة</option>
+                                            <option value="عند الحاجة">عند الحاجة</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="submit" class="btn btn-success btn-block">
+                                            <i class="fas fa-plus"></i> إضافة
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label><i class="fas fa-info-circle"></i> تعليمات الاستخدام</label>
+                                <textarea name="instructions" class="form-control" rows="2" placeholder="مثال: قبل الأكل، بعد الأكل، مع الماء..."></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- قائمة الأدوية المضافة -->
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-list"></i> الأدوية المضافة (@Model.PrescriptionItems.Count)</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.PrescriptionItems.Any())
+                        {
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>الدواء</th>
+                                        <th>الكمية</th>
+                                        <th>الجرعة</th>
+                                        <th>التكرار</th>
+                                        <th>المدة</th>
+                                        <th>السعر</th>
+                                        <th>الإجمالي</th>
+                                        <th>إجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.PrescriptionItems)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <i class="fas fa-pills text-primary"></i>
+                                                <strong>@item.Product.Name</strong>
+                                            </td>
+                                            <td><span class="badge bg-info">@item.Quantity</span></td>
+                                            <td>@item.Dosage</td>
+                                            <td>@item.Frequency</td>
+                                            <td>@item.Duration أيام</td>
+                                            <td>@item.Price?.ToString("N2")</td>
+                                            <td><strong class="text-success">@item.Total?.ToString("N2")</strong></td>
+                                            <td>
+                                                <form asp-action="RemoveItem" method="post" style="display:inline;">
+                                                    <input type="hidden" name="itemId" value="@item.Id" />
+                                                    <input type="hidden" name="prescriptionId" value="@Model.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل تريد حذف هذا الدواء؟')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                        @if (!string.IsNullOrEmpty(item.Instructions))
+                                        {
+                                            <tr>
+                                                <td colspan="8" class="bg-light">
+                                                    <small><i class="fas fa-info-circle text-info"></i> <strong>تعليمات:</strong> @item.Instructions</small>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-success">
+                                        <th colspan="6" class="text-end">الإجمالي:</th>
+                                        <th colspan="2">
+                                            <strong class="text-success">
+                                                @Model.PrescriptionItems.Sum(i => i.Total ?? 0).ToString("N2") ج.م
+                                            </strong>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning m-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                لم يتم إضافة أي أدوية بعد. استخدم النموذج أعلاه لإضافة الأدوية.
+                            </div>
+                        }
+                    </div>
+                    @if (Model.PrescriptionItems.Any())
+                    {
+                        <div class="card-footer">
+                            <form asp-action="Dispense" method="post" id="dispenseForm">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                
+                                @if (Model.CustomerId.HasValue)
+                                {
+                                    <div class="form-group">
+                                        <label>
+                                            <i class="fas fa-shield-alt text-primary"></i> البوليصة التأمينية (اختياري):
+                                        </label>
+                                        <select name="insurancePolicyId" id="insurancePolicySelect" class="form-control">
+                                            <option value="">-- لا يوجد تأمين --</option>
+                                        </select>
+                                        <small class="text-muted">سيتم حساب التغطية التأمينية تلقائياً</small>
+                                    </div>
+                                }
+                                
+                                <div class="form-group">
+                                    <label><i class="fas fa-comment"></i> ملاحظات الصيدلي:</label>
+                                    <textarea name="pharmacistNotes" class="form-control" rows="2" placeholder="أي ملاحظات إضافية..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary" onclick="return confirm('هل تريد صرف هذه الوصفة؟')">
+                                    <i class="fas fa-check-circle"></i> صرف الوصفة
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-right"></i> رجوع
+                                </a>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function() {
+            // Load insurance policies for customer
+            @if (Model.CustomerId.HasValue)
+            {
+                <text>
+                loadInsurancePolicies(@Model.CustomerId.Value);
+                </text>
+            }
+        });
+
+        function loadInsurancePolicies(customerId) {
+            $.get('@Url.Action("GetCustomerPolicies", "Orders")', { customerId: customerId })
+                .done(function(policies) {
+                    const policySelect = $('#insurancePolicySelect');
+                    policySelect.html('<option value="">-- لا يوجد تأمين --</option>');
+                    
+                    if (policies && policies.length > 0) {
+                        policies.forEach(function(policy) {
+                            policySelect.append(`<option value="${policy.id}">${policy.text}</option>`);
+                        });
+                    }
+                })
+                .fail(function() {
+                    console.error('فشل تحميل البوليصات التأمينية');
+                });
+        }
+    </script>
+}

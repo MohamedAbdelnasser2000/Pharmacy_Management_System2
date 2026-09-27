@@ -1,0 +1,475 @@
+@model IMS.Models.PurchaseOrder
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>فاتورة شراء #@Model.Id</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.rtl.min.css" />
+    <style>
+        /* إعداد عام للطباعة - يدعم جميع أنواع الورق */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @@page {
+            size: auto;
+            margin: 10mm;
+        }
+        
+        body {
+            font-family: 'Arial', 'Tahoma', 'Segoe UI', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #000;
+            background: #fff;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 15px;
+            margin: 0 auto;
+        }
+        
+        /* رأس الفاتورة */
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #000;
+            padding-bottom: 15px;
+        }
+        
+        .invoice-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #000;
+            margin: 10px 0;
+        }
+        
+        .invoice-header h2 {
+            font-size: 20px;
+            margin: 8px 0;
+            font-weight: bold;
+        }
+        
+        .invoice-header p {
+            font-size: 13px;
+            margin: 5px 0;
+            line-height: 1.5;
+        }
+        
+        .invoice-header img {
+            max-height: 80px;
+            max-width: 150px;
+            margin: 5px 0;
+        }
+        
+        /* معلومات الفاتورة */
+        .invoice-info {
+            background: #f5f5f5;
+            padding: 12px 15px;
+            border: 1px solid #000;
+            margin-bottom: 12px;
+            border-radius: 0;
+        }
+        
+        .invoice-info .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .invoice-info .col-6 {
+            flex: 1;
+            padding: 0;
+        }
+        
+        .invoice-info p {
+            margin: 1px 0;
+            font-size: 12px;
+            line-height: 1.1;
+        }
+        
+        .invoice-info strong {
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .invoice-info .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            background: #28a745;
+            color: #fff;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        /* جدول المنتجات */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        
+        .table th,
+        .table td {
+            border: 1px solid #000;
+            padding: 8px 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .table th {
+            background-color: #000;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+        /* قسم الإجماليات */
+        .total-section {
+            background: #f5f5f5;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        .total-section .d-flex {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .total-section strong {
+            font-weight: bold;
+        }
+        
+        .total-section hr {
+            margin: 10px 0;
+            border: none;
+            border-top: 2px solid #000;
+        }
+        
+        .total-section .text-success {
+            color: #28a745;
+        }
+        
+        .total-section .text-danger {
+            color: #dc3545;
+        }
+        
+        /* التذييل */
+        .footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 2px solid #000;
+            text-align: center;
+            font-size: 12px;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        /* إعدادات الطباعة */
+        @@media print {
+            @@page {
+                size: auto;
+                margin: 8mm;
+            }
+            
+            body {
+                margin: 0;
+                padding: 0;
+                font-size: 12px;
+            }
+            
+            .container {
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            /* منع تقسيم العناصر المهمة */
+            .invoice-header,
+            .invoice-info,
+            .total-section,
+            .footer {
+                page-break-inside: avoid;
+            }
+            
+            /* تحسين الخطوط للطباعة */
+            .invoice-title {
+                font-size: 24px;
+            }
+            
+            .invoice-header h2 {
+                font-size: 18px;
+            }
+            
+            .invoice-header p {
+                font-size: 11px;
+            }
+            
+            .table {
+                font-size: 11px;
+            }
+            
+            .table th,
+            .table td {
+                padding: 6px 4px;
+                font-size: 11px;
+            }
+            
+            .table th {
+                font-size: 12px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .invoice-info,
+            .total-section {
+                font-size: 12px;
+                padding: 10px;
+            }
+            
+            .footer {
+                font-size: 10px;
+                margin-top: 20px;
+                padding-top: 10px;
+            }
+            
+            /* تحسين الألوان للطباعة */
+            .table th {
+                background-color: #000 !important;
+                color: #fff !important;
+            }
+            
+            .invoice-info,
+            .total-section {
+                background: #f5f5f5 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        
+        /* دعم الطباعة الحرارية (58mm و 80mm) */
+        @@media print and (max-width: 80mm) {
+            body {
+                font-size: 10px;
+            }
+            
+            .invoice-title {
+                font-size: 16px;
+            }
+            
+            .invoice-header h2 {
+                font-size: 14px;
+            }
+            
+            .invoice-header p {
+                font-size: 9px;
+            }
+            
+            .invoice-header img {
+                max-height: 50px;
+                max-width: 100px;
+            }
+            
+            .table {
+                font-size: 9px;
+            }
+            
+            .table th,
+            .table td {
+                padding: 4px 2px;
+                font-size: 9px;
+            }
+            
+            .invoice-info,
+            .total-section {
+                font-size: 10px;
+                padding: 8px;
+            }
+            
+            .footer {
+                font-size: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="invoice-header">
+            @{
+                var settings = ViewBag.StoreSettings as IMS.Models.StoreSettings;
+            }
+            <div class="invoice-title">فاتورة شراء</div>
+            <h2 class="mb-0">@(settings?.StoreName ?? "نظام إدارة المخازن")</h2>
+            
+            <div style="text-align:center; width:100%;">
+                @if (!string.IsNullOrEmpty(settings?.PhoneNumber))
+                {
+                    <p class="mb-0">
+                        رقم التليفون : @settings.PhoneNumber
+                        @if (!string.IsNullOrEmpty(settings.PhoneNumber2))
+                        {
+                            <span> - @settings.PhoneNumber2</span>
+                        }
+                    </p>
+                }
+                @if (!string.IsNullOrEmpty(settings?.Address))
+                {
+                    <p class="mb-0">العنوان : @settings.Address</p>
+                }
+                @if (!string.IsNullOrEmpty(settings?.Email))
+                {
+                    <p class="mb-0">البريد الالكتروني : @settings.Email</p>
+                }
+            </div>
+        </div>
+
+        <div class="invoice-info">
+            <div class="row">
+                <div class="col-6">
+                    <p><strong>رقم الفاتورة:</strong> #@Model.Id</p>
+                    <p><strong>التاريخ:</strong> @Model.OrderDate.ToString("dd/MM/yyyy")</p>
+                    <p><strong>الحالة:</strong> <span class="badge">@Model.Status</span></p>
+                </div>
+                <div class="col-6">
+                    <p><strong>المورد:</strong> @Model.Supplier?.Name</p>
+                    <p><strong>الهاتف:</strong> @Model.Supplier?.PhoneNumber</p>
+                    <p><strong>العنوان:</strong> @Model.Supplier?.Address</p>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>سعر الوحدة</th>
+                    <th>الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.PurchaseOrderItems != null && Model.PurchaseOrderItems.Any())
+                {
+                    int index = 1;
+                    // إزالة التكرار بناءً على Id أو ProductId + UnitPrice
+                    var distinctItems = Model.PurchaseOrderItems
+                        .GroupBy(x => new { x.ProductId, x.UnitPrice })
+                        .Select(g => new {
+                            Item = g.First(),
+                            TotalQuantity = g.Sum(i => i.Quantity)
+                        })
+                        .ToList();
+                    
+                    foreach (var group in distinctItems)
+                    {
+                        var item = group.Item;
+                        <tr>
+                            <td>@index</td>
+                            <td>@item.Product?.Name</td>
+                            <td>@group.TotalQuantity</td>
+                            <td>@item.UnitPrice.ToString("N2")</td>
+                            <td>@((group.TotalQuantity * item.UnitPrice).ToString("N2"))</td>
+                        </tr>
+                        index++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center">لا توجد عناصر في هذا الأمر</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="total-section">
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong>المبلغ الإجمالي:</strong>
+                        <span>@Model.TotalAmount.ToString("N2") جنيه</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <strong>المبلغ المدفوع:</strong>
+                        <span class="text-success">@Model.PaidAmount.ToString("N2") جنيه</span>
+                    </div>
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <strong class="text-danger">المبلغ المتبقي:</strong>
+                        <strong class="text-danger">@((Model.TotalAmount - Model.PaidAmount).ToString("N2")) جنيه</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>شكراً لتعاملكم معنا</p>
+            <p class="mb-0">تم الطباعة في: @IMS.AppClock.UtcNow.ToString("dd/MM/yyyy hh:mm tt")</p>
+        </div>
+
+        <div class="no-print text-center mt-4">
+            <button onclick="window.print()" class="btn btn-primary btn-lg">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <a href="javascript:window.close()" class="btn btn-secondary btn-lg">إغلاق</a>
+        </div>
+    </div>
+    
+    <script>
+        // تحسين وظيفة الطباعة
+        window.addEventListener('load', function() {
+            // إزالة أي تنسيقات Bootstrap قد تتداخل مع الطباعة
+            if (window.matchMedia) {
+                var mediaQueryList = window.matchMedia('print');
+                mediaQueryList.addListener(function(mql) {
+                    if (mql.matches) {
+                        beforePrint();
+                    } else {
+                        afterPrint();
+                    }
+                });
+            }
+            
+            window.onbeforeprint = beforePrint;
+            window.onafterprint = afterPrint;
+        });
+        
+        function beforePrint() {
+            // إزالة أي عناصر قد تسبب مشاكل في الطباعة
+            document.body.style.margin = '0';
+            document.body.style.padding = '0';
+        }
+        
+        function afterPrint() {
+            // استعادة التنسيقات الأصلية
+            document.body.style.margin = '';
+            document.body.style.padding = '';
+        }
+    </script>
+</body>
+</html>

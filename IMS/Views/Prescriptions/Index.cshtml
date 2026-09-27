@@ -1,0 +1,166 @@
+@model IEnumerable<IMS.Models.Prescription>
+
+@{
+    ViewData["Title"] = "الوصفات الطبية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-prescription text-primary"></i> الوصفات الطبية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">الوصفات الطبية</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-8">
+                        <form asp-action="Index" method="get" class="form-inline">
+                            <div class="input-group">
+                                <input type="text" name="searchString" value="@ViewData["SearchString"]" class="form-control" placeholder="البحث برقم الوصفة أو اسم المريض..." />
+                                <select name="isDispensed" class="form-control ms-2">
+                                    <option value="">الكل</option>
+                                    <option value="false" selected="@(ViewData["IsDispensed"]?.ToString() == "False")">قيد الانتظار</option>
+                                    <option value="true" selected="@(ViewData["IsDispensed"]?.ToString() == "True")">مصروفة</option>
+                                </select>
+                                <input type="date" name="fromDate" value="@ViewData["FromDate"]" class="form-control ms-2" placeholder="من تاريخ" />
+                                <input type="date" name="toDate" value="@ViewData["ToDate"]" class="form-control ms-2" placeholder="إلى تاريخ" />
+                                <button type="submit" class="btn btn-primary ms-2">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary ms-2">
+                                    <i class="fas fa-redo"></i> إعادة تعيين
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-md-4 text-start">
+                        <a asp-action="Create" class="btn btn-success">
+                            <i class="fas fa-plus"></i> إضافة وصفة جديدة
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead class="table-primary">
+                                <tr>
+                                    <th>رقم الوصفة</th>
+                                    <th>التاريخ</th>
+                                    <th>الطبيب</th>
+                                    <th>المريض</th>
+                                    <th>العمر</th>
+                                    <th>الحالة</th>
+                                    <th>المبلغ</th>
+                                    <th style="width: 200px;">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var prescription in Model)
+                                {
+                                    <tr class="@(prescription.IsDispensed ? "" : "table-warning")">
+                                        <td>
+                                            <strong class="text-primary">@prescription.PrescriptionNumber</strong>
+                                        </td>
+                                        <td>@prescription.PrescriptionDate.ToString("yyyy-MM-dd")</td>
+                                        <td>
+                                            @if (prescription.Doctor != null)
+                                            {
+                                                <i class="fas fa-user-md text-info"></i> @prescription.Doctor.Name
+                                            }
+                                        </td>
+                                        <td>@prescription.PatientName</td>
+                                        <td>@prescription.PatientAge سنة</td>
+                                        <td>
+                                            @if (prescription.IsDispensed)
+                                            {
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check"></i> مصروفة
+                                                </span>
+                                                <br />
+                                                <small class="text-muted">@prescription.DispensedDate?.ToString("yyyy-MM-dd")</small>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning">
+                                                    <i class="fas fa-clock"></i> قيد الانتظار
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (prescription.TotalAmount.HasValue)
+                                            {
+                                                <strong class="text-success">@prescription.TotalAmount.Value.ToString("N2") ج.م</strong>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@prescription.Id" class="btn btn-sm btn-info" title="التفاصيل">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                @if (!prescription.IsDispensed)
+                                                {
+                                                    <a asp-action="AddItems" asp-route-id="@prescription.Id" class="btn btn-sm btn-primary" title="إضافة أدوية">
+                                                        <i class="fas fa-pills"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@prescription.Id" class="btn btn-sm btn-warning" title="تعديل">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a asp-action="Delete" asp-route-id="@prescription.Id" class="btn btn-sm btn-danger" title="حذف">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-2"></i>
+                        <p class="mb-0">لا توجد وصفات طبية حالياً. يمكنك إضافة وصفة جديدة من الزر أعلاه.</p>
+                    </div>
+                }
+            </div>
+            @if (Model.Any())
+            {
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="text-muted">
+                                <i class="fas fa-info-circle"></i>
+                                إجمالي الوصفات: <strong>@Model.Count()</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-start">
+                            <span class="badge bg-success me-2">
+                                <i class="fas fa-check"></i> مصروفة: @Model.Count(p => p.IsDispensed)
+                            </span>
+                            <span class="badge bg-warning">
+                                <i class="fas fa-clock"></i> قيد الانتظار: @Model.Count(p => !p.IsDispensed)
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

@@ -1,0 +1,179 @@
+@model IMS.Models.MedicationRequest
+
+@{
+    ViewData["Title"] = "إضافة طلب دواء جديد";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-plus-circle"></i> إضافة طلب دواء جديد</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">طلبات الأدوية</a></li>
+                    <li class="breadcrumb-item active">إضافة جديد</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title">معلومات الطلب</h3>
+                    </div>
+
+                    <form asp-action="Create" method="post">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="callout callout-info">
+                                        <h5><i class="fas fa-info-circle"></i> تعليمات:</h5>
+                                        <p>استخدم هذا النموذج لتسجيل طلبات الأدوية التي يطلبها المرضى ولكنها غير متوفرة حالياً في الصيدلية.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="mb-3"><i class="fas fa-pills"></i> معلومات الدواء</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="MedicationName" class="required"></label>
+                                        <input asp-for="MedicationName" class="form-control" placeholder="أدخل اسم الدواء التجاري" />
+                                        <span asp-validation-for="MedicationName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ScientificName"></label>
+                                        <input asp-for="ScientificName" class="form-control" placeholder="الاسم العلمي (اختياري)" />
+                                        <span asp-validation-for="ScientificName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Strength"></label>
+                                        <input asp-for="Strength" class="form-control" placeholder="مثال: 500mg" />
+                                        <span asp-validation-for="Strength" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="DosageForm"></label>
+                                        <input asp-for="DosageForm" class="form-control" placeholder="مثال: أقراص، شراب، حقن" />
+                                        <span asp-validation-for="DosageForm" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="RequestedQuantity"></label>
+                                        <input asp-for="RequestedQuantity" type="number" class="form-control" placeholder="الكمية المطلوبة" />
+                                        <span asp-validation-for="RequestedQuantity" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5 class="mb-3"><i class="fas fa-user"></i> معلومات المريض</h5>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="PatientName"></label>
+                                        <input asp-for="PatientName" class="form-control" placeholder="اسم المريض (اختياري)" />
+                                        <span asp-validation-for="PatientName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="PatientPhone"></label>
+                                        <input asp-for="PatientPhone" class="form-control" placeholder="رقم الهاتف للتواصل" />
+                                        <span asp-validation-for="PatientPhone" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5 class="mb-3"><i class="fas fa-cog"></i> إعدادات الطلب</h5>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Priority" class="required"></label>
+                                        <select asp-for="Priority" class="form-control">
+                                            <option value="0">عادي</option>
+                                            <option value="1">عاجل</option>
+                                            <option value="2">طارئ</option>
+                                        </select>
+                                        <span asp-validation-for="Priority" class="text-danger"></span>
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-info-circle"></i> اختر "طارئ" للحالات الحرجة التي تحتاج متابعة فورية
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BranchId"></label>
+                                        <select asp-for="BranchId" class="form-control" asp-items="ViewBag.BranchId">
+                                            <option value="">-- اختر الفرع --</option>
+                                        </select>
+                                        <span asp-validation-for="BranchId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Notes"></label>
+                                <textarea asp-for="Notes" class="form-control" rows="3" placeholder="أي ملاحظات إضافية..."></textarea>
+                                <span asp-validation-for="Notes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> حفظ الطلب
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Focus on medication name field
+            $('#MedicationName').focus();
+            
+            // Add required indicator styling
+            $('.required').append(' <span class="text-danger">*</span>');
+        });
+    </script>
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+</style>

@@ -1,0 +1,301 @@
+@model IEnumerable<IMS.Models.Order>
+@{
+    ViewData["Title"] = "المبيعات المباشرة - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-cash-register text-success"></i> مبيعات الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">المبيعات</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <!-- Quick Statistics -->
+        @if (Model != null && Model.Any())
+        {
+            var totalSales = Model.Sum(o => o.TotalAmount);
+            var totalPaid = Model.Sum(o => o.PaidAmount);
+            var totalRemaining = totalSales - totalPaid;
+            var completedCount = Model.Count(o => o.Status == "مكتمل");
+            
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <div class="card bg-gradient-primary text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-receipt"></i> إجمالي الفواتير</h6>
+                                    <h3 class="mb-0">@Model.Count()</h3>
+                                </div>
+                                <i class="fas fa-file-invoice fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-gradient-success text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-money-bill-wave"></i> إجمالي المبيعات</h6>
+                                    <h3 class="mb-0">@totalSales.ToString("N0")</h3>
+                                    <small>جنيه</small>
+                                </div>
+                                <i class="fas fa-coins fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-gradient-info text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-hand-holding-usd"></i> المبالغ المحصلة</h6>
+                                    <h3 class="mb-0">@totalPaid.ToString("N0")</h3>
+                                    <small>جنيه</small>
+                                </div>
+                                <i class="fas fa-wallet fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-gradient-warning text-white shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1"><i class="fas fa-exclamation-triangle"></i> المبالغ المتبقية</h6>
+                                    <h3 class="mb-0">@totalRemaining.ToString("N0")</h3>
+                                    <small>جنيه</small>
+                                </div>
+                                <i class="fas fa-clock fa-3x opacity-50"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-pills"></i> فواتير بيع الأدوية</h5>
+                <a asp-action="Create" class="btn btn-light btn-lg">
+                    <i class="fas fa-plus-circle me-1"></i> فاتورة جديدة
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Search Box -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <form asp-action="Index" method="get" class="d-flex">
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="searchTerm" 
+                                       class="form-control" 
+                                       placeholder="ابحث برقم الفاتورة، اسم العميل، رقم الهاتف، أو الحالة..." 
+                                       value="@ViewBag.SearchTerm"
+                                       autocomplete="off">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                                @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                                {
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </a>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                    {
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-0 py-2">
+                                <i class="fas fa-info-circle"></i> 
+                                نتائج البحث عن: <strong>@ViewBag.SearchTerm</strong>
+                                (@Model.Count() نتيجة)
+                            </div>
+                        </div>
+                    }
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th style="width: 100px;" class="text-center">
+                                    <i class="fas fa-receipt me-2"></i>رقم الفاتورة
+                                </th>
+                                <th style="width: 180px;">
+                                    <i class="fas fa-user-injured me-2"></i>العميل/المريض
+                                </th>
+                                <th style="width: 160px;">
+                                    <i class="fas fa-calendar me-2"></i>التاريخ
+                                </th>
+                                <th style="width: 130px;" class="text-center">
+                                    <i class="fas fa-money-bill-wave me-2"></i>الإجمالي
+                                </th>
+                                <th style="width: 130px;" class="text-center">
+                                    <i class="fas fa-check-circle me-2"></i>المدفوع
+                                </th>
+                                <th style="width: 130px;" class="text-center">
+                                    <i class="fas fa-exclamation-circle me-2"></i>المتبقي
+                                </th>
+                                <th style="width: 120px;" class="text-center">
+                                    <i class="fas fa-info-circle me-2"></i>الحالة
+                                </th>
+                                <th style="width: 220px;" class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var item in Model)
+                                {
+                                    var remaining = item.TotalAmount - item.PaidAmount;
+                                    <tr>
+                                        <td class="text-center">
+                                            <span class="badge bg-dark fs-6">#@item.Id</span>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user-injured text-primary me-2"></i>
+                                            <strong class="text-primary">@item.Customer?.Name</strong>
+                                            @if (!string.IsNullOrEmpty(item.Customer?.PhoneNumber))
+                                            {
+                                                <br />
+                                                <small class="text-muted">
+                                                    <i class="fas fa-phone me-1"></i>@item.Customer.PhoneNumber
+                                                </small>
+                                            }
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-clock text-info me-1"></i>
+                                            <small class="text-muted">@item.OrderDate.ToString("yyyy/MM/dd")</small>
+                                            <br />
+                                            <small class="text-muted">@item.OrderDate.ToString("HH:mm")</small>
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-primary fs-6">@item.TotalAmount.ToString("N2") جنيه</strong>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-success rounded-pill fs-6">
+                                                @item.PaidAmount.ToString("N2") جنيه
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (remaining > 0)
+                                            {
+                                                <span class="badge bg-danger rounded-pill fs-6">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                                    @remaining.ToString("N2") جنيه
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-success rounded-pill fs-6">
+                                                    <i class="fas fa-check-circle me-1"></i>مدفوع بالكامل
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.Status == "جديد")
+                                            {
+                                                <span class="badge bg-primary fs-6">
+                                                    <i class="fas fa-star me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "قيد الشحن")
+                                            {
+                                                <span class="badge bg-warning text-dark fs-6">
+                                                    <i class="fas fa-truck me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "مكتمل")
+                                            {
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-check-double me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "مرتجع")
+                                            {
+                                                <span class="badge bg-danger fs-6">
+                                                    <i class="fas fa-undo me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary fs-6">@item.Status</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="عرض التفاصيل">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="PrintInvoice" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-success" 
+                                                   target="_blank" 
+                                                   title="طباعة حرارية">
+                                                    <i class="fas fa-print"></i>
+                                                </a>
+                                                <a asp-action="DownloadInvoice" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-outline-danger" 
+                                                   title="تحميل فاتورة PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                <a asp-action="Edit" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-primary" 
+                                                   title="تعديل">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a asp-action="Delete" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-danger" 
+                                                   title="إلغاء"
+                                                   onclick="return confirm('⚠️ هل أنت متأكد من إلغاء هذه الفاتورة؟');">
+                                                    <i class="fas fa-ban"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="fas fa-receipt fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">لا توجد فواتير بيع</h5>
+                                        <p class="text-muted">قم بإضافة فاتورة جديدة للبدء</p>
+                                        <a asp-action="Create" class="btn btn-success btn-lg mt-3">
+                                            <i class="fas fa-plus-circle"></i> فاتورة جديدة
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

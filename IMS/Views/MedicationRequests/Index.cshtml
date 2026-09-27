@@ -1,0 +1,255 @@
+@model IEnumerable<IMS.Models.MedicationRequest>
+
+@{
+    ViewData["Title"] = "طلبات الأدوية المفقودة";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-pills"></i> طلبات الأدوية المفقودة</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">طلبات الأدوية</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <i class="icon fas fa-check"></i> @TempData["SuccessMessage"]
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">قائمة طلبات الأدوية</h3>
+                <div class="card-tools">
+                    <a asp-action="Create" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> إضافة طلب جديد
+                    </a>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <!-- Filter Form -->
+                <form method="get" class="mb-3">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>بحث</label>
+                                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="اسم الدواء، المريض، أو رقم الهاتف..." />
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>الحالة</label>
+                                <select name="status" class="form-control">
+                                    <option value="">الكل</option>
+                                    <option value="0" selected="@(ViewData["StatusFilter"]?.ToString() == "0")">قيد الانتظار</option>
+                                    <option value="1" selected="@(ViewData["StatusFilter"]?.ToString() == "1")">تم الطلب من المورد</option>
+                                    <option value="2" selected="@(ViewData["StatusFilter"]?.ToString() == "2")">تم الاستلام</option>
+                                    <option value="3" selected="@(ViewData["StatusFilter"]?.ToString() == "3")">تم التسليم للمريض</option>
+                                    <option value="4" selected="@(ViewData["StatusFilter"]?.ToString() == "4")">ملغي</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>الأولوية</label>
+                                <select name="priority" class="form-control">
+                                    <option value="">الكل</option>
+                                    <option value="0" selected="@(ViewData["PriorityFilter"]?.ToString() == "0")">عادي</option>
+                                    <option value="1" selected="@(ViewData["PriorityFilter"]?.ToString() == "1")">عاجل</option>
+                                    <option value="2" selected="@(ViewData["PriorityFilter"]?.ToString() == "2")">طارئ</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3>@Model.Count(m => m.Status == IMS.Models.RequestStatus.Pending)</h3>
+                                <p>قيد الانتظار</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3>@Model.Count(m => m.Status == IMS.Models.RequestStatus.Ordered)</h3>
+                                <p>تم الطلب</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="small-box bg-primary">
+                            <div class="inner">
+                                <h3>@Model.Count(m => m.Status == IMS.Models.RequestStatus.Received)</h3>
+                                <p>تم الاستلام</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-box"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3>@Model.Count(m => m.Status == IMS.Models.RequestStatus.Delivered)</h3>
+                                <p>تم التسليم</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>اسم الدواء</th>
+                                <th>التركيز</th>
+                                <th>المريض</th>
+                                <th>الهاتف</th>
+                                <th>الكمية</th>
+                                <th>الأولوية</th>
+                                <th>الحالة</th>
+                                <th>تم الإبلاغ</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr class="@(item.Priority == IMS.Models.Priority.Emergency ? "table-danger" : item.Priority == IMS.Models.Priority.Urgent ? "table-warning" : "")">
+                                    <td>@item.RequestDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <strong>@item.MedicationName</strong>
+                                        @if (!string.IsNullOrEmpty(item.ScientificName))
+                                        {
+                                            <br /><small class="text-muted">@item.ScientificName</small>
+                                        }
+                                    </td>
+                                    <td>@item.Strength</td>
+                                    <td>@item.PatientName</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.PatientPhone))
+                                        {
+                                            <a href="tel:@item.PatientPhone">@item.PatientPhone</a>
+                                        }
+                                    </td>
+                                    <td>@item.RequestedQuantity</td>
+                                    <td>
+                                        @switch (item.Priority)
+                                        {
+                                            case IMS.Models.Priority.Emergency:
+                                                <span class="badge badge-danger">طارئ</span>
+                                                break;
+                                            case IMS.Models.Priority.Urgent:
+                                                <span class="badge badge-warning">عاجل</span>
+                                                break;
+                                            default:
+                                                <span class="badge badge-secondary">عادي</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        @switch (item.Status)
+                                        {
+                                            case IMS.Models.RequestStatus.Pending:
+                                                <span class="badge badge-warning">قيد الانتظار</span>
+                                                break;
+                                            case IMS.Models.RequestStatus.Ordered:
+                                                <span class="badge badge-info">تم الطلب</span>
+                                                break;
+                                            case IMS.Models.RequestStatus.Received:
+                                                <span class="badge badge-primary">تم الاستلام</span>
+                                                break;
+                                            case IMS.Models.RequestStatus.Delivered:
+                                                <span class="badge badge-success">تم التسليم</span>
+                                                break;
+                                            case IMS.Models.RequestStatus.Cancelled:
+                                                <span class="badge badge-danger">ملغي</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.PatientNotified)
+                                        {
+                                            <i class="fas fa-check-circle text-success" title="تم الإبلاغ"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="fas fa-times-circle text-danger" title="لم يتم الإبلاغ"></i>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="التفاصيل">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="حذف">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (!Model.Any())
+                {
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle"></i> لا توجد طلبات حالياً
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Auto-hide success message after 3 seconds
+        setTimeout(function() {
+            $('.alert-success').fadeOut('slow');
+        }, 3000);
+    </script>
+}

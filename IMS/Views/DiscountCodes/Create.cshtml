@@ -1,0 +1,96 @@
+@model IMS.Models.DiscountCode
+
+@{
+    ViewData["Title"] = "إضافة كود خصم جديد";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <h1 class="m-0"><i class="fas fa-plus-circle text-success"></i> إضافة كود خصم</h1>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0 col-md-8 mx-auto">
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Code" class="form-label font-weight-bold">كود الخصم (مثل: SAVE20)</label>
+                            <input asp-for="Code" class="form-control text-uppercase" placeholder="أدخل الكود هنا" />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="MinimumOrderAmount" class="form-label font-weight-bold">الحد الأدنى للطلب</label>
+                            <div class="input-group">
+                                <input asp-for="MinimumOrderAmount" class="form-control" type="number" step="0.01" value="0.00" />
+                                <span class="input-group-text">ج.م</span>
+                            </div>
+                            <span asp-validation-for="MinimumOrderAmount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Percentage" class="form-label font-weight-bold">نسبة الخصم (%)</label>
+                            <div class="input-group">
+                                <input asp-for="Percentage" class="form-control" type="number" step="0.01" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <small class="text-muted">اتركه فارغاً إذا كنت تستخدم مبلغاً ثابتاً</small>
+                            <span asp-validation-for="Percentage" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="FixedAmount" class="form-label font-weight-bold">مبلغ خصم ثابت</label>
+                            <div class="input-group">
+                                <input asp-for="FixedAmount" class="form-control" type="number" step="0.01" />
+                                <span class="input-group-text">ج.م</span>
+                            </div>
+                            <small class="text-muted">اتركه فارغاً إذا كنت تستخدم نسبة مئوية</small>
+                            <span asp-validation-for="FixedAmount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="StartDate" class="form-label font-weight-bold">تاريخ البدء</label>
+                            <input asp-for="StartDate" class="form-control" type="date" />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="EndDate" class="form-label font-weight-bold">تاريخ الانتهاء</label>
+                            <input asp-for="EndDate" class="form-control" type="date" />
+                            <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="UsageLimit" class="form-label font-weight-bold">الحد الأقصى للاستخدام</label>
+                            <input asp-for="UsageLimit" class="form-control" type="number" />
+                            <span asp-validation-for="UsageLimit" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3 d-flex align-items-center">
+                            <div class="form-check form-switch mt-4">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" id="isActiveSwitch">
+                                <label class="form-check-label ms-2" for="isActiveSwitch">تفعيل الكود فوراً</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group text-center mt-4">
+                        <button type="submit" class="btn btn-primary px-5 rounded-pill">إضافة الكود</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-5 rounded-pill">إلغاء</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

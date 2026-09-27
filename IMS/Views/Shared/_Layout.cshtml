@@ -1,0 +1,546 @@
+@using Microsoft.EntityFrameworkCore
+@using System.IO
+@inject IMS.Data.ApplicationDbContext DbContext
+@{
+    var storeSettings = await DbContext.StoreSettings.FirstOrDefaultAsync();
+    var storeName = storeSettings?.StoreName ?? "نظام إدارة الصيدلية";
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @storeName</title>
+    <!-- Local Fonts -->
+    <link rel="stylesheet" href="~/lib/fonts/tajawal/tajawal.css" asp-append-version="true" />
+    <!-- Local Font Awesome -->
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" asp-append-version="true" />
+    <!-- Local Bootstrap RTL -->
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" asp-append-version="true" />
+    <!-- Local AdminLTE -->
+    <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/IMS.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body class="hold-transition sidebar-mini layout-fixed text-end">
+    <div class="wrapper">
+        <!-- Modern Glass Navbar -->
+        <nav class="main-header navbar navbar-expand navbar-light glass-panel border-bottom-0 mx-3 mt-3 rounded-4 shadow-sm" style="background: var(--glass-bg); backdrop-filter: blur(12px);">
+            <!-- Search and User Menu -->
+            <ul class="navbar-nav d-flex align-items-center w-100 px-3">
+                <li class="nav-item">
+                    <a class="nav-link btn-premium" data-widget="pushmenu" href="#" role="button" style="color: var(--ims-primary) !important;">
+                        <i class="fas fa-bars"></i>
+                    </a>
+                </li>
+
+                <!-- Integrated Premium Search - Centered-ish -->
+                <li class="nav-item d-none d-md-inline-block flex-grow-1 ms-auto me-auto" style="max-width: 500px;">
+                    <div class="position-relative">
+                        <input type="text" id="global-search-input" 
+                               class="form-control border-0 bg-white rounded-pill ps-5 py-2 shadow-sm" 
+                               placeholder="بحث شامل (منتج، فاتورة، مريض)..." autocomplete="off"
+                               style="height: 42px; font-size: 0.9rem; border: 1px solid rgba(46, 139, 87, 0.2) !important;">
+                        <span class="position-absolute top-50 translate-middle-y" style="right: 15px; z-index: 5; pointer-events: none; color: var(--ims-primary) !important;">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <div id="search-results-dropdown" class="dropdown-menu dropdown-menu-lg shadow-lg border-0 mt-2 w-100 rounded-3">
+                            <!-- Results loaded via JS -->
+                        </div>
+                    </div>
+                </li>
+
+                <!-- User Menu & Notifications -->
+                <li class="nav-item dropdown ms-3">
+                    <a class="nav-link position-relative px-2" data-bs-toggle="dropdown" href="#" id="notification-dropdown">
+                        <i class="far fa-bell fa-lg" style="color: var(--ims-accent) !important;"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="notification-count" style="font-size: 0.65rem; background: var(--ims-primary) !important;">0</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end shadow-lg border-0 mt-3 rounded-3" style="width: 320px;">
+                        <div class="px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                            <span class="fw-bold">الإشعارات</span>
+                            <span class="badge bg-light text-primary small">جديد</span>
+                        </div>
+                        <div id="notification-items" style="max-height: 350px; overflow-y: auto;">
+                            <!-- Notifications items -->
+                        </div>
+                        <a href="/Notifications/Index" class="dropdown-item text-center py-2 text-primary small border-top">عرض الكل</a>
+                    </div>
+                </li>
+
+                <!-- Premium User Menu -->
+                <li class="nav-item dropdown user-menu ms-2">
+                    <a href="#" class="nav-link d-flex align-items-center bg-light rounded-pill px-3 py-1" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=@(User.GetFullName())&background=Random&color=fff" 
+                             class="rounded-circle me-2" alt="User" style="width: 28px; height: 28px;">
+                        <span class="d-none d-md-inline small fw-semibold">@User.GetFullName()</span>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-3 rounded-3 p-2" style="width: 280px;">
+                        <div class="p-3 text-center bg-light rounded-3 mb-2">
+                            <img src="https://ui-avatars.com/api/?name=@(User.GetFullName())&background=0f172a&color=fff&size=128" 
+                                 class="rounded-circle mb-2 shadow-sm" alt="User" style="width: 64px; height: 64px;">
+                            <h6 class="mb-0 fw-bold">@User.GetFullName()</h6>
+                            <p class="text-muted small mb-0">
+                                @(User.IsInRole(RoleNamesConstants.Admin) ? "مدير النظام" : 
+                                  User.IsInRole(RoleNamesConstants.Pharmacist) ? "صيدلي" : "مستخدم")
+                            </p>
+                        </div>
+                        <a asp-controller="UserSettings" asp-action="Index" class="dropdown-item rounded-2 py-2">
+                            <i class="fas fa-user-gear me-2 opacity-50"></i> إعدادات الحساب
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                            <button type="submit" class="dropdown-item rounded-2 py-2 text-danger">
+                                <i class="fas fa-power-off me-2 opacity-75"></i> تسجيل الخروج
+                            </button>
+                        </form>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Sidebar -->
+        <aside class="main-sidebar sidebar-light-primary elevation-0">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="brand-link d-flex align-items-center border-0 py-4">
+                <div class="bg-primary rounded-3 p-2 me-2 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px; background: linear-gradient(135deg, var(--ims-primary), var(--ims-primary-light)) !important;">
+                    <i class="fas fa-prescription-bottle-medical text-white fs-4"></i>
+                </div>
+                <span class="brand-text fw-bold" style="font-size: 1.2rem; color: var(--ims-text-main) !important; letter-spacing: 0.5px;">@storeName</span>
+            </a>
+            
+            <div class="sidebar px-3">
+                <nav class="mt-4">
+                    <ul class="nav nav-pills nav-sidebar flex-column gap-1" data-widget="treeview" role="menu" data-accordion="false">
+
+
+                        <li class="nav-item">
+                            <a href="/Home/Index" class="nav-link">
+                                <i class="nav-icon fas fa-th-large text-info"></i>
+                                <p>لوحة التحكم</p>
+                            </a>
+                        </li>
+
+                        @if (User.IsInRole(RoleNamesConstants.Admin))
+                        {
+                            <li class="nav-item">
+                                <a asp-area="" asp-controller="Users" asp-action="Index" class="nav-link">
+                                    <i class="nav-icon fas fa-users text-info"></i>
+                                    <p>إدارة المستخدمين</p>
+                                </a>
+                            </li>
+                        }
+                        
+                        <!-- قسم المبيعات - Dropdown -->
+                        @if (User.IsInRole(RoleNamesConstants.Admin) || User.IsInRole(RoleNamesConstants.Accountant) || User.IsInRole(RoleNamesConstants.Pharmacist) || User.IsInRole(RoleNamesConstants.Cashier))
+                        {
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-shopping-cart text-success"></i>
+                                    <p>
+                                        المبيعات
+                                        <i class="fas fa-angle-left left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Orders" asp-action="Create" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-success"></i>
+                                            <p>نقطة البيع - POS</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Orders" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-info"></i>
+                                            <p>المبيعات المباشرة</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Returns" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-danger"></i>
+                                            <p>مرتجعات الأدوية</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Customers" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-info"></i>
+                                            <p>العملاء / المرضى</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        
+                        <!-- قسم المخزون الدوائي - Dropdown -->
+                        @if (User.IsInRole(RoleNamesConstants.Admin) || User.IsInRole(RoleNamesConstants.WarehouseStaff) || User.IsInRole(RoleNamesConstants.Pharmacist) || User.IsInRole(RoleNamesConstants.DataEntry))
+                        {
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-pills text-primary"></i>
+                                    <p>
+                                        المخزون الدوائي
+                                        <i class="fas fa-angle-left left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Products" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-primary"></i>
+                                            <p>الأدوية</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Categories" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-success"></i>
+                                            <p>تصنيفات الأدوية</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="MedicationRequests" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-warning"></i>
+                                            <p>طلبات أدوية مفقودة</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Warehouses" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-primary"></i>
+                                            <p>مخازن الأدوية</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Inventory" asp-action="Movements" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-info"></i>
+                                            <p>حركات المخزون</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Inventory" asp-action="LowStock" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-warning"></i>
+                                            <p>تنبيهات المخزون</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="ExpiryAlerts" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-danger"></i>
+                                            <p>تنبيهات الصلاحية</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        
+                        <!-- قسم المشتريات - Dropdown -->
+                        @if (User.IsInRole(RoleNamesConstants.Admin) || User.IsInRole(RoleNamesConstants.Accountant) || User.IsInRole(RoleNamesConstants.WarehouseStaff))
+                        {
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-truck text-warning"></i>
+                                    <p>
+                                        المشتريات
+                                        <i class="fas fa-angle-left left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="PurchaseOrders" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-warning"></i>
+                                            <p>طلبات شراء الأدوية</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Suppliers" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-primary"></i>
+                                            <p>موردو الأدوية</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        
+                        <!-- قسم الإدارة الطبية - Dropdown -->
+                        @if (User.IsInRole(RoleNamesConstants.Admin) || User.IsInRole(RoleNamesConstants.Pharmacist) || User.IsInRole(RoleNamesConstants.DataEntry))
+                        {
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-prescription text-info"></i>
+                                    <p>
+                                        الإدارة الطبية
+                                        <i class="fas fa-angle-left left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Prescriptions" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-primary"></i>
+                                            <p>الوصفات الطبية</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Doctors" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-info"></i>
+                                            <p>الأطباء</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="Insurances" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-success"></i>
+                                            <p>شركات التأمين</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="InsurancePolicies" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-primary"></i>
+                                            <p>بوليصات التأمين</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="" asp-controller="DrugInteractions" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-danger"></i>
+                                            <p>التفاعلات الدوائية</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        
+                        <!-- قسم المتجر الإلكتروني - Dropdown -->
+                        @if (User.IsInRole(RoleNamesConstants.Admin))
+                        {
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-store text-danger"></i>
+                                    <p>
+                                        المتجر الإلكتروني
+                                        <i class="fas fa-angle-left left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="nav-link" target="_blank">
+                                            <i class="far fa-circle nav-icon text-success"></i>
+                                            <p>زيارة المتجر <i class="fas fa-external-link-alt text-muted ms-1" style="font-size: 0.7rem;"></i></p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="ECommerce" asp-controller="ECommerceOrders" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-primary"></i>
+                                            <p>إدارة الطلبات</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="ECommerce" asp-controller="ECommerceProducts" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-info"></i>
+                                            <p>إدارة المنتجات</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-area="ECommerce" asp-controller="ECommerceSettings" asp-action="Index" class="nav-link">
+                                            <i class="far fa-circle nav-icon text-secondary"></i>
+                                            <p>إعدادات المتجر</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        
+                        <!-- قسم التقارير والإعدادات - Dropdown -->
+                        @if (User.IsInRole(RoleNamesConstants.Admin) || User.IsInRole(RoleNamesConstants.Accountant) || User.IsInRole(RoleNamesConstants.Pharmacist) || User.IsInRole(RoleNamesConstants.WarehouseStaff) || User.IsInRole(RoleNamesConstants.DataEntry))
+                        {
+                            <li class="nav-item">
+                                <a href="#" class="nav-link">
+                                    <i class="nav-icon fas fa-cog text-secondary"></i>
+                                    <p>
+                                        التقارير والإعدادات
+                                        <i class="fas fa-angle-left left"></i>
+                                    </p>
+                                </a>
+                                <ul class="nav nav-treeview">
+                                    @if (User.IsInRole(RoleNamesConstants.Admin) || User.IsInRole(RoleNamesConstants.Accountant) || User.IsInRole(RoleNamesConstants.Pharmacist))
+                                    {
+                                        <li class="nav-item">
+                                            <a asp-area="" asp-controller="Reports" asp-action="Index" class="nav-link">
+                                                <i class="far fa-circle nav-icon text-success small"></i>
+                                                <p>التقارير</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a asp-area="" asp-controller="BarcodeScan" asp-action="Index" class="nav-link">
+                                                <i class="far fa-circle nav-icon text-primary"></i>
+                                                <p>مسح الباركود</p>
+                                            </a>
+                                        </li>
+                                    }
+                                    
+                                    @if (User.IsInRole(RoleNamesConstants.Admin))
+                                    {
+                                        <li class="nav-item">
+                                            <a asp-area="" asp-controller="StoreSettings" asp-action="Index" class="nav-link">
+                                                <i class="far fa-circle nav-icon text-secondary"></i>
+                                                <p>إعدادات الصيدلية</p>
+                                            </a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a asp-area="" asp-controller="AuditLogs" asp-action="Index" class="nav-link">
+                                                <i class="far fa-circle nav-icon text-warning"></i>
+                                                <p>سجل المراجعة</p>
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Dynamic Content Wrapper -->
+        <div class="content-wrapper border-0">
+            <div class="container-fluid pb-5">
+                @RenderBody()
+            </div>
+        </div>
+
+        <!-- Premium Minimal Footer -->
+        <footer class="main-footer border-0 bg-transparent text-muted small py-4">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col-md-6 text-center text-md-start">
+                        <span>&copy; @IMS.AppClock.UtcNow.Year <span class="fw-bold text-dark">@storeName</span>. جميع الحقوق محفوظة.</span>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                        <span class="me-2">تم التطوير بواسطة</span>
+                        <a href="https://controla.runasp.net/" class="text-primary fw-bold text-decoration-none">Control A</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Local jQuery -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- Local Bootstrap -->
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <!-- Local AdminLTE -->
+    <script src="~/lib/adminlte/js/adminlte.min.js"></script>
+    <!-- Local Chart.js -->
+    <script src="~/lib/chartjs/chart.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        $(document).ready(function () {
+            function loadNotifications() {
+                $.get('/Notifications/GetUnread', function (data) {
+                    if (data.count > 0) {
+                        $('#notification-count').text(data.count).removeClass('d-none');
+                        
+                        let html = '';
+                        data.notifications.forEach(function (n) {
+                            let icon = 'fa-info-circle text-info';
+                            if (n.type === 'Warning') icon = 'fa-exclamation-triangle text-warning';
+                            if (n.type === 'Error') icon = 'fa-times-circle text-danger';
+                            if (n.type === 'Success') icon = 'fa-check-circle text-success';
+
+                            html += `
+                                <a href="${n.link || '#'}" class="dropdown-item p-3 border-bottom notification-item" data-id="${n.id}">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas ${icon} me-3 mt-1"></i>
+                                        <div class="flex-grow-1">
+                                            <p class="text-sm mb-0 fw-bold text-dark">${n.title}</p>
+                                            <p class="text-sm text-muted mb-0">${n.message}</p>
+                                            <small class="text-muted">${new Date(n.createdAt).toLocaleString('ar-EG')}</small>
+                                        </div>
+                                    </div>
+                                </a>
+                            `;
+                        });
+                        $('#notification-items').html(html);
+                    } else {
+                        $('#notification-count').addClass('d-none');
+                        $('#notification-items').html('<div class="text-center py-3 text-muted small">لا توجد إشعارات جديدة</div>');
+                    }
+                });
+            }
+
+            // Initial load
+            loadNotifications();
+
+            // Refresh notifications every 2 minutes
+            setInterval(loadNotifications, 120000);
+
+            // Mark as read when clicked
+            $(document).on('click', '.notification-item', function (e) {
+                const id = $(this).data('id');
+                $.post('/Notifications/MarkAsRead', { id: id });
+            });
+
+            // Global Search Logic
+            let searchTimeout = null;
+            
+            function performGlobalSearch() {
+                const query = $('#global-search-input').val().trim();
+                if (query.length >= 2) {
+                    window.location.href = `/GlobalSearch/Index?query=${encodeURIComponent(query)}`;
+                }
+            }
+
+            $('#global-search-input').on('keydown', function (e) {
+                if (e.keyCode === 13) { // Enter key
+                    e.preventDefault();
+                    performGlobalSearch();
+                }
+            });
+
+            $('.btn-navbar').on('click', function() {
+                performGlobalSearch();
+            });
+
+            $('#global-search-input').on('keyup', function (e) {
+                if (e.keyCode === 13) return;
+
+                const query = $(this).val();
+                clearTimeout(searchTimeout);
+
+                if (query.length < 2) {
+                    $('#search-results-dropdown').hide().empty();
+                    return;
+                }
+
+                searchTimeout = setTimeout(function () {
+                    $.get('/GlobalSearch/Search', { query: query }, function (data) {
+                        let html = '';
+                        if (data.items.length > 0) {
+                            data.items.forEach(function (item) {
+                                html += `
+                                    <a href="${item.link}" class="dropdown-item py-2 border-bottom">
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-light rounded-circle p-2 me-3 text-primary" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                                                <i class="fas ${item.icon}"></i>
+                                            </div>
+                                            <div>
+                                                <p class="mb-0 fw-bold text-sm">${item.title}</p>
+                                                <small class="text-muted text-xs">${item.type}: ${item.subtitle}</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                `;
+                            });
+                            html += `<a href="/GlobalSearch/Index?query=${encodeURIComponent(query)}" class="dropdown-item dropdown-footer text-center py-2 text-primary fw-bold">عرض كافة النتائج <i class="fas fa-arrow-left ms-1"></i></a>`;
+                        } else {
+                            html = '<div class="dropdown-item text-center py-3 text-muted">لا توجد نتائج</div>';
+                        }
+                        $('#search-results-dropdown').html(html).show();
+                    });
+                }, 300);
+            });
+
+            // Hide search results when clicking outside
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#global-search-input, #search-results-dropdown').length) {
+                    $('#search-results-dropdown').hide();
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

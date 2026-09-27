@@ -1,0 +1,218 @@
+@using Microsoft.EntityFrameworkCore
+@inject IMS.Data.ApplicationDbContext DbContext
+@{
+    var storeSettings = await DbContext.StoreSettings.FirstOrDefaultAsync();
+    var storeName = storeSettings?.StoreName ?? "صيدلية أونلاين";
+    var ecomSettings = await DbContext.ECommerceSettings.FirstOrDefaultAsync();
+}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @storeName</title>
+    <meta name="description" content="@(ecomSettings?.BannerSubtitle ?? "تسوق أدويتك ومستلزماتك الطبية أونلاين")" />
+    <link rel="stylesheet" href="~/lib/fonts/tajawal/tajawal.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ecommerce.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <!-- Announcement Bar -->
+    @if (!string.IsNullOrEmpty(ecomSettings?.AnnouncementMessage))
+    {
+        <div class="ec-announcement-bar">
+            <div class="container">
+                <i class="fas fa-bullhorn me-2"></i> @ecomSettings.AnnouncementMessage
+            </div>
+        </div>
+    }
+
+    <!-- Header -->
+    <header class="ec-header" id="ec-header">
+        <div class="container">
+            <nav class="ec-nav">
+                <div class="ec-nav-left d-flex align-items-center gap-3">
+                    <button class="ec-mobile-menu-btn d-md-none" id="mobile-menu-btn" aria-label="القائمة">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-logo">
+                        <i class="fas fa-clinic-medical"></i>
+                        <span>@storeName</span>
+                    </a>
+                </div>
+
+                <div class="ec-nav-links d-none d-md-flex">
+                    <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-nav-link">
+                        <i class="fas fa-home"></i> الرئيسية
+                    </a>
+                    <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-nav-link">
+                        <i class="fas fa-pills"></i> المنتجات
+                    </a>
+                </div>
+
+                <div class="ec-nav-actions">
+                    <a asp-area="ECommerce" asp-controller="Cart" asp-action="Index" class="ec-cart-btn" id="cart-btn">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span class="ec-cart-badge" id="cart-badge">@(ViewBag.CartCount ?? 0)</span>
+                    </a>
+                    
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <div class="dropdown">
+                            <button class="ec-nav-btn user border-0 bg-transparent p-0" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg p-2 rounded-4 mt-2" aria-labelledby="userDropdown">
+                                @{
+                                    bool isStaffMember = User.IsInRole(IMS.Models.RoleNamesConstants.Admin) || 
+                                                        User.IsInRole(IMS.Models.RoleNamesConstants.Accountant) || 
+                                                        User.IsInRole(IMS.Models.RoleNamesConstants.WarehouseStaff) || 
+                                                        User.IsInRole(IMS.Models.RoleNamesConstants.Pharmacist) || 
+                                                        User.IsInRole(IMS.Models.RoleNamesConstants.Cashier) || 
+                                                        User.IsInRole(IMS.Models.RoleNamesConstants.DataEntry);
+                                }
+                                <li class="px-3 py-2 border-bottom mb-2 text-center d-md-none">
+                                    <small class="text-muted d-block">مرحباً بك</small>
+                                    <span class="fw-bold d-block text-truncate" style="max-width: 150px;">@User.GetFullName()</span>
+                                </li>
+                                <li>
+                                    @if (isStaffMember)
+                                    {
+                                        <a class="dropdown-item rounded-3 py-2 px-3 fw-bold" href="/Home/Index">
+                                            <i class="fas fa-th-large me-2 text-primary"></i> لوحة تحكم الإدارة
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a class="dropdown-item rounded-3 py-2 px-3 fw-bold" asp-area="ECommerce" asp-controller="ECommerceAccount" asp-action="Dashboard">
+                                            <i class="fas fa-th-large me-2 text-primary"></i> لوحة التحكم
+                                        </a>
+                                    }
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-3 py-2 px-3 fw-bold" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                        <i class="fas fa-user-edit me-2 text-success"></i> تعديل بياناتي
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Shop", new { area = "ECommerce" })" method="post">
+                                        <button type="submit" class="dropdown-item rounded-3 py-2 px-3 fw-bold text-danger">
+                                            <i class="fas fa-sign-out-alt me-2"></i> تسجيل الخروج
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" class="ec-nav-btn user" title="تسجيل الدخول">
+                            <i class="fas fa-sign-in-alt"></i>
+                        </a>
+                    }
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="ec-main">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="ec-footer">
+        <div class="ec-footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,58.7C96,53,192,43,288,48C384,53,480,75,576,80C672,85,768,75,864,64C960,53,1056,43,1152,42.7C1248,43,1344,53,1392,58.7L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z" fill="currentColor"></path>
+            </svg>
+        </div>
+        <div class="ec-footer-content">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-4">
+                        <div class="ec-footer-brand">
+                            <i class="fas fa-clinic-medical"></i>
+                            <h5>@storeName</h5>
+                        </div>
+                        <p class="ec-footer-desc">@(ecomSettings?.BannerSubtitle ?? "نوفر لك أدويتك ومستلزماتك الطبية بأعلى جودة وأفضل سعر")</p>
+                    </div>
+                    <div class="col-lg-4">
+                        <h6 class="ec-footer-title">روابط سريعة</h6>
+                        <ul class="ec-footer-links">
+                            <li><a asp-area="ECommerce" asp-controller="Shop" asp-action="Index"><i class="fas fa-chevron-left me-2"></i>تصفح المنتجات</a></li>
+                            <li><a asp-area="ECommerce" asp-controller="Cart" asp-action="Index"><i class="fas fa-chevron-left me-2"></i>سلة التسوق</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-4">
+                        <h6 class="ec-footer-title">تواصل معنا</h6>
+                        <ul class="ec-footer-links">
+                            @if (!string.IsNullOrEmpty(storeSettings?.PhoneNumber))
+                            {
+                                <li><a href="tel:@storeSettings.PhoneNumber"><i class="fas fa-phone me-2"></i>@storeSettings.PhoneNumber</a></li>
+                            }
+                            @if (!string.IsNullOrEmpty(storeSettings?.Email))
+                            {
+                                <li><a href="mailto:@storeSettings.Email"><i class="fas fa-envelope me-2"></i>@storeSettings.Email</a></li>
+                            }
+                            @if (!string.IsNullOrEmpty(storeSettings?.Address))
+                            {
+                                <li><i class="fas fa-map-marker-alt me-2"></i>@storeSettings.Address</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="ec-footer-bottom">
+                    <p>&copy; @IMS.AppClock.UtcNow.Year @storeName. جميع الحقوق محفوظة.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="ec-mobile-nav" id="mobile-nav">
+        <div class="ec-mobile-nav-header">
+            <div class="ec-logo">
+                <i class="fas fa-clinic-medical"></i>
+                <span>@storeName</span>
+            </div>
+            <button class="ec-close-btn" id="close-mobile-nav">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="ec-mobile-nav-links">
+            <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-mobile-link">
+                <i class="fas fa-home"></i> الرئيسية
+            </a>
+            <a asp-area="ECommerce" asp-controller="Shop" asp-action="Index" class="ec-mobile-link">
+                <i class="fas fa-pills"></i> المنتجات
+            </a>
+            <a asp-area="ECommerce" asp-controller="Cart" asp-action="Index" class="ec-mobile-link">
+                <i class="fas fa-shopping-cart"></i> سلة التسوق
+            </a>
+            @if (User.Identity?.IsAuthenticated == true && User.IsInRole(IMS.Models.RoleNamesConstants.Admin))
+            {
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="ec-mobile-link admin">
+                    <i class="fas fa-tachometer-alt"></i> لوحة التحكم
+                </a>
+            }
+        </div>
+    </div>
+    <div class="ec-mobile-overlay" id="mobile-overlay"></div>
+
+    <!-- Toast Notification -->
+    <div class="ec-toast" id="ec-toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="ec-toast-message">تمت الإضافة بنجاح</span>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/ecommerce.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

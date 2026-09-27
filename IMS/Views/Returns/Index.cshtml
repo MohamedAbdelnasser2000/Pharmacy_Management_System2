@@ -1,0 +1,258 @@
+@model IEnumerable<IMS.Models.Return>
+@{
+    ViewData["Title"] = "مرتجعات الأدوية - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-undo-alt text-danger"></i> مرتجعات الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">المرتجعات</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-danger text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-exchange-alt"></i> قائمة مرتجعات الأدوية</h5>
+                <a asp-action="Create" class="btn btn-light">
+                    <i class="fas fa-plus-circle me-1"></i> إضافة مرتجع دواء
+                </a>
+            </div>
+            <div class="card-body">
+                <!-- Search Box -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <form asp-action="Index" method="get" class="d-flex">
+                            <input type="hidden" name="status" value="@ViewBag.SelectedStatus" />
+                            <div class="input-group">
+                                <input type="text" 
+                                       name="searchTerm" 
+                                       class="form-control" 
+                                       placeholder="ابحث برقم المرتجع، رقم الطلب، اسم العميل، رقم الهاتف..." 
+                                       value="@ViewBag.SearchTerm"
+                                       autocomplete="off">
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                                @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                                {
+                                    <a asp-action="Index" asp-route-status="@ViewBag.SelectedStatus" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </a>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                    @if (!string.IsNullOrEmpty(ViewBag.SearchTerm))
+                    {
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-0 py-2">
+                                <i class="fas fa-info-circle"></i> 
+                                نتائج البحث عن: <strong>@ViewBag.SearchTerm</strong>
+                                (@Model.Count() نتيجة)
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Filter by status -->
+                <div class="mb-3">
+                    <div class="btn-group" role="group">
+                        <a asp-action="Index" asp-route-searchTerm="@ViewBag.SearchTerm" class="btn btn-sm @(string.IsNullOrEmpty(ViewBag.SelectedStatus) ? "btn-primary" : "btn-outline-primary")">
+                            <i class="fas fa-list me-1"></i>الكل
+                        </a>
+                        <a asp-action="Index" asp-route-status="معلق" asp-route-searchTerm="@ViewBag.SearchTerm" class="btn btn-sm @(ViewBag.SelectedStatus == "معلق" ? "btn-warning" : "btn-outline-warning")">
+                            <i class="fas fa-clock me-1"></i>معلق
+                        </a>
+                        <a asp-action="Index" asp-route-status="مقبول" asp-route-searchTerm="@ViewBag.SearchTerm" class="btn btn-sm @(ViewBag.SelectedStatus == "مقبول" ? "btn-success" : "btn-outline-success")">
+                            <i class="fas fa-check me-1"></i>مقبول
+                        </a>
+                        <a asp-action="Index" asp-route-status="مرفوض" asp-route-searchTerm="@ViewBag.SearchTerm" class="btn btn-sm @(ViewBag.SelectedStatus == "مرفوض" ? "btn-danger" : "btn-outline-danger")">
+                            <i class="fas fa-times me-1"></i>مرفوض
+                        </a>
+                        <a asp-action="Index" asp-route-status="مكتمل" asp-route-searchTerm="@ViewBag.SearchTerm" class="btn btn-sm @(ViewBag.SelectedStatus == "مكتمل" ? "btn-info" : "btn-outline-info")">
+                            <i class="fas fa-check-double me-1"></i>مكتمل
+                        </a>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th class="text-center" style="width: 80px;">
+                                    <i class="fas fa-hashtag me-2"></i>رقم المرتجع
+                                </th>
+                                <th style="width: 100px;">
+                                    <i class="fas fa-receipt me-2"></i>رقم الطلب
+                                </th>
+                                <th style="width: 180px;">
+                                    <i class="fas fa-user me-2"></i>العميل
+                                </th>
+                                <th style="width: 160px;">
+                                    <i class="fas fa-calendar me-2"></i>التاريخ
+                                </th>
+                                <th style="width: 120px;">
+                                    <i class="fas fa-tag me-2"></i>النوع
+                                </th>
+                                <th class="text-center" style="width: 130px;">
+                                    <i class="fas fa-money-bill-wave me-2"></i>المبلغ المسترجع
+                                </th>
+                                <th class="text-center" style="width: 120px;">
+                                    <i class="fas fa-info-circle me-2"></i>الحالة
+                                </th>
+                                <th class="text-center" style="width: 200px;">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            <span class="badge bg-dark fs-6">#@item.Id</span>
+                                        </td>
+                                        <td>
+                                            <a asp-controller="Orders" asp-action="Details" asp-route-id="@item.OrderId" 
+                                               class="text-decoration-none">
+                                                <i class="fas fa-receipt text-info me-1"></i>
+                                                <strong>#@item.OrderId</strong>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-user-circle text-primary me-2"></i>
+                                            <strong class="text-primary">@item.Customer?.Name</strong>
+                                        </td>
+                                        <td>
+                                            <i class="fas fa-clock text-info me-1"></i>
+                                            <small class="text-muted">@item.ReturnDate.ToString("yyyy/MM/dd")</small>
+                                            <br />
+                                            <small class="text-muted">@item.ReturnDate.ToString("HH:mm")</small>
+                                        </td>
+                                        <td>
+                                            @if (item.ReturnType == "استرجاع كامل")
+                                            {
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-undo-alt me-1"></i>@item.ReturnType
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-undo me-1"></i>@item.ReturnType
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <strong class="text-danger">@item.TotalRefundAmount.ToString("N2") ج.م</strong>
+                                            <br />
+                                            <small class="text-success">مسترد: @item.RefundedAmount.ToString("N2") ج.م</small>
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.Status == "معلق")
+                                            {
+                                                <span class="badge bg-warning text-dark fs-6">
+                                                    <i class="fas fa-clock me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "مقبول")
+                                            {
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-check me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "مرفوض")
+                                            {
+                                                <span class="badge bg-danger fs-6">
+                                                    <i class="fas fa-times me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else if (item.Status == "مكتمل")
+                                            {
+                                                <span class="badge bg-info fs-6">
+                                                    <i class="fas fa-check-double me-1"></i>@item.Status
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary fs-6">@item.Status</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group" role="group">
+                                                <a asp-action="Details" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-info" 
+                                                   title="التفاصيل">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a asp-action="Print" asp-route-id="@item.Id" 
+                                                   class="btn btn-sm btn-secondary" 
+                                                   title="طباعة"
+                                                   target="_blank">
+                                                    <i class="fas fa-print"></i>
+                                                </a>
+                                                @if (item.Status == "معلق")
+                                                {
+                                                    <a asp-action="Edit" asp-route-id="@item.Id" 
+                                                       class="btn btn-sm btn-primary" 
+                                                       title="تعديل">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                }
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <a asp-action="Delete" asp-route-id="@item.Id" 
+                                                       class="btn btn-sm btn-danger" 
+                                                       title="حذف"
+                                                       onclick="return confirm('هل أنت متأكد من حذف هذا المرتجع؟');">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="fas fa-undo-alt fa-3x text-muted mb-3"></i>
+                                        <h5 class="text-muted">لا توجد مرتجعات</h5>
+                                        <p class="text-muted">قم بإضافة مرتجع جديد للبدء</p>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

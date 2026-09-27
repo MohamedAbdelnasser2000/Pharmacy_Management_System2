@@ -1,0 +1,206 @@
+@model IMS.Models.StoreSettings
+@{
+    ViewData["Title"] = "تعديل إعدادات المخزن";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">تعديل إعدادات المخزن</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">إعدادات المخزن</a></li>
+                    <li class="breadcrumb-item active">تعديل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-edit me-2"></i>تعديل معلومات المخزن
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                            <input type="hidden" asp-for="Id" />
+                            
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>ملاحظة:</strong> هذه المعلومات ستظهر في جميع الفواتير المطبوعة.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="StoreName" class="form-label">
+                                        <i class="fas fa-store me-1"></i>اسم المخزن <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="StoreName" class="form-control form-control-lg" placeholder="أدخل اسم المخزن" />
+                                    <span asp-validation-for="StoreName" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="PhoneNumber" class="form-label">
+                                        <i class="fas fa-phone me-1"></i>رقم التليفون
+                                    </label>
+                                    <input asp-for="PhoneNumber" class="form-control" placeholder="01xxxxxxxxx" />
+                                    <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="PhoneNumber2" class="form-label">
+                                        <i class="fas fa-phone me-1"></i>رقم تليفون إضافي
+                                    </label>
+                                    <input asp-for="PhoneNumber2" class="form-control" placeholder="01xxxxxxxxx" />
+                                    <span asp-validation-for="PhoneNumber2" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Email" class="form-label">
+                                        <i class="fas fa-envelope me-1"></i>البريد الإلكتروني
+                                    </label>
+                                    <input asp-for="Email" class="form-control" type="email" placeholder="example@domain.com" />
+                                    <span asp-validation-for="Email" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="Website" class="form-label">
+                                        <i class="fas fa-globe me-1"></i>الموقع الإلكتروني
+                                    </label>
+                                    <input asp-for="Website" class="form-control" placeholder="www.example.com" />
+                                    <span asp-validation-for="Website" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label asp-for="Address" class="form-label">
+                                        <i class="fas fa-map-marker-alt me-1"></i>العنوان
+                                    </label>
+                                    <textarea asp-for="Address" class="form-control" rows="2" placeholder="أدخل عنوان المخزن"></textarea>
+                                    <span asp-validation-for="Address" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h6 class="text-muted mb-3">
+                                <i class="fas fa-file-invoice me-2"></i>معلومات قانونية (اختياري)
+                            </h6>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="TaxNumber" class="form-label">
+                                        <i class="fas fa-file-invoice me-1"></i>الرقم الضريبي
+                                    </label>
+                                    <input asp-for="TaxNumber" class="form-control" placeholder="xxx-xxx-xxx" />
+                                    <span asp-validation-for="TaxNumber" class="text-danger"></span>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label asp-for="CommercialRegister" class="form-label">
+                                        <i class="fas fa-certificate me-1"></i>السجل التجاري
+                                    </label>
+                                    <input asp-for="CommercialRegister" class="form-control" placeholder="xxxxxxxx" />
+                                    <span asp-validation-for="CommercialRegister" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-image me-1"></i>شعار المخزن
+                                    </label>
+                                    
+                                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                                    {
+                                        <div class="mb-3">
+                                            <div class="card" style="max-width: 300px;">
+                                                <img src="@Model.LogoUrl" class="card-img-top" alt="شعار المخزن" style="max-height: 200px; object-fit: contain; padding: 10px;" />
+                                                <div class="card-body text-center">
+                                                    <small class="text-muted">الشعار الحالي</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    
+                                    <div class="input-group">
+                                        <input type="file" 
+                                               class="form-control" 
+                                               id="logoFile" 
+                                               name="logoFile" 
+                                               accept="image/*"
+                                               onchange="previewLogo(this)" />
+                                        <label class="input-group-text" for="logoFile">
+                                            <i class="fas fa-upload"></i>
+                                        </label>
+                                    </div>
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        يمكنك رفع صورة بصيغة JPG, PNG, GIF أو SVG (الحد الأقصى: 5 ميجابايت)
+                                    </small>
+                                    
+                                    <!-- معاينة الصورة الجديدة -->
+                                    <div id="logoPreview" class="mt-3" style="display: none;">
+                                        <div class="card" style="max-width: 300px;">
+                                            <img id="previewImage" class="card-img-top" alt="معاينة الشعار" style="max-height: 200px; object-fit: contain; padding: 10px;" />
+                                            <div class="card-body text-center">
+                                                <small class="text-success">
+                                                    <i class="fas fa-check-circle me-1"></i>معاينة الشعار الجديد
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <input type="hidden" asp-for="LogoUrl" />
+                                </div>
+                            </div>
+                            
+                            <script>
+                                function previewLogo(input) {
+                                    if (input.files && input.files[0]) {
+                                        var reader = new FileReader();
+                                        
+                                        reader.onload = function(e) {
+                                            document.getElementById('previewImage').src = e.target.result;
+                                            document.getElementById('logoPreview').style.display = 'block';
+                                        }
+                                        
+                                        reader.readAsDataURL(input.files[0]);
+                                    }
+                                }
+                            </script>
+
+                            <hr />
+
+                            <div class="d-flex justify-content-between">
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i>إلغاء
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-1"></i>حفظ التغييرات
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

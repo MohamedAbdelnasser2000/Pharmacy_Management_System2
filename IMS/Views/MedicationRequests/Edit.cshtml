@@ -1,0 +1,242 @@
+@model IMS.Models.MedicationRequest
+
+@{
+    ViewData["Title"] = "تعديل طلب الدواء";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-edit"></i> تعديل طلب الدواء</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">طلبات الأدوية</a></li>
+                    <li class="breadcrumb-item active">تعديل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">تعديل معلومات الطلب</h3>
+                    </div>
+
+                    <form asp-action="Edit" method="post">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                            <input type="hidden" asp-for="Id" />
+                            <input type="hidden" asp-for="RequestDate" />
+                            <input type="hidden" asp-for="CreatedBy" />
+
+                            <h5 class="mb-3"><i class="fas fa-pills"></i> معلومات الدواء</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="MedicationName" class="required"></label>
+                                        <input asp-for="MedicationName" class="form-control" />
+                                        <span asp-validation-for="MedicationName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="ScientificName"></label>
+                                        <input asp-for="ScientificName" class="form-control" />
+                                        <span asp-validation-for="ScientificName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Strength"></label>
+                                        <input asp-for="Strength" class="form-control" />
+                                        <span asp-validation-for="Strength" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="DosageForm"></label>
+                                        <input asp-for="DosageForm" class="form-control" />
+                                        <span asp-validation-for="DosageForm" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="RequestedQuantity"></label>
+                                        <input asp-for="RequestedQuantity" type="number" class="form-control" />
+                                        <span asp-validation-for="RequestedQuantity" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5 class="mb-3"><i class="fas fa-user"></i> معلومات المريض</h5>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="PatientName"></label>
+                                        <input asp-for="PatientName" class="form-control" />
+                                        <span asp-validation-for="PatientName" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="PatientPhone"></label>
+                                        <input asp-for="PatientPhone" class="form-control" />
+                                        <span asp-validation-for="PatientPhone" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-checkbox">
+                                    <input asp-for="PatientNotified" class="custom-control-input" id="patientNotified" />
+                                    <label class="custom-control-label" for="patientNotified">
+                                        تم إبلاغ المريض بتوفر الدواء
+                                    </label>
+                                </div>
+                            </div>
+
+                            <hr />
+                            <h5 class="mb-3"><i class="fas fa-tasks"></i> حالة الطلب</h5>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Status" class="required"></label>
+                                        <select asp-for="Status" class="form-control" id="statusSelect">
+                                            <option value="0">قيد الانتظار</option>
+                                            <option value="1">تم الطلب من المورد</option>
+                                            <option value="2">تم الاستلام</option>
+                                            <option value="3">تم التسليم للمريض</option>
+                                            <option value="4">ملغي</option>
+                                        </select>
+                                        <span asp-validation-for="Status" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Priority" class="required"></label>
+                                        <select asp-for="Priority" class="form-control">
+                                            <option value="0">عادي</option>
+                                            <option value="1">عاجل</option>
+                                            <option value="2">طارئ</option>
+                                        </select>
+                                        <span asp-validation-for="Priority" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>تاريخ الطلب</label>
+                                        <input type="text" class="form-control" value="@Model.RequestDate.ToString("dd/MM/yyyy")" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-4" id="orderedDateGroup" style="display: none;">
+                                    <div class="form-group">
+                                        <label asp-for="OrderedDate"></label>
+                                        <input asp-for="OrderedDate" type="date" class="form-control" />
+                                        <span asp-validation-for="OrderedDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4" id="receivedDateGroup" style="display: none;">
+                                    <div class="form-group">
+                                        <label asp-for="ReceivedDate"></label>
+                                        <input asp-for="ReceivedDate" type="date" class="form-control" />
+                                        <span asp-validation-for="ReceivedDate" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="BranchId"></label>
+                                        <select asp-for="BranchId" class="form-control" asp-items="ViewBag.BranchId">
+                                            <option value="">-- اختر الفرع --</option>
+                                        </select>
+                                        <span asp-validation-for="BranchId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Notes"></label>
+                                <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Notes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> حفظ التعديلات
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Show/hide date fields based on status
+            function toggleDateFields() {
+                var status = parseInt($('#statusSelect').val());
+                
+                // Show ordered date if status is Ordered or higher
+                if (status >= 1) {
+                    $('#orderedDateGroup').show();
+                } else {
+                    $('#orderedDateGroup').hide();
+                }
+                
+                // Show received date if status is Received or higher
+                if (status >= 2) {
+                    $('#receivedDateGroup').show();
+                } else {
+                    $('#receivedDateGroup').hide();
+                }
+            }
+            
+            // Initial check
+            toggleDateFields();
+            
+            // Check on status change
+            $('#statusSelect').change(function() {
+                toggleDateFields();
+            });
+            
+            // Add required indicator styling
+            $('.required').append(' <span class="text-danger">*</span>');
+        });
+    </script>
+}
+
+<style>
+    .required::after {
+        content: " *";
+        color: red;
+    }
+</style>

@@ -1,0 +1,118 @@
+@model IMS.Models.DrugInteraction
+
+@{
+    ViewData["Title"] = "تعديل التفاعل الدوائي";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-edit text-warning"></i> تعديل التفاعل الدوائي</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">التفاعلات الدوائية</a></li>
+                    <li class="breadcrumb-item active">تعديل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-10 offset-md-1">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-edit"></i> تعديل التفاعل</h3>
+                    </div>
+                    <form asp-action="Edit" method="post">
+                        <div class="card-body">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                            <input type="hidden" asp-for="Id" />
+                            <input type="hidden" asp-for="CreatedDate" />
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Product1Id" class="control-label">
+                                            <i class="fas fa-pills"></i> الدواء الأول <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="Product1Id" class="form-control" asp-items="ViewBag.Product1Id">
+                                            <option value="">-- اختر الدواء الأول --</option>
+                                        </select>
+                                        <span asp-validation-for="Product1Id" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label asp-for="Product2Id" class="control-label">
+                                            <i class="fas fa-pills"></i> الدواء الثاني <span class="text-danger">*</span>
+                                        </label>
+                                        <select asp-for="Product2Id" class="form-control" asp-items="ViewBag.Product2Id">
+                                            <option value="">-- اختر الدواء الثاني --</option>
+                                        </select>
+                                        <span asp-validation-for="Product2Id" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="SeverityLevel" class="control-label">
+                                    <i class="fas fa-exclamation-triangle"></i> مستوى الخطورة <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="SeverityLevel" class="form-control">
+                                    <option value="">-- اختر مستوى الخطورة --</option>
+                                    <option value="خطير">خطير - يجب تجنبه تماماً</option>
+                                    <option value="متوسط">متوسط - يحتاج لمراقبة دقيقة</option>
+                                    <option value="بسيط">بسيط - يمكن استخدامه بحذر</option>
+                                </select>
+                                <span asp-validation-for="SeverityLevel" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="InteractionDescription" class="control-label">
+                                    <i class="fas fa-file-medical"></i> وصف التفاعل <span class="text-danger">*</span>
+                                </label>
+                                <textarea asp-for="InteractionDescription" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="InteractionDescription" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Recommendations" class="control-label">
+                                    <i class="fas fa-lightbulb"></i> التوصيات والإرشادات
+                                </label>
+                                <textarea asp-for="Recommendations" class="form-control" rows="3"></textarea>
+                                <span asp-validation-for="Recommendations" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="custom-control custom-switch">
+                                    <input asp-for="IsActive" class="custom-control-input" type="checkbox" id="isActiveSwitch" />
+                                    <label class="custom-control-label" for="isActiveSwitch">
+                                        <i class="fas fa-toggle-on"></i> نشط (سيظهر في التحذيرات)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-save"></i> حفظ التعديلات
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right"></i> رجوع
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

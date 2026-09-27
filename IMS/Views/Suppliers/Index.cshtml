@@ -1,0 +1,91 @@
+@model IEnumerable<IMS.Models.Supplier>
+@{
+    ViewData["Title"] = "موردي الأدوية - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-truck-medical text-primary"></i> موردو الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">الموردون</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0"><i class="fas fa-industry"></i> قائمة موردي الأدوية</h5>
+                <a asp-action="Create" class="btn btn-light">
+                    <i class="fas fa-plus-circle me-1"></i> إضافة مورد أدوية
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <form asp-action="Index" method="get">
+                            <div class="input-group">
+                                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" class="form-control" placeholder="ابحث عن مورد (الاسم، الهاتف، البريد)..." />
+                                <button class="btn btn-primary" type="submit">
+                                    <i class="fas fa-search"></i> بحث
+                                </button>
+                                @if (!string.IsNullOrEmpty(ViewData["CurrentFilter"]?.ToString()))
+                                {
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> إلغاء
+                                    </a>
+                                }
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>اسم المورد</th>
+                                <th>الهاتف</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>عدد المنتجات</th>
+                                <th>أوامر الشراء</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var supplier in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold">@supplier.Name</td>
+                                    <td>@supplier.PhoneNumber</td>
+                                    <td>@supplier.Email</td>
+                                    <td><span class="badge badge-low-stock">@supplier.Products?.Count()</span></td>
+                                    <td>@supplier.PurchaseOrders?.Count()</td>
+                                    <td class="text-end">
+                                        <a asp-action="Details" asp-route-id="@supplier.Id" class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+                                        <a asp-action="Edit" asp-route-id="@supplier.Id" class="btn btn-sm btn-outline-primary mx-1"><i class="fas fa-edit"></i></a>
+                                        <a asp-action="Delete" asp-route-id="@supplier.Id" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

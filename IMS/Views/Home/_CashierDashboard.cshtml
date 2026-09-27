@@ -1,0 +1,87 @@
+@model DashboardViewModel
+
+<div class="content-header mb-4">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">لوحة الكاشير</h2>
+                <p class="text-muted mb-0">مرحباً بك، ابدأ عملية بيع جديدة وتابع مبيعاتك اليوم</p>
+            </div>
+            <div class="glass-panel px-3 py-2 text-primary fw-semibold small d-none d-md-block">
+                <i class="fas fa-calendar-day me-2"></i> @IMS.AppClock.UtcNow.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid mb-5">
+    <div class="row g-4">
+        <div class="col-md-12">
+            <a asp-controller="Orders" asp-action="Create" class="info-card d-flex align-items-center justify-content-center text-decoration-none shadow-sm p-5 border-2 border-primary" style="background: #e6f4ea; border-style: dashed !important;">
+                <div class="text-center">
+                    <div class="mx-auto mb-3" style="width: 80px; height: 80px; background: var(--ims-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 35px;">
+                        <i class="fas fa-cash-register"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-1">فاتورة بيع جديدة</h3>
+                    <p class="text-muted mb-0">اضغط هنا لفتح شاشة الكاشير والبدء في البيع</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="info-card h-100 text-center py-4 bg-primary text-white">
+                    <h6 class="opacity-75 mb-2">مبيعاتك اليوم</h6>
+                    <h2 class="fw-bold mb-0">@Model.SummaryCards.FirstOrDefault(c => c.Title == "مبيعات اليوم")?.Value</h2>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="info-card h-100 text-center py-4 bg-success text-white">
+                    <h6 class="opacity-75 mb-2">إجمالي الطلبات اليوم</h6>
+                    <h2 class="fw-bold mb-0">@Model.SummaryCards.FirstOrDefault(c => c.Title == "طلبات اليوم")?.Value</h2>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="info-card h-100 text-center py-4 bg-info text-white">
+                    <h6 class="opacity-75 mb-2">خدمة العملاء</h6>
+                    <a asp-controller="Customers" asp-action="Create" class="btn btn-light rounded-pill fw-bold mt-2">
+                        <i class="fas fa-user-plus me-1"></i> إضافة عميل
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <div class="info-card">
+                    <h5 class="fw-bold mb-4">آحدث 5 عمليات بيع قمت بها</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th>رقم العملية</th>
+                                    <th>الوقت</th>
+                                    <th>المبلغ</th>
+                                    <th>الحالة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var order in Model.RecentOrders.Take(5))
+                                {
+                                    <tr>
+                                        <td class="fw-bold">#@order.Id</td>
+                                        <td>@order.OrderDate.ToString("t")</td>
+                                        <td class="text-success fw-bold">@order.TotalAmount.ToString("N0") ج.م</td>
+                                        <td><span class="badge bg-success">@order.Status</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

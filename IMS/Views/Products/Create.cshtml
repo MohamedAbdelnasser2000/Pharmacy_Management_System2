@@ -1,0 +1,257 @@
+@model IMS.Models.Product
+@{
+    ViewData["Title"] = "إضافة دواء جديد - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-plus-circle text-success"></i> إضافة دواء جديد</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">الأدوية</a></li>
+                    <li class="breadcrumb-item active">إضافة</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["InfoMessage"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-info-circle"></i> @TempData["InfoMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-success text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-pills"></i> بيانات الدواء</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    @await Html.PartialAsync("_ProductForm", Model)
+                    
+                    <div class="form-group mt-3 text-end">
+                        <a asp-action="Index" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> إلغاء
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-save"></i> حفظ الدواء
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Add Category Modal (Outside form to prevent form submission conflict) -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">إضافة فئة جديدة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addCategoryForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="categoryName" class="form-label">اسم الفئة <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="categoryName" name="Name" required maxlength="100">
+                        <div class="invalid-feedback" id="categoryNameError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryDescription" class="form-label">الوصف</label>
+                        <textarea class="form-control" id="categoryDescription" name="Description" rows="3" maxlength="500"></textarea>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="categoryIsActive" name="IsActive" checked>
+                        <label class="form-check-label" for="categoryIsActive">نشط</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/lib/toastr/toastr.min.js"></script>
+    <link rel="stylesheet" href="~/lib/toastr/toastr.min.css">
+    
+    <script>
+    // Category Quick Add functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        function initializeCategoryModal() {
+            if (typeof $ === 'undefined') {
+                console.error('jQuery is not loaded');
+                setTimeout(initializeCategoryModal, 100);
+                return;
+            }
+            
+            if (!document.getElementById('addCategoryForm')) {
+                return;
+            }
+        
+        $(document).ready(function() {
+            // Handle add category form submission
+            $('#addCategoryForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form data manually
+                var formData = {
+                    Name: $('#categoryName').val(),
+                    Description: $('#categoryDescription').val(),
+                    IsActive: $('#categoryIsActive').is(':checked')
+                };
+                
+                // Add CSRF token
+                var token = $('input[name="__RequestVerificationToken"]', this).val();
+                if (token) {
+                    formData.__RequestVerificationToken = token;
+                }
+                
+                console.log('Form data to send:', formData);
+                
+                // Reset previous errors
+                $('.form-control').removeClass('is-invalid');
+                $('.invalid-feedback').text('');
+                
+                // Client-side validation
+                if (!formData.Name || formData.Name.trim() === '') {
+                    $('#categoryName').addClass('is-invalid');
+                    $('#categoryNameError').text('اسم الفئة مطلوب');
+                    return false;
+                }
+                
+                // Show loading state
+                var $saveBtn = $('#saveCategoryBtn');
+                var originalText = $saveBtn.html();
+                $saveBtn.html('<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...').prop('disabled', true);
+                
+                console.log('Sending AJAX request with data:', formData);
+                
+                $.ajax({
+                    url: '@Url.Action("CreateQuick", "Categories")',
+                    type: 'POST',
+                    data: formData,
+                    beforeSend: function(xhr) {
+                        console.log('Before send - URL:', '@Url.Action("CreateQuick", "Categories")');
+                    },
+                    success: function(response) {
+                        console.log('Success Response:', response);
+                        if (response.success) {
+                            console.log('Category saved successfully:', response.category);
+                            
+                            // Add new option to select
+                            var newOption = new Option(response.category.name, response.category.id, true, true);
+                            $('#categorySelect').append(newOption).trigger('change');
+                            
+                            // Close modal using Bootstrap 5 syntax
+                            var modalElement = document.getElementById('addCategoryModal');
+                            var modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) {
+                                modal.hide();
+                            } else {
+                                $('#addCategoryModal').modal('hide');
+                            }
+                            
+                            // Reset form
+                            $('#addCategoryForm')[0].reset();
+                            $('#categoryIsActive').prop('checked', true);
+                            
+                            // Show success message
+                            if (typeof toastr !== 'undefined') {
+                                toastr.success('تم إضافة الفئة بنجاح: ' + response.category.name);
+                            } else {
+                                alert('تم إضافة الفئة بنجاح: ' + response.category.name);
+                            }
+                        } else {
+                            // Handle validation errors
+                            if (response.errors) {
+                                for (var field in response.errors) {
+                                    var $field = $('#category' + field);
+                                    if ($field.length) {
+                                        $field.addClass('is-invalid');
+                                        $('#category' + field + 'Error').text(response.errors[field][0]);
+                                    }
+                                }
+                            }
+                            if (response.message) {
+                                if (typeof toastr !== 'undefined') {
+                                    toastr.error(response.message);
+                                } else {
+                                    alert(response.message);
+                                }
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('AJAX Error Details:');
+                        console.error('Status:', status);
+                        console.error('Error:', error);
+                        console.error('Response Text:', xhr.responseText);
+                        console.error('Status Code:', xhr.status);
+                        
+                        var errorMessage = 'حدث خطأ أثناء إضافة الفئة';
+                        
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            if (xhr.status === 404) {
+                                errorMessage = 'لم يتم العثور على الصفحة المطلوبة';
+                            } else if (xhr.status === 500) {
+                                errorMessage = 'خطأ في الخادم';
+                            } else if (xhr.status === 403) {
+                                errorMessage = 'غير مسموح بالوصول';
+                            }
+                        }
+                        
+                        if (typeof toastr !== 'undefined') {
+                            toastr.error(errorMessage);
+                        } else {
+                            alert(errorMessage);
+                        }
+                    },
+                    complete: function() {
+                        // Restore button state
+                        $saveBtn.html(originalText).prop('disabled', false);
+                    }
+                });
+            });
+            
+            // Reset form when modal is closed (Bootstrap 5 event)
+            var modalElement = document.getElementById('addCategoryModal');
+            if (modalElement) {
+                modalElement.addEventListener('hidden.bs.modal', function() {
+                    console.log('Modal closed, resetting form');
+                    $('#addCategoryForm')[0].reset();
+                    $('#categoryIsActive').prop('checked', true);
+                    $('.form-control').removeClass('is-invalid');
+                    $('.invalid-feedback').text('');
+                });
+            }
+        });
+        }
+        
+        initializeCategoryModal();
+    });
+    </script>
+}

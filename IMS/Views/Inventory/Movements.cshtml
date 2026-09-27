@@ -1,0 +1,87 @@
+@model IEnumerable<IMS.Models.StockMovement>
+@{
+    ViewData["Title"] = "حركة المخزون";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">حركة المخزون</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">حركة المخزون</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row mb-3">
+            <div class="col-md-12">
+                <a asp-action="AddMovement" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> إضافة حركة
+                </a>
+                <a asp-action="Transfer" class="btn btn-info">
+                    <i class="fas fa-exchange-alt"></i> تحويل بين المستودعات
+                </a>
+                <a asp-action="Report" class="btn btn-success">
+                    <i class="fas fa-chart-bar"></i> تقرير المخزون
+                </a>
+                <a asp-action="LowStock" class="btn btn-warning">
+                    <i class="fas fa-exclamation-triangle"></i> تنبيهات المخزون المنخفض
+                </a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">سجل حركة المخزون</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>المنتج</th>
+                                <th>المستودع</th>
+                                <th>نوع الحركة</th>
+                                <th>الكمية</th>
+                                <th>السبب</th>
+                                <th>رقم المرجع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.MovementDate.ToString("yyyy/MM/dd HH:mm")</td>
+                                    <td>@item.Product?.Name</td>
+                                    <td>@item.Warehouse?.Name</td>
+                                    <td>
+                                        @if (item.MovementType == "إدخال" || item.MovementType == "In")
+                                        {
+                                            <span class="badge bg-success">إدخال</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger">إخراج</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold">@item.Quantity</td>
+                                    <td>@item.Reason</td>
+                                    <td><small class="text-muted">@item.ReferenceNumber</small></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

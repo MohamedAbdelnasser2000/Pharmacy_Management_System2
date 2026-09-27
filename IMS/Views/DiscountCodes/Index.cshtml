@@ -1,0 +1,101 @@
+@model IEnumerable<IMS.Models.DiscountCode>
+
+@{
+    ViewData["Title"] = "إدارة أكواد الخصم";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-tags text-primary"></i> إدارة أكواد الخصم</h1>
+            </div>
+            <div class="col-sm-6 text-start">
+                <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
+                    <i class="fas fa-plus-circle me-1"></i> إضافة كود جديد
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light text-dark">
+                            <tr>
+                                <th>الكود</th>
+                                <th>نوع الخصم</th>
+                                <th>القيمة</th>
+                                <th>تاريخ الصلاحية</th>
+                                <th>الاستخدام</th>
+                                <th>الحالة</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-light text-dark border p-2">@item.Code</span></td>
+                                    <td>
+                                        @(item.Percentage.HasValue ? "نسبة مئوية" : "مبلغ ثابت")
+                                    </td>
+                                    <td>
+                                        @if (item.Percentage.HasValue)
+                                        {
+                                            <span class="text-info font-weight-bold">@item.Percentage%</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-success font-weight-bold">@item.FixedAmount?.ToString("N2") ج.م</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="small">
+                                            من: @item.StartDate.ToShortDateString()<br />
+                                            إلى: @item.EndDate.ToShortDateString()
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="progress progress-sm" style="width: 100px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" 
+                                                 style="width: @(item.UsageLimit > 0 ? (item.CurrentUsage * 100 / item.UsageLimit) : 0)%;"></div>
+                                        </div>
+                                        <small class="text-muted">@item.CurrentUsage / @item.UsageLimit</small>
+                                    </td>
+                                    <td>
+                                        @if (item.IsActive && item.EndDate >= DateTime.Now)
+                                        {
+                                            <span class="badge bg-success rounded-pill">نشط</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-danger rounded-pill">منتهي / غير نشط</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group shadow-sm border rounded-pill overflow-hidden">
+                                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-white text-warning px-3 border-0" title="تعديل">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form asp-action="Delete" asp-route-id="@item.Id" method="post" onsubmit="return confirm('هل أنت متأكد من الحذف؟')" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-white text-danger px-3 border-0" title="حذف">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

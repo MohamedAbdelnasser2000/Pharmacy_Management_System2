@@ -1,0 +1,136 @@
+@model IMS.Models.Category
+
+@{
+    ViewData["Title"] = "حذف الفئة";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h3 class="card-title">@ViewData["Title"]</h3>
+                </div>
+
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h4><i class="fas fa-exclamation-triangle"></i> تحذير!</h4>
+                        <p>هل أنت متأكد من أنك تريد حذف هذه الفئة؟</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Name)</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Name)</dd>
+
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Description)</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Description)</dd>
+
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+                                <dd class="col-sm-8">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.IsActive)</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">نشط</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">غير نشط</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6>المنتجات المرتبطة</h6>
+                                </div>
+                                <div class="card-body">
+                                    <h3 class="text-center text-primary">@Model.Products.Count</h3>
+                                    <p class="text-center">منتج</p>
+                                    
+                                    @if (Model.Products.Any())
+                                    {
+                                        <div class="alert alert-danger">
+                                            <strong>تنبيه:</strong> هناك @Model.Products.Count منتج مرتبط بهذه الفئة.
+                                            يجب نقل المنتجات لفئة أخرى قبل الحذف.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Products.Any())
+                    {
+                        <div class="mt-4">
+                            <h6>المنتجات المرتبطة:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>اسم المنتج</th>
+                                            <th>الكود</th>
+                                            <th>سعر البيع</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var product in Model.Products.Take(5))
+                                        {
+                                            <tr>
+                                                <td>@product.Name</td>
+                                                <td>@product.Code</td>
+                                                <td>
+                                                    @if (product.SalePrice.HasValue)
+                                                    {
+                                                        @product.SalePrice.Value.ToString("C")
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">غير محدد</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                @if (Model.Products.Count > 5)
+                                {
+                                    <p class="text-muted">يتم عرض أول 5 منتجات فقط...</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer">
+                    @if (!Model.Products.Any())
+                    {
+                        <form asp-action="Delete" method="post" class="d-inline">
+                            <input type="hidden" asp-for="Id" />
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('هل أنت متأكد من الحذف؟')">
+                                <i class="fas fa-trash"></i> تأكيد الحذف
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        <button class="btn btn-danger" disabled>
+                            <i class="fas fa-ban"></i> لا يمكن الحذف - يوجد منتجات مرتبطة
+                        </button>
+                    }
+                    
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> العودة إلى القائمة
+                    </a>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                        <i class="fas fa-eye"></i> التفاصيل
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

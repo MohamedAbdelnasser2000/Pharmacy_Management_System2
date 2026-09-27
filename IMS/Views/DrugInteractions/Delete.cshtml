@@ -1,0 +1,73 @@
+@model IMS.Models.DrugInteraction
+
+@{
+    ViewData["Title"] = "حذف التفاعل الدوائي";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-trash text-danger"></i> حذف التفاعل الدوائي</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">التفاعلات الدوائية</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> تأكيد الحذف</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            <h5><i class="icon fas fa-ban"></i> تحذير!</h5>
+                            هل أنت متأكد من حذف هذا التفاعل الدوائي؟ هذا الإجراء لا يمكن التراجع عنه.
+                        </div>
+
+                        <dl class="row">
+                            <dt class="col-sm-4">الدواء الأول:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Product1.Name</strong></dd>
+
+                            <dt class="col-sm-4">الدواء الثاني:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Product2.Name</strong></dd>
+
+                            <dt class="col-sm-4">مستوى الخطورة:</dt>
+                            <dd class="col-sm-8">
+                                @{
+                                    var badgeClass = Model.SeverityLevel == "خطير" ? "bg-danger" : 
+                                                    Model.SeverityLevel == "متوسط" ? "bg-warning" : "bg-info";
+                                }
+                                <span class="badge @badgeClass">@Model.SeverityLevel</span>
+                            </dd>
+
+                            <dt class="col-sm-4">وصف التفاعل:</dt>
+                            <dd class="col-sm-8">@Model.InteractionDescription</dd>
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> نعم، احذف
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

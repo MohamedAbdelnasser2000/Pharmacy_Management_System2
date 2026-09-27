@@ -1,0 +1,193 @@
+@model IMS.Models.ExpiryAlert
+
+@{
+    ViewData["Title"] = "تفاصيل التنبيه";
+    var badgeClass = Model.AlertStatus == "منتهي" ? "bg-danger" : 
+                    Model.AlertStatus == "قريب من الانتهاء" ? "bg-warning" : "bg-info";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-calendar-times text-warning"></i> تفاصيل التنبيه</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">تنبيهات الصلاحية</a></li>
+                    <li class="breadcrumb-item active">التفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> معلومات التنبيه</h3>
+                        <div class="card-tools">
+                            <span class="badge @badgeClass">@Model.AlertStatus</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4"><i class="fas fa-pills"></i> المنتج:</dt>
+                            <dd class="col-sm-8">
+                                <strong>@Model.Product.Name</strong>
+                                @if (!string.IsNullOrEmpty(Model.Product.ScientificName))
+                                {
+                                    <br /><small class="text-muted">@Model.Product.ScientificName</small>
+                                }
+                            </dd>
+
+                            @if (Model.Warehouse != null)
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-warehouse"></i> المستودع:</dt>
+                                <dd class="col-sm-8">@Model.Warehouse.Name</dd>
+                            }
+
+                            <dt class="col-sm-4"><i class="fas fa-calendar-times"></i> تاريخ الانتهاء:</dt>
+                            <dd class="col-sm-8">
+                                <h5 class="text-danger mb-0">@Model.ExpiryDate.ToString("yyyy-MM-dd")</h5>
+                                <small class="text-muted">
+                                    @{
+                                        var daysRemaining = (Model.ExpiryDate - IMS.AppClock.UtcNow).Days;
+                                        if (daysRemaining < 0)
+                                        {
+                                            <span class="text-danger">منتهي منذ @Math.Abs(daysRemaining) يوم</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning">متبقي @daysRemaining يوم</span>
+                                        }
+                                    }
+                                </small>
+                            </dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-sort-numeric-up"></i> الكمية:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-secondary">@Model.Quantity</span></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-exclamation-circle"></i> حالة التنبيه:</dt>
+                            <dd class="col-sm-8"><span class="badge @badgeClass">@Model.AlertStatus</span></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-bell"></i> تاريخ التنبيه:</dt>
+                            <dd class="col-sm-8">@Model.AlertDate.ToString("yyyy-MM-dd hh:mm tt")</dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-check-circle"></i> تمت المعالجة:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.IsHandled)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> نعم</span>
+                                    <br />
+                                    <small>@Model.HandledDate?.ToString("yyyy-MM-dd hh:mm tt")</small>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-times"></i> لا</span>
+                                }
+                            </dd>
+
+                            @if (!string.IsNullOrEmpty(Model.ActionTaken))
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-tasks"></i> الإجراء المتخذ:</dt>
+                                <dd class="col-sm-8">
+                                    <div class="alert alert-success">@Model.ActionTaken</div>
+                                </dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-sticky-note"></i> ملاحظات:</dt>
+                                <dd class="col-sm-8">
+                                    <div class="alert alert-info">@Model.Notes</div>
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        @if (!Model.IsHandled)
+                        {
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#handleModal">
+                                <i class="fas fa-check"></i> تحديد كمعالج
+                            </button>
+                        }
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> حذف
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> رجوع للقائمة
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> معلومات المنتج</h3>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(Model.Product.BatchNumber))
+                        {
+                            <p><strong>رقم التشغيلة:</strong> @Model.Product.BatchNumber</p>
+                        }
+                        @if (Model.Product.ManufacturingDate.HasValue)
+                        {
+                            <p><strong>تاريخ الإنتاج:</strong> @Model.Product.ManufacturingDate.Value.ToString("yyyy-MM-dd")</p>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Product.Manufacturer))
+                        {
+                            <p><strong>الشركة المصنعة:</strong> @Model.Product.Manufacturer</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal for handling alert -->
+@if (!Model.IsHandled)
+{
+    <div class="modal fade" id="handleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form asp-action="MarkAsHandled" method="post">
+                    <div class="modal-header bg-success">
+                        <h5 class="modal-title"><i class="fas fa-check"></i> تحديد التنبيه كمعالج</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="form-group">
+                            <label>الإجراء المتخذ <span class="text-danger">*</span></label>
+                            <select name="actionTaken" class="form-control" required>
+                                <option value="">-- اختر الإجراء --</option>
+                                <option value="تم الإرجاع للمورد">تم الإرجاع للمورد</option>
+                                <option value="تم التخلص منه">تم التخلص منه</option>
+                                <option value="تم البيع بخصم">تم البيع بخصم</option>
+                                <option value="تم النقل لمستودع آخر">تم النقل لمستودع آخر</option>
+                                <option value="لا يزال قيد المعالجة">لا يزال قيد المعالجة</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>ملاحظات إضافية</label>
+                            <textarea name="notes" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> حفظ
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,63 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "الملف الشخصي";
+    ViewData["ActivePage"] = ManageNavPages.Index;
+}
+
+<div class="mb-4">
+    <h3 class="fw-bold text-primary">@ViewData["Title"]</h3>
+    <p class="text-muted">مرحباً بك، قم بتحديث بيانات ملفك الشخصي أدناه</p>
+</div>
+
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<form id="profile-form" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+    
+    <div class="row g-4">
+        <div class="col-md-12">
+            <div class="form-group mb-4">
+                <label asp-for="Username" class="form-label fw-bold mb-2">اسم المستخدم</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                        <i class="fas fa-at text-muted"></i>
+                    </span>
+                    <input asp-for="Username" class="form-control identity-form-control border-start-0 rounded-end-3" disabled />
+                </div>
+            </div>
+            
+            <div class="form-group mb-4">
+                <label asp-for="Input.FullName" class="form-label fw-bold mb-2">الاسم بالكامل</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                        <i class="fas fa-user text-muted"></i>
+                    </span>
+                    <input asp-for="Input.FullName" class="form-control identity-form-control border-start-0 rounded-end-3" placeholder="أدخل الاسم بالكامل..." />
+                </div>
+                <span asp-validation-for="Input.FullName" class="text-danger small mt-1 d-block"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label asp-for="Input.PhoneNumber" class="form-label fw-bold mb-2">رقم الهاتف</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 rounded-start-3">
+                        <i class="fas fa-phone text-muted"></i>
+                    </span>
+                    <input asp-for="Input.PhoneNumber" class="form-control identity-form-control border-start-0 rounded-end-3" placeholder="أدخل رقم الهاتف..." />
+                </div>
+                <span asp-validation-for="Input.PhoneNumber" class="text-danger small mt-1 d-block"></span>
+            </div>
+        </div>
+
+        <div class="col-12 mt-4">
+            <button id="update-profile-button" type="submit" class="identity-btn-primary px-5">
+                <i class="fas fa-save me-2"></i> حفظ التغييرات
+            </button>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,136 @@
+@model IMS.Models.Warehouse
+@{
+    ViewData["Title"] = "تفاصيل المستودع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark"><i class="fas fa-warehouse"></i> تفاصيل المستودع</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المستودعات</a></li>
+                    <li class="breadcrumb-item active">التفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0"><i class="fas fa-info-circle"></i> معلومات المستودع</h5>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-5">
+                                <i class="fas fa-warehouse text-primary"></i> الاسم:
+                            </dt>
+                            <dd class="col-sm-7">
+                                <strong>@Model.Name</strong>
+                            </dd>
+
+                            <dt class="col-sm-5">
+                                <i class="fas fa-building text-info"></i> الفرع:
+                            </dt>
+                            <dd class="col-sm-7">
+                                @Model.Branch?.Name
+                            </dd>
+
+                            <dt class="col-sm-5">
+                                <i class="fas fa-map-marker-alt text-danger"></i> الموقع:
+                            </dt>
+                            <dd class="col-sm-7">
+                                @if (!string.IsNullOrEmpty(Model.Location))
+                                {
+                                    @Model.Location
+                                }
+                                else
+                                {
+                                    <span class="text-muted">غير محدد</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-5">
+                                <i class="fas fa-boxes text-success"></i> المنتجات:
+                            </dt>
+                            <dd class="col-sm-7">
+                                <span class="badge bg-success">@Model.ProductInventories.Count منتج</span>
+                            </dd>
+                        </dl>
+
+                        <hr>
+
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> العودة للقائمة
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="card-title mb-0"><i class="fas fa-boxes"></i> المنتجات في المستودع</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (!Model.ProductInventories.Any())
+                        {
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                <p class="mb-0">لا توجد منتجات في هذا المستودع حالياً</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>المنتج</th>
+                                            <th>الكمية المتاحة</th>
+                                            <th>الكمية المحجوزة</th>
+                                            <th>الإجمالي</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var inventory in Model.ProductInventories)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <i class="fas fa-box text-primary"></i>
+                                                    <strong>@inventory.Product?.Name</strong>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-success">@inventory.OnHandQuantity</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-warning">@inventory.ReservedQuantity</span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-info">@(inventory.OnHandQuantity + inventory.ReservedQuantity)</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

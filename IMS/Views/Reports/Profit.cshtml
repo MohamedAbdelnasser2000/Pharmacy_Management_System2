@@ -1,0 +1,205 @@
+@{
+    ViewData["Title"] = "تقرير الأرباح - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-chart-line text-success"></i> تقرير أرباح الصيدلية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">التقارير</a></li>
+                    <li class="breadcrumb-item active">الأرباح</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-filter"></i> فلترة التقرير</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">من تاريخ</label>
+                        <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">إلى تاريخ</label>
+                        <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary d-block w-100">
+                            <i class="fas fa-search"></i> بحث
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-gradient-success text-white shadow-sm">
+                    <div class="card-body text-center">
+                        <h6><i class="fas fa-cash-register"></i> مبيعات الأدوية</h6>
+                        <h3>@ViewBag.Sales.ToString("N2")</h3>
+                        <small>جنيه</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-gradient-warning text-white shadow-sm">
+                    <div class="card-body text-center">
+                        <h6><i class="fas fa-truck-medical"></i> مشتريات الأدوية</h6>
+                        <h3>@ViewBag.Purchases.ToString("N2")</h3>
+                        <small>جنيه</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card @(ViewBag.Profit >= 0 ? "bg-primary" : "bg-danger") text-white">
+                    <div class="card-body text-center">
+                        <h6><i class="fas fa-chart-line"></i> صافي الربح</h6>
+                        <h3>@ViewBag.Profit.ToString("N2")</h3>
+                        <small>جنيه</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white">
+                    <div class="card-body text-center">
+                        <h6><i class="fas fa-percentage"></i> هامش الربح</h6>
+                        <h3>@ViewBag.ProfitMargin.ToString("N2")%</h3>
+                        <small>من المبيعات</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3 shadow-sm border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-chart-bar"></i> تحليل أرباح الصيدلية</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="profitChart" height="200"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h5><i class="fas fa-info-circle"></i> ملاحظات</h5>
+                            <ul class="mb-0">
+                                <li>الفترة المحددة: من @ViewBag.StartDate.ToString("yyyy/MM/dd") إلى @ViewBag.EndDate.ToString("yyyy/MM/dd")</li>
+                                <li>مبيعات الأدوية المحتسبة: العمليات المكتملة فقط</li>
+                                <li>مشتريات الأدوية المحتسبة: جميع طلبات الشراء</li>
+                                @if (ViewBag.Profit >= 0)
+                                {
+                                    <li class="text-success"><strong>✅ الصيدلية تحقق أرباح</strong></li>
+                                }
+                                else
+                                {
+                                    <li class="text-danger"><strong>⚠️ الصيدلية تتكبد خسائر</strong></li>
+                                }
+                            </ul>
+                        </div>
+
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="text-muted">نسبة المصروفات من المبيعات</h6>
+                                <div class="progress" style="height: 30px;">
+                                    @{
+                                        var expensePercentage = ViewBag.Sales > 0 ? (ViewBag.Purchases / ViewBag.Sales * 100) : 0;
+                                    }
+                                    <div class="progress-bar @(expensePercentage > 80 ? "bg-danger" : expensePercentage > 60 ? "bg-warning" : "bg-success")" 
+                                         role="progressbar" 
+                                         style="width: @expensePercentage%"
+                                         aria-valuenow="@expensePercentage" 
+                                         aria-valuemin="0" 
+                                         aria-valuemax="100">
+                                        @expensePercentage.ToString("N1")%
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    @if (expensePercentage > 80)
+                                    {
+                                        <span class="text-danger">⚠️ نسبة مصروفات عالية جداً</span>
+                                    }
+                                    else if (expensePercentage > 60)
+                                    {
+                                        <span class="text-warning">⚠️ نسبة مصروفات مرتفعة</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-success">✅ نسبة مصروفات جيدة</span>
+                                    }
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="~/lib/chartjs/chart.min.js"></script>
+    <script>
+        const ctx = document.getElementById('profitChart').getContext('2d');
+        const profitChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['المبيعات', 'المشتريات', 'صافي الربح'],
+                datasets: [{
+                    label: 'المبلغ (جنيه)',
+                    data: [@ViewBag.Sales, @ViewBag.Purchases, @ViewBag.Profit],
+                    backgroundColor: [
+                        'rgba(40, 167, 69, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        '@(ViewBag.Profit >= 0 ? "rgba(0, 123, 255, 0.7)" : "rgba(220, 53, 69, 0.7)")'
+                    ],
+                    borderColor: [
+                        'rgba(40, 167, 69, 1)',
+                        'rgba(255, 193, 7, 1)',
+                        '@(ViewBag.Profit >= 0 ? "rgba(0, 123, 255, 1)" : "rgba(220, 53, 69, 1)")'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' جنيه';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString() + ' جنيه';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

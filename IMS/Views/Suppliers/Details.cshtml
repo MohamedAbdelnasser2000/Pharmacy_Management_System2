@@ -1,0 +1,346 @@
+@model IMS.Models.Supplier
+@{
+    ViewData["Title"] = "تفاصيل مورد الأدوية - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-truck text-info"></i> تفاصيل مورد الأدوية</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">الموردون</a></li>
+                    <li class="breadcrumb-item active">تفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-industry"></i> معلومات مورد الأدوية</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card border-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary"><i class="fas fa-industry"></i> معلومات المورد</h6>
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-building text-primary"></i> الاسم:</dt>
+                                    <dd class="col-sm-8"><strong class="fs-5 text-primary">@Model.Name</strong></dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-id-badge text-info"></i> رقم المورد:</dt>
+                                    <dd class="col-sm-8"><span class="badge bg-secondary fs-6">#@Model.Id</span></dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-university text-success"></i> الحساب البنكي:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.BankAccount))
+                                        {
+                                            <code>@Model.BankAccount</code>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-success">
+                            <div class="card-body">
+                                <h6 class="text-success"><i class="fas fa-address-book"></i> معلومات الاتصال</h6>
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-4"><i class="fas fa-phone text-success"></i> الهاتف:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.PhoneNumber))
+                                        {
+                                            <a href="tel:@Model.PhoneNumber" class="text-decoration-none">
+                                                <strong>@Model.PhoneNumber</strong>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-envelope text-info"></i> البريد:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.Email))
+                                        {
+                                            <a href="mailto:@Model.Email" class="text-decoration-none">
+                                                <small>@Model.Email</small>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-map-marker-alt text-danger"></i> العنوان:</dt>
+                                    <dd class="col-sm-8">
+                                        @if (!string.IsNullOrEmpty(Model.Address))
+                                        {
+                                            <span>@Model.Address</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">غير محدد</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </dl>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card border-info">
+                            <div class="card-header bg-gradient-info text-white">
+                                <h6 class="mb-0"><i class="fas fa-pills"></i> أدوية المورد</h6>
+                            </div>
+                            <div class="card-body">
+                        @if (Model.Products == null || !Model.Products.Any())
+                        {
+                            <div class="alert alert-info text-center mb-0">
+                                <i class="fas fa-info-circle"></i>
+                                <p class="mb-0">لا توجد أدوية مرتبطة بهذا المورد</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-2">
+                                <span class="badge bg-info fs-6">إجمالي الأدوية: @Model.Products.Count()</span>
+                            </div>
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead class="table-light sticky-top">
+                                        <tr>
+                                            <th><i class="fas fa-pills"></i> اسم الدواء</th>
+                                            <th class="text-center"><i class="fas fa-boxes"></i> الكمية</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var product in Model.Products)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" class="text-decoration-none">
+                                                        @product.Name
+                                                    </a>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-primary">@product.TotalQuantity</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mt-4">
+                        <div class="card border-warning">
+                            <div class="card-header bg-gradient-warning text-white">
+                                <h5 class="mb-0"><i class="fas fa-file-invoice"></i> طلبات الشراء من المورد</h5>
+                            </div>
+                            <div class="card-body">
+                        @if (Model.PurchaseOrders == null || !Model.PurchaseOrders.Any())
+                        {
+                            <div class="alert alert-info text-center">
+                                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                                <p class="mb-0">لا توجد طلبات شراء من هذا المورد حتى الآن</p>
+                                <small class="text-muted">سيتم عرض طلبات الشراء هنا عند إضافتها</small>
+                            </div>
+                        }
+                        else
+                        {
+                            var totalOrders = Model.PurchaseOrders.Count();
+                            var totalAmount = Model.PurchaseOrders.Sum(o => o.TotalAmount);
+                            var totalPaid = Model.PurchaseOrders.Sum(o => o.PaidAmount);
+                            var totalDue = totalAmount - totalPaid;
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <div class="info-box bg-light">
+                                        <span class="info-box-icon bg-warning"><i class="fas fa-file-invoice"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">عدد الطلبات</span>
+                                            <span class="info-box-number">@totalOrders</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box bg-light">
+                                        <span class="info-box-icon bg-primary"><i class="fas fa-dollar-sign"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">إجمالي المشتريات</span>
+                                            <span class="info-box-number">@totalAmount.ToString("N2") جنيه</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box bg-light">
+                                        <span class="info-box-icon bg-success"><i class="fas fa-check-circle"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">المدفوع</span>
+                                            <span class="info-box-number">@totalPaid.ToString("N2") جنيه</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-box bg-light">
+                                        <span class="info-box-icon @(totalDue > 0 ? "bg-danger" : "bg-success")"><i class="fas fa-exclamation-circle"></i></span>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">المتبقي للمورد</span>
+                                            <span class="info-box-number text-@(totalDue > 0 ? "danger" : "success")">@totalDue.ToString("N2") جنيه</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th><i class="fas fa-hashtag"></i> رقم الطلب</th>
+                                            <th><i class="fas fa-calendar"></i> التاريخ</th>
+                                            <th><i class="fas fa-money-bill-wave"></i> الإجمالي</th>
+                                            <th><i class="fas fa-check-circle"></i> المدفوع</th>
+                                            <th><i class="fas fa-exclamation-circle"></i> المتبقي</th>
+                                            <th><i class="fas fa-info-circle"></i> الحالة</th>
+                                            <th><i class="fas fa-clock"></i> موعد الدفع</th>
+                                            <th class="text-center">إجراءات</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var order in Model.PurchaseOrders.OrderByDescending(o => o.OrderDate))
+                                        {
+                                            var remaining = order.TotalAmount - order.PaidAmount;
+                                            var dueDate = order.OrderDate.AddDays(30); // موعد الدفع بعد 30 يوم
+                                            var isOverdue = remaining > 0 && dueDate < IMS.AppClock.UtcNow;
+                                            <tr class="@(isOverdue ? "table-danger" : "")">
+                                                <td><span class="badge bg-secondary fs-6">#@order.Id</span></td>
+                                                <td><i class="far fa-calendar-alt text-muted"></i> @order.OrderDate.ToString("yyyy/MM/dd")</td>
+                                                <td><strong>@order.TotalAmount.ToString("N2")</strong> جنيه</td>
+                                                <td class="text-success"><strong>@order.PaidAmount.ToString("N2")</strong> جنيه</td>
+                                                <td>
+                                                    @if (remaining > 0)
+                                                    {
+                                                        <span class="badge bg-danger fs-6">@remaining.ToString("N2") جنيه</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-success fs-6"><i class="fas fa-check"></i> مدفوع كاملاً</span>
+                                                    }
+                                                </td>
+                                                <td><span class="badge bg-info fs-6">@order.Status</span></td>
+                                                <td>
+                                                    @if (remaining > 0)
+                                                    {
+                                                        <span class="@(isOverdue ? "text-danger fw-bold" : "")">
+                                                            @dueDate.ToString("yyyy/MM/dd")
+                                                            @if (isOverdue)
+                                                            {
+                                                                <i class="fas fa-exclamation-circle" title="متأخر"></i>
+                                                            }
+                                                        </span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">-</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (remaining > 0)
+                                                    {
+                                                        <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#paymentModal@(order.Id)" title="إضافة دفعة">
+                                                            <i class="fas fa-money-bill-wave"></i> دفع
+                                                        </button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            @* Payment Modals *@
+                            @foreach (var order in Model.PurchaseOrders.Where(o => o.TotalAmount - o.PaidAmount > 0))
+                            {
+                                var remaining = order.TotalAmount - order.PaidAmount;
+                                <div class="modal fade" id="paymentModal@(order.Id)" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-warning text-dark">
+                                                <h5 class="modal-title">إضافة دفعة للمورد - أمر #@order.Id</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <form asp-controller="PurchaseOrders" asp-action="AddPayment" method="post">
+                                                <div class="modal-body">
+                                                    <input type="hidden" name="id" value="@order.Id" />
+                                                    <div class="alert alert-warning">
+                                                        <strong>المبلغ المتبقي للمورد:</strong> @remaining.ToString("N2") جنيه
+                                                    </div>
+                                                    <div class="form-group mb-3">
+                                                        <label class="form-label">مبلغ الدفعة</label>
+                                                        <input type="number" name="amount" class="form-control" step="0.01" min="0.01" max="@remaining" required />
+                                                        <small class="text-muted">الحد الأقصى: @remaining.ToString("N2") جنيه</small>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label class="form-label">طريقة الدفع</label>
+                                                        <select name="method" class="form-control" required>
+                                                            <option value="نقدي">نقدي</option>
+                                                            <option value="شيك">شيك</option>
+                                                            <option value="تحويل بنكي">تحويل بنكي</option>
+                                                            <option value="بطاقة">بطاقة</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                                                    <button type="submit" class="btn btn-warning">
+                                                        <i class="fas fa-check"></i> تأكيد الدفع
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-end bg-light">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg">
+                    <i class="fas fa-edit"></i> تعديل البيانات
+                </a>
+                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> عودة للقائمة
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

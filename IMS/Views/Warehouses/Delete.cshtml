@@ -1,0 +1,81 @@
+@model IMS.Models.Warehouse
+@{
+    ViewData["Title"] = "حذف مستودع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark"><i class="fas fa-trash"></i> حذف المستودع</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المستودعات</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-exclamation-triangle"></i> تأكيد الحذف</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>تحذير:</strong> هل أنت متأكد من حذف هذا المستودع؟ هذا الإجراء لا يمكن التراجع عنه.
+                </div>
+
+                <dl class="row">
+                    <dt class="col-sm-3">
+                        <i class="fas fa-warehouse text-primary"></i> اسم المستودع:
+                    </dt>
+                    <dd class="col-sm-9">
+                        <strong>@Model.Name</strong>
+                    </dd>
+
+                    <dt class="col-sm-3">
+                        <i class="fas fa-building text-info"></i> الفرع:
+                    </dt>
+                    <dd class="col-sm-9">
+                        @Model.Branch?.Name
+                    </dd>
+
+                    <dt class="col-sm-3">
+                        <i class="fas fa-map-marker-alt text-danger"></i> الموقع:
+                    </dt>
+                    <dd class="col-sm-9">
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            @Model.Location
+                        }
+                        else
+                        {
+                            <span class="text-muted">غير محدد</span>
+                        }
+                    </dd>
+                </dl>
+
+                <hr>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="form-group text-end">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> إلغاء
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> تأكيد الحذف
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>

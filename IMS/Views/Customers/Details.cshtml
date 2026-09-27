@@ -1,0 +1,226 @@
+@model IMS.Models.Customer
+@{
+    ViewData["Title"] = "ملف العميل/المريض - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-user-circle text-info"></i> ملف العميل/المريض</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">العملاء</a></li>
+                    <li class="breadcrumb-item active">الملف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-user-injured"></i> معلومات العميل/المريض</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card border-info h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-info fw-bold mb-3"><i class="fas fa-user-circle"></i> المعلومات الشخصية</h6>
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-5 text-muted">الاسم:</dt>
+                                    <dd class="col-sm-7 fw-bold">@Model.Name</dd>
+
+                                    <dt class="col-sm-5 text-muted">رقم الهوية:</dt>
+                                    <dd class="col-sm-7">@(Model.NationalId ?? "---")</dd>
+
+                                    <dt class="col-sm-5 text-muted">تاريخ الميلاد:</dt>
+                                    <dd class="col-sm-7">@(Model.DateOfBirth?.ToString("yyyy/MM/dd") ?? "---")</dd>
+
+                                    <dt class="col-sm-5 text-muted">الجنس:</dt>
+                                    <dd class="col-sm-7">@(Model.Gender ?? "---")</dd>
+
+                                    <dt class="col-sm-5 text-muted">فصيلة الدم:</dt>
+                                    <dd class="col-sm-7"><span class="badge bg-danger">@(Model.BloodType ?? "---")</span></dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-danger h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-danger fw-bold mb-3"><i class="fas fa-hand-holding-medical"></i> الوضع الطبي ⚠️</h6>
+                                <dl class="row mb-0">
+                                    <dt class="col-sm-12 text-danger"><i class="fas fa-exclamation-triangle"></i> الحساسية:</dt>
+                                    <dd class="col-sm-12">
+                                        @if (!string.IsNullOrEmpty(Model.Allergies))
+                                        {
+                                            <div class="alert alert-danger py-1 px-2 mb-2">@Model.Allergies</div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">لا يوجد حساسية مسجلة</span>
+                                        }
+                                    </dd>
+
+                                    <dt class="col-sm-12 text-primary border-top pt-2"><i class="fas fa-heartbeat"></i> الأمراض المزمنة:</dt>
+                                    <dd class="col-sm-12">
+                                        @if (!string.IsNullOrEmpty(Model.ChronicDiseases))
+                                        {
+                                            <span class="badge bg-primary fs-6">@Model.ChronicDiseases</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">لا يوجد</span>
+                                        }
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card border-success h-100 shadow-sm">
+                            <div class="card-body">
+                                <h6 class="text-success fw-bold mb-3"><i class="fas fa-address-book"></i> معلومات الاتصال</h6>
+                                <p class="mb-1"><strong>الهاتف:</strong> @(Model.PhoneNumber ?? "---")</p>
+                                <p class="mb-1"><strong>العنوان:</strong> @(Model.Address ?? "---")</p>
+                                <hr />
+                                <h6 class="text-warning fw-bold mb-2"><i class="fas fa-phone-alt"></i> الطوارئ</h6>
+                                <p class="mb-0 text-sm">@Model.EmergencyContactName</p>
+                                <p class="mb-0 fw-bold">@Model.EmergencyContactPhone</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-primary card-outline card-tabs">
+                    <div class="card-header p-0 pt-1 border-bottom-0">
+                        <ul class="nav nav-tabs" id="customer-tabs" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="orders-tab" data-bs-toggle="pill" href="#orders-content" role="tab">سجل المشتريات</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="prescriptions-tab" data-bs-toggle="pill" href="#prescriptions-content" role="tab">الوصفات الطبية</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="customer-tabs-content">
+                            <!-- Tab: Orders -->
+                            <div class="tab-pane fade show active" id="orders-content" role="tabpanel">
+                                @if (Model.Orders == null || !Model.Orders.Any())
+                                {
+                                    <div class="alert alert-info text-center py-4">
+                                        <i class="fas fa-receipt fa-2x mb-2 text-muted"></i>
+                                        <p>لا توجد فواتير سابقة</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>رقم الفاتورة</th>
+                                                    <th>التاريخ</th>
+                                                    <th>الإجمالي</th>
+                                                    <th>المدفوع</th>
+                                                    <th>الحالة</th>
+                                                    <th>إجراء</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var order in Model.Orders.OrderByDescending(o => o.OrderDate))
+                                                {
+                                                    <tr>
+                                                        <td>#@order.Id</td>
+                                                        <td>@order.OrderDate.ToString("yyyy/MM/dd")</td>
+                                                        <td>@order.TotalAmount.ToString("N2")</td>
+                                                        <td class="text-success">@order.PaidAmount.ToString("N2")</td>
+                                                        <td><span class="badge @(order.PaidAmount >= order.TotalAmount ? "bg-success" : "bg-warning")">@order.Status</span></td>
+                                                        <td><a asp-controller="Orders" asp-action="Details" asp-route-id="@order.Id" class="btn btn-xs btn-info"><i class="fas fa-eye"></i></a></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                            
+                            <!-- Tab: Prescriptions -->
+                            <div class="tab-pane fade" id="prescriptions-content" role="tabpanel">
+                                @{
+                                    var prescriptions = ViewBag.Prescriptions as List<IMS.Models.Prescription>;
+                                }
+                                @if (prescriptions == null || !prescriptions.Any())
+                                {
+                                    <div class="alert alert-warning text-center py-4">
+                                        <i class="fas fa-prescription fa-2x mb-2 text-muted"></i>
+                                        <p>لا توجد وصفات طبية مسجلة</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>رقم الوصفة</th>
+                                                    <th>التاريخ</th>
+                                                    <th>الطبيب</th>
+                                                    <th>الحالة</th>
+                                                    <th>إجراء</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var p in prescriptions)
+                                                {
+                                                    <tr>
+                                                        <td class="fw-bold">@p.PrescriptionNumber</td>
+                                                        <td>@p.PrescriptionDate.ToString("yyyy/MM/dd")</td>
+                                                        <td>@p.Doctor?.Name @p.PatientName</td>
+                                                        <td>
+                                                            @if (p.IsDispensed)
+                                                            {
+                                                                <span class="badge bg-success">تم الصرف</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-primary">جديدة</span>
+                                                            }
+                                                        </td>
+                                                        <td><a asp-controller="Prescriptions" asp-action="Details" asp-route-id="@p.Id" class="btn btn-xs btn-warning"><i class="fas fa-eye"></i></a></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer text-end bg-light">
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg">
+                    <i class="fas fa-edit"></i> تعديل البيانات
+                </a>
+                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> عودة للقائمة
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

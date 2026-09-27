@@ -1,0 +1,236 @@
+@model DashboardViewModel
+
+<!-- Modern Dashboard Header -->
+<div class="content-header mb-4">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="fw-bold mb-1">لوحة التحكم (المدير)</h2>
+                <p class="text-muted mb-0">نظرة شاملة على أداء الصيدلية</p>
+            </div>
+            <div class="glass-panel px-3 py-2 text-primary fw-semibold small d-none d-md-block">
+                <i class="fas fa-calendar-day me-2"></i> @IMS.AppClock.UtcNow.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-EG"))
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Premium Quick Actions -->
+<div class="container-fluid mb-5">
+    <h5 class="fw-bold mb-4 ms-2">إجراءات سريعة</h5>
+    <div class="row g-4">
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="Prescriptions" asp-action="Create" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-blue mx-auto"><i class="fas fa-file-prescription"></i></div>
+                <span class="fw-bold text-dark d-block">وصفة جديدة</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="Orders" asp-action="Create" class="info-card d-block text-center text-decoration-none border-primary border-opacity-25" style="background: #e6f4ea;">
+                <div class="info-card-icon icon-green mx-auto" style="background: var(--ims-primary); color: #fff;"><i class="fas fa-cash-register"></i></div>
+                <span class="fw-bold text-dark d-block">بيع مباشر</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="Products" asp-action="Create" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-orange mx-auto"><i class="fas fa-pills"></i></div>
+                <span class="fw-bold text-dark d-block">دواء جديد</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="ExpiryAlerts" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-red mx-auto"><i class="fas fa-calendar-times"></i></div>
+                <span class="fw-bold text-dark d-block">تنبيهات الصلاحية</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="DrugInteractions" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-purple mx-auto"><i class="fas fa-triangle-exclamation"></i></div>
+                <span class="fw-bold text-dark d-block">التفاعلات</span>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <a asp-controller="Reports" asp-action="Index" class="info-card d-block text-center text-decoration-none">
+                <div class="info-card-icon icon-blue mx-auto"><i class="fas fa-chart-line"></i></div>
+                <span class="fw-bold text-dark d-block">التقارير</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Modern Statistics Cards -->
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="info-card-icon icon-blue">
+                            <i class="fas fa-file-prescription"></i>
+                        </div>
+                        <span class="badge bg-soft-warning text-warning px-2 py-1 rounded-pill small">
+                            @Model.PendingOrders قيد الانتظار
+                        </span>
+                    </div>
+                    <h6 class="text-muted small fw-bold mb-1">الوصفات الطبية</h6>
+                    <h3 class="fw-bold mb-3">@Model.TotalOrders</h3>
+                    <a asp-controller="Prescriptions" asp-action="Index" class="btn btn-link p-0 text-decoration-none small fw-bold">
+                        إدارة الوصفات <i class="fas fa-arrow-left ms-1" style="font-size: 0.7rem;"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="info-card-icon icon-green" style="background: #e6f4ea; color: var(--ims-primary);">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <span class="badge bg-soft-success text-success px-2 py-1 rounded-pill small">
+                            نشط
+                        </span>
+                    </div>
+                    <h6 class="text-muted small fw-bold mb-1">إجمالي الأدوية</h6>
+                    <h3 class="fw-bold mb-3">@Model.SummaryCards.FirstOrDefault()?.Value</h3>
+                    <a asp-controller="Products" asp-action="Index" class="btn btn-link p-0 text-decoration-none small fw-bold text-success" style="color: var(--ims-primary) !important;">
+                        عرض المخزون <i class="fas fa-arrow-left ms-1" style="font-size: 0.7rem;"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="info-card-icon icon-purple">
+                            <i class="fas fa-user-doctor"></i>
+                        </div>
+                    </div>
+                    <h6 class="text-muted small fw-bold mb-1">الأطباء المسجلون</h6>
+                    <h3 class="fw-bold mb-3">@Model.ActiveSuppliers</h3>
+                    <a asp-controller="Doctors" asp-action="Index" class="btn btn-link p-0 text-decoration-none small fw-bold text-purple">
+                        إدارة الأطباء <i class="fas fa-arrow-left ms-1" style="font-size: 0.7rem;"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <div class="info-card h-100 border-warning border-opacity-25" style="background: #fffdf5;">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="info-card-icon icon-red">
+                            <i class="fas fa-calendar-exclamation"></i>
+                        </div>
+                        @if (Model.LowStockProducts.Count() > 0)
+                        {
+                            <span class="badge bg-danger px-2 py-1 rounded-pill small">هناك تنبيهات!</span>
+                        }
+                    </div>
+                    <h6 class="text-muted small fw-bold mb-1">تنبيهات الصلاحية</h6>
+                    <h3 class="fw-bold mb-3 text-warning">@Model.LowStockProducts.Count()</h3>
+                    <a asp-controller="ExpiryAlerts" asp-action="Index" class="btn btn-link p-0 text-decoration-none small fw-bold text-danger">
+                        مراجعة الآن <i class="fas fa-arrow-left ms-1" style="font-size: 0.7rem;"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="info-card h-100">
+                    <div class="px-2 mb-4">
+                        <h5 class="fw-bold mb-1">نظرة مالية</h5>
+                        <p class="text-muted small">ملخص الأداء المالي للفترة الحالية</p>
+                    </div>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="text-muted small mb-1">إجمالي المبيعات</h6>
+                                <h4 class="text-success fw-bold mb-0">@Model.TotalSales.ToString("N0") ج.م</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="text-muted small mb-1">إجمالي المشتريات</h6>
+                                <h4 class="text-danger fw-bold mb-0">@Model.TotalPurchases.ToString("N0") ج.م</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="text-muted small mb-1">ديون عملاء</h6>
+                                <h4 class="text-warning fw-bold mb-0">@Model.PendingPayments.ToString("N0") ج.م</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded-3">
+                                <h6 class="text-muted small mb-1">مستحقات موردين</h6>
+                                <h4 class="text-info fw-bold mb-0">@Model.SupplierPendingPayments.ToString("N0") ج.م</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel p-4 text-center">
+                        <h6 class="text-muted small mb-2">صافي الربح المتوقع</h6>
+                        <h2 class="fw-bold @(Model.TotalSales - Model.TotalPurchases >= 0 ? "text-success" : "text-danger") mb-0">
+                            @((Model.TotalSales - Model.TotalPurchases).ToString("N0")) ج.م
+                        </h2>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="info-card h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4 px-2">
+                        <div>
+                            <h5 class="fw-bold mb-1">أحدث الوصفات</h5>
+                            <p class="text-muted small">آخر 5 وصفات طبية مسجلة</p>
+                        </div>
+                        <a asp-controller="Prescriptions" asp-action="Index" class="btn btn-premium btn-premium-primary py-2 px-3 small">
+                            عرض الكل
+                        </a>
+                    </div>
+
+                    @if (!Model.RecentOrders.Any())
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-receipt fa-3x text-light mb-3"></i>
+                            <p class="text-muted">لا توجد وصفات طبية بعد</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-borderless align-middle">
+                                <thead class="bg-light rounded-3">
+                                    <tr class="small text-muted">
+                                        <th class="ps-3">المريض</th>
+                                        <th>التاريخ</th>
+                                        <th>المبلغ</th>
+                                        <th class="text-center">الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var order in Model.RecentOrders.Take(5))
+                                    {
+                                        <tr class="border-bottom border-light">
+                                            <td class="ps-3">
+                                                <div class="fw-bold py-2">@order.CustomerName</div>
+                                                <div class="text-muted small">#@order.Id</div>
+                                            </td>
+                                            <td class="small">@order.OrderDate.ToString("yyyy/MM/dd")</td>
+                                            <td class="fw-bold text-success">@order.TotalAmount.ToString("N0") ج.م</td>
+                                            <td class="text-center">
+                                                <span class="badge @(order.Status == "Completed" ? "bg-soft-success text-success" : "bg-soft-primary text-primary") px-2 py-1 rounded-pill small">
+                                                    @order.Status
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

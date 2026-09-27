@@ -1,0 +1,205 @@
+@model IEnumerable<IMS.Models.ECommerceOrder>
+@using IMS.Models
+@{
+    ViewData["Title"] = "لوحة التحكم";
+    Layout = "_ECommerceLayout";
+    var user = ViewBag.User as ApplicationUser;
+}
+
+<div class="container py-4 py-md-5">
+    <div class="row g-3 g-md-4">
+        <!-- Dashboard Header -->
+        <div class="col-12 mb-3">
+            <div class="ec-card dashboard-hero p-4 p-md-5" style="background: linear-gradient(135deg, #2E8B57 0%, #1e5c3a 100%); color: white; border: none; position: relative; overflow: hidden;">
+                <div class="hero-overlay"></div>
+                <div class="d-flex align-items-center justify-content-between flex-column flex-md-row gap-4 position-relative">
+                    <div class="d-flex align-items-center flex-column flex-md-row text-center text-md-start gap-3 gap-md-4">
+                        <div class="rounded-circle bg-white bg-opacity-25 d-flex align-items-center justify-content-center hero-icon">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div>
+                        <h2 class="fw-bold mb-1 hero-title">مرحباً، @User.GetFullName()!</h2>
+                        <p class="mb-0 text-white-50 small-mobile-text">أهلاً بك في لوحة تحكم حسابك الخاص بصيدلية PMS</p>
+                    </div>
+                    </div>
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-light rounded-pill px-4 fw-bold shadow-sm">
+                        <i class="fas fa-user-edit me-2"></i> تعديل البيانات
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="col-6 col-md-4">
+            <div class="ec-card p-3 p-md-4 text-center h-100">
+                <div class="fs-2 fs-md-1 text-primary mb-2 mb-md-3">
+                    <i class="fas fa-shopping-bag"></i>
+                </div>
+                <h3 class="fw-bold mb-1 stat-number">@ViewBag.TotalOrders</h3>
+                <p class="text-muted mb-0 small-text">إجمالي الطلبات</p>
+            </div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="ec-card p-3 p-md-4 text-center h-100 border-success border-opacity-25">
+                <div class="fs-2 fs-md-1 text-success mb-2 mb-md-3">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <h3 class="fw-bold mb-1 stat-number text-truncate px-2">@ViewBag.TotalSpent.ToString("N2")</h3>
+                <p class="text-muted mb-0 small-text">إجمالي المدفوعات (ج.م)</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="ec-card p-3 p-md-4 text-center h-100 border-info border-opacity-25">
+                <div class="fs-2 fs-md-1 text-info mb-2 mb-md-3 d-none d-md-block">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="d-flex d-md-block align-items-center justify-content-center gap-2">
+                    <i class="fas fa-envelope text-info d-md-none"></i>
+                    <h3 class="fw-bold mb-1 email-text text-truncate">@user?.Email</h3>
+                </div>
+                <p class="text-muted mb-0 small-text">البريد الإلكتروني المسجل</p>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="col-12 mt-2">
+            <div class="ec-card overflow-hidden">
+                <div class="p-3 p-md-4 border-bottom bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0">طلباتي الأخيرة</h5>
+                    <a asp-action="Orders" class="btn btn-link text-primary p-0 text-decoration-none fw-bold small-text">عرض الكل <i class="fas fa-arrow-left ms-1"></i></a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead class="bg-light-subtle">
+                            <tr>
+                                <th class="px-3 px-md-4 py-3">رقم الطلب</th>
+                                <th class="px-3 px-md-4 py-3 d-none d-sm-table-cell">التاريخ</th>
+                                <th class="px-3 px-md-4 py-3">المجموع</th>
+                                <th class="px-3 px-md-4 py-3 text-center">الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null && Model.Any())
+                            {
+                                foreach (var order in Model)
+                                {
+                                    <tr>
+                                        <td class="px-3 px-md-4 py-3 fw-bold">#@order.OrderNumber</td>
+                                        <td class="px-3 px-md-4 py-3 text-muted d-none d-sm-table-cell">@order.OrderDate.ToString("yyyy/MM/dd")</td>
+                                        <td class="px-3 px-md-4 py-3 fw-bold text-primary">@order.GrandTotal.ToString("N2")</td>
+                                        <td class="px-3 px-md-4 py-3 text-center">
+                                            <span class="badge @ECommerceOrderStatus.GetBadgeClass(order.Status) rounded-pill status-badge">
+                                                @ECommerceOrderStatus.GetArabicName(order.Status)
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-5">
+                                        <div class="text-muted mb-3">
+                                            <i class="fas fa-shopping-cart fa-3x opacity-25"></i>
+                                        </div>
+                                        <p class="mb-3">لم تقم بإجراء أي طلبات بعد.</p>
+                                        <a asp-controller="Shop" asp-action="Index" class="btn btn-primary rounded-pill px-4">ابدأ التسوق الآن</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .ec-card {
+            background: white;
+            border: 1px solid #f1f5f9;
+            border-radius: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .ec-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-icon {
+            width: 80px;
+            height: 80px;
+            font-size: 35px;
+        }
+        
+        .hero-title {
+            font-size: 1.8rem;
+        }
+        
+        .stat-number {
+            font-size: 1.5rem;
+        }
+        
+        .email-text {
+            font-size: 0.95rem;
+        }
+        
+        .status-badge {
+            padding: 0.5rem 0.8rem;
+            font-size: 0.75rem;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><g fill="%23ffffff" fill-opacity="0.05" fill-rule="evenodd"><circle cx="3" cy="3" r="3"/><circle cx="13" cy="13" r="3"/></g></svg>');
+            opacity: 0.3;
+        }
+
+        @@media (max-width: 768px) {
+            .hero-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+            .hero-title {
+                font-size: 1.4rem;
+            }
+            .stat-number {
+                font-size: 1.2rem;
+            }
+            .small-text {
+                font-size: 0.75rem;
+            }
+            .status-badge {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.7rem;
+            }
+        }
+        
+        @@media (max-width: 480px) {
+            .hero-title {
+                font-size: 1.2rem;
+            }
+            .small-mobile-text {
+                font-size: 0.8rem;
+            }
+            .email-text {
+                font-size: 0.85rem;
+            }
+            .ec-card.dashboard-hero {
+                padding: 1.5rem !important;
+            }
+        }
+
+        .table > :not(caption) > * > * {
+            border-bottom-color: #f1f5f9;
+        }
+    </style>
+}

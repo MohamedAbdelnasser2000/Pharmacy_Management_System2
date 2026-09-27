@@ -1,0 +1,166 @@
+@model IMS.Models.InsurancePolicy
+
+@{
+    ViewData["Title"] = "تفاصيل البوليصة";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-file-contract text-info"></i> تفاصيل البوليصة</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">بوليصات التأمين</a></li>
+                    <li class="breadcrumb-item active">التفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> معلومات البوليصة</h3>
+                        <div class="card-tools">
+                            @if (Model.IsValid)
+                            {
+                                <span class="badge bg-success"><i class="fas fa-check"></i> صالح</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger"><i class="fas fa-times"></i> منتهي</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4"><i class="fas fa-hashtag"></i> رقم البوليصة:</dt>
+                            <dd class="col-sm-8"><strong class="text-primary">@Model.PolicyNumber</strong></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-shield-alt"></i> شركة التأمين:</dt>
+                            <dd class="col-sm-8">
+                                <a asp-controller="Insurances" asp-action="Details" asp-route-id="@Model.Insurance.Id">
+                                    @Model.Insurance.Name
+                                </a>
+                            </dd>
+
+                            @if (Model.Customer != null)
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-user"></i> العميل:</dt>
+                                <dd class="col-sm-8">
+                                    <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Customer.Id">
+                                        @Model.Customer.Name
+                                    </a>
+                                </dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.PolicyHolderName))
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-user-tag"></i> صاحب البوليصة:</dt>
+                                <dd class="col-sm-8"><strong>@Model.PolicyHolderName</strong></dd>
+                            }
+
+                            <dt class="col-sm-4"><i class="fas fa-calendar-check"></i> تاريخ البداية:</dt>
+                            <dd class="col-sm-8">@Model.StartDate.ToString("yyyy-MM-dd")</dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-calendar-times"></i> تاريخ الانتهاء:</dt>
+                            <dd class="col-sm-8">@Model.EndDate.ToString("yyyy-MM-dd")</dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-percentage"></i> نسبة التغطية:</dt>
+                            <dd class="col-sm-8"><span class="badge bg-info">@Model.CoveragePercentage%</span></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-money-bill"></i> الحد الأقصى للتغطية:</dt>
+                            <dd class="col-sm-8"><h5 class="text-success mb-0">@((double)Model.MaxCoverageAmount).ToString("N2") ج.م</h5></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-coins"></i> المبلغ المستخدم:</dt>
+                            <dd class="col-sm-8"><strong class="text-warning">@((double)Model.UsedAmount).ToString("N2") ج.م</strong></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-wallet"></i> المبلغ المتبقي:</dt>
+                            <dd class="col-sm-8"><h5 class="text-primary mb-0">@((double)Model.RemainingAmount).ToString("N2") ج.م</h5></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-toggle-on"></i> الحالة:</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> نشط</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-times"></i> غير نشط</span>
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-calendar"></i> تاريخ الإضافة:</dt>
+                            <dd class="col-sm-8">@Model.CreatedDate.ToString("yyyy-MM-dd hh:mm tt")</dd>
+
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-sticky-note"></i> ملاحظات:</dt>
+                                <dd class="col-sm-8">
+                                    <div class="alert alert-info">@Model.Notes</div>
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> تعديل
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> حذف
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> رجوع للقائمة
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-chart-pie"></i> إحصائيات التغطية</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box bg-primary">
+                            <span class="info-box-icon"><i class="fas fa-money-bill-wave"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">الحد الأقصى</span>
+                                <span class="info-box-number">@((double)Model.MaxCoverageAmount).ToString("N0")</span>
+                            </div>
+                        </div>
+                        <div class="info-box bg-warning">
+                            <span class="info-box-icon"><i class="fas fa-coins"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">المستخدم</span>
+                                <span class="info-box-number">@((double)Model.UsedAmount).ToString("N0")</span>
+                            </div>
+                        </div>
+                        <div class="info-box bg-success">
+                            <span class="info-box-icon"><i class="fas fa-wallet"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">المتبقي</span>
+                                <span class="info-box-number">@((double)Model.RemainingAmount).ToString("N0")</span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-group">
+                            <span class="progress-text">نسبة الاستخدام</span>
+                            <span class="progress-number"><b>@((double)(Model.UsedAmount / Model.MaxCoverageAmount * 100)).ToString("N1")</b>%</span>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" style="width: @((double)(Model.UsedAmount / Model.MaxCoverageAmount * 100)).ToString("N1")%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,123 @@
+@model IMS.Models.Category
+
+@{
+    ViewData["Title"] = "تفاصيل الفئة";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">@ViewData["Title"]: @Html.DisplayFor(model => model.Name)</h3>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Name)</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Name)</dd>
+
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Description)</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Description)</dd>
+
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedDate)</dt>
+                                <dd class="col-sm-8">@Model.CreatedDate.ToString("dd/MM/yyyy HH:mm")</dd>
+
+                                <dt class="col-sm-4">@Html.DisplayNameFor(model => model.IsActive)</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">نشط</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">غير نشط</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>إحصائيات الفئة</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-12">
+                                            <h2 class="text-primary">@Model.Products.Count</h2>
+                                            <p>عدد المنتجات</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Products.Any())
+                    {
+                        <div class="mt-4">
+                            <h5>المنتجات في هذه الفئة</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>اسم المنتج</th>
+                                            <th>الكود</th>
+                                            <th>سعر البيع</th>
+                                            <th>المورد</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var product in Model.Products.Take(10))
+                                        {
+                                            <tr>
+                                                <td>@product.Name</td>
+                                                <td>@product.Code</td>
+                                                <td>
+                                                    @if (product.SalePrice.HasValue)
+                                                    {
+                                                        @product.SalePrice.Value.ToString("C")
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">غير محدد</span>
+                                                    }
+                                                </td>
+                                                <td>@(product.Supplier?.Name ?? "غير محدد")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                @if (Model.Products.Count > 10)
+                                {
+                                    <p class="text-muted">يتم عرض أول 10 منتجات فقط...</p>
+                                }
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mt-4">
+                            <h6>لا توجد منتجات</h6>
+                            <p>لا توجد منتجات مرتبطة بهذه الفئة حالياً.</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="card-footer">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> العودة إلى القائمة
+                    </a>
+                    <a asp-controller="Products" asp-action="Index" asp-route-categoryId="@Model.Id" class="btn btn-info">
+                        <i class="fas fa-box"></i> عرض المنتجات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,623 @@
+@model IMS.Models.Return
+@using Microsoft.EntityFrameworkCore
+@inject IMS.Data.ApplicationDbContext DbContext
+@{
+    Layout = null;
+    var storeSettings = await DbContext.StoreSettings.FirstOrDefaultAsync();
+    var storeName = storeSettings?.StoreName ?? "نظام إدارة المخازن";
+    var storeAddress = storeSettings?.Address ?? "";
+    var storePhone = storeSettings?.PhoneNumber ?? "";
+}
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>فاتورة مرتجع #@Model.Id</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.rtl.min.css" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" />
+    <style>
+        /* إعداد عام للطباعة - يدعم جميع أنواع الورق */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        @@page {
+            size: auto;
+            margin: 10mm;
+        }
+        
+        body {
+            font-family: 'Arial', 'Tahoma', 'Segoe UI', sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #000;
+            background: #fff;
+            padding: 15px;
+        }
+        
+        .invoice-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: #fff;
+            padding: 15px;
+        }
+        
+        /* رأس الفاتورة */
+        .invoice-header {
+            text-align: center;
+            border-bottom: 3px solid #000;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .invoice-header h1 {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 26px;
+            margin: 10px 0;
+        }
+        
+        .invoice-header h3 {
+            font-size: 18px;
+            margin: 8px 0;
+            font-weight: bold;
+        }
+        
+        .invoice-header img {
+            max-height: 70px;
+            max-width: 140px;
+            margin-bottom: 10px;
+        }
+        
+        .invoice-header .store-info {
+            font-size: 12px;
+            color: #333;
+            margin-top: 8px;
+        }
+        
+        .invoice-header .store-info p {
+            margin: 3px 0;
+        }
+        
+        /* تفاصيل الفاتورة */
+        .invoice-details {
+            background: #f5f5f5;
+            padding: 12px 15px;
+            border: 1px solid #000;
+            margin-bottom: 12px;
+            border-radius: 0;
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+        }
+        
+        .invoice-details .section {
+            flex: 1;
+            padding: 0;
+        }
+        
+        .invoice-details p {
+            margin: 1px 0;
+            font-size: 12px;
+            line-height: 1.1;
+        }
+        
+        .invoice-details strong {
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        /* جدول المنتجات */
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+        
+        .items-table th,
+        .items-table td {
+            border: 1px solid #000;
+            padding: 8px 5px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .items-table th {
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+            font-size: 13px;
+        }
+        
+        .items-table tbody tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .items-table .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .items-table .bg-success {
+            background: #28a745;
+            color: #fff;
+        }
+        
+        .items-table .bg-warning {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .items-table .bg-danger {
+            background: #dc3545;
+            color: #fff;
+        }
+        
+        /* قسم الإجماليات */
+        .totals-section {
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .totals-section table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .totals-section td {
+            padding: 8px;
+            border: 1px solid #000;
+        }
+        
+        .totals-section strong {
+            font-weight: bold;
+        }
+        
+        .totals-section .total-row {
+            background: #dc3545;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .totals-section .text-success {
+            color: #28a745;
+        }
+        
+        .totals-section .text-danger {
+            color: #dc3545;
+        }
+        
+        /* شارات الحالة */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .status-pending {
+            background: #ffc107;
+            color: #000;
+        }
+        
+        .status-approved {
+            background: #28a745;
+            color: #fff;
+        }
+        
+        .status-rejected {
+            background: #dc3545;
+            color: #fff;
+        }
+        
+        .status-completed {
+            background: #17a2b8;
+            color: #fff;
+        }
+        
+        /* قسم الملاحظات */
+        .notes-section {
+            margin-top: 20px;
+            padding: 12px;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+        }
+        
+        .notes-section h6 {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .notes-section p {
+            font-size: 12px;
+            margin: 0;
+        }
+        
+        /* التذييل */
+        .footer {
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #000;
+            text-align: center;
+            font-size: 11px;
+            clear: both;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+        }
+        
+        .footer strong {
+            font-weight: bold;
+        }
+        
+        /* إعدادات الطباعة */
+        @@media print {
+            @@page {
+                size: auto;
+                margin: 8mm;
+            }
+            
+            body {
+                padding: 0;
+                margin: 0;
+                font-size: 11px;
+            }
+            
+            .invoice-container {
+                padding: 0;
+                border: none;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            /* منع تقسيم العناصر المهمة */
+            .invoice-header,
+            .invoice-details,
+            .totals-section,
+            .notes-section,
+            .footer {
+                page-break-inside: avoid;
+            }
+            
+            /* تحسين الخطوط للطباعة */
+            .invoice-header h1 {
+                font-size: 22px;
+            }
+            
+            .invoice-header h3 {
+                font-size: 16px;
+            }
+            
+            .invoice-header .store-info {
+                font-size: 10px;
+            }
+            
+            .invoice-details {
+                font-size: 11px;
+            }
+            
+            .invoice-details h5 {
+                font-size: 12px;
+            }
+            
+            .invoice-details p {
+                font-size: 11px;
+            }
+            
+            .items-table {
+                font-size: 10px;
+            }
+            
+            .items-table th,
+            .items-table td {
+                padding: 5px 3px;
+                font-size: 10px;
+            }
+            
+            .items-table th {
+                font-size: 11px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .totals-section {
+                font-size: 11px;
+            }
+            
+            .footer {
+                font-size: 9px;
+            }
+            
+            /* تحسين الألوان للطباعة */
+            .items-table th,
+            .invoice-details h5,
+            .totals-section .total-row {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .status-badge,
+            .items-table .badge {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+        
+        /* دعم الطباعة الحرارية (58mm و 80mm) */
+        @@media print and (max-width: 80mm) {
+            body {
+                font-size: 9px;
+            }
+            
+            .invoice-header h1 {
+                font-size: 16px;
+            }
+            
+            .invoice-header h3 {
+                font-size: 12px;
+            }
+            
+            .invoice-header img {
+                max-height: 45px;
+                max-width: 90px;
+            }
+            
+            .invoice-header .store-info {
+                font-size: 8px;
+            }
+            
+            .invoice-details {
+                flex-direction: column;
+            }
+            
+            .invoice-details h5 {
+                font-size: 10px;
+                padding: 4px 6px;
+            }
+            
+            .invoice-details p {
+                font-size: 9px;
+            }
+            
+            .items-table {
+                font-size: 8px;
+            }
+            
+            .items-table th,
+            .items-table td {
+                padding: 3px 2px;
+                font-size: 8px;
+            }
+            
+            .totals-section {
+                width: 100%;
+                font-size: 9px;
+            }
+            
+            .notes-section {
+                font-size: 9px;
+                padding: 8px;
+            }
+            
+            .footer {
+                font-size: 7px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <!-- Print Button -->
+        <div class="no-print text-center mb-3">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> طباعة
+            </button>
+            <button onclick="window.close()" class="btn btn-secondary">
+                <i class="fas fa-times"></i> إغلاق
+            </button>
+        </div>
+
+        <!-- Invoice Header -->
+        <div class="invoice-header">
+            @if (!string.IsNullOrEmpty(storeSettings?.LogoUrl))
+            {
+                <img src="@storeSettings.LogoUrl" alt="Logo" style="max-height: 80px; margin-bottom: 10px;" />
+            }
+            <h1>فاتورة مرتجع</h1>
+            <h3>@storeName</h3>
+            <div class="store-info">
+                @if (!string.IsNullOrEmpty(storeAddress))
+                {
+                    <p><i class="fas fa-map-marker-alt"></i> @storeAddress</p>
+                }
+                @if (!string.IsNullOrEmpty(storePhone))
+                {
+                    <p><i class="fas fa-phone"></i> @storePhone</p>
+                }
+            </div>
+        </div>
+
+        <!-- Invoice Details -->
+        <div class="invoice-details">
+            <div class="section">
+                <p><strong>رقم المرتجع:</strong> #@Model.Id</p>
+                <p><strong>تاريخ المرتجع:</strong> @Model.ReturnDate.ToString("yyyy/MM/dd HH:mm")</p>
+                <p><strong>نوع المرتجع:</strong> @Model.ReturnType</p>
+                <p><strong>الحالة:</strong> 
+                    @if (Model.Status == "معلق")
+                    {
+                        <span class="status-badge status-pending">@Model.Status</span>
+                    }
+                    else if (Model.Status == "مقبول")
+                    {
+                        <span class="status-badge status-approved">@Model.Status</span>
+                    }
+                    else if (Model.Status == "مرفوض")
+                    {
+                        <span class="status-badge status-rejected">@Model.Status</span>
+                    }
+                    else if (Model.Status == "مكتمل")
+                    {
+                        <span class="status-badge status-completed">@Model.Status</span>
+                    }
+                </p>
+            </div>
+            <div class="section">
+                <p><strong>اسم العميل:</strong> @Model.Customer?.Name</p>
+                <p><strong>رقم الهاتف:</strong> @Model.Customer?.PhoneNumber</p>
+                <p><strong>رقم الطلب الأصلي:</strong> #@Model.OrderId</p>
+                <p><strong>تاريخ الطلب:</strong> @Model.Order?.OrderDate.ToString("yyyy/MM/dd")</p>
+            </div>
+        </div>
+
+        <!-- Return Reason -->
+        <div class="mb-4">
+            <h5 style="background: #f8f9fa; padding: 8px; border-right: 4px solid #dc3545;">
+                <i class="fas fa-exclamation-circle"></i> سبب المرتجع
+            </h5>
+            <p style="padding: 10px; background: #fff; border: 1px solid #ddd;">@Model.Reason</p>
+        </div>
+
+        <!-- Items Table -->
+        <h5 style="background: #f8f9fa; padding: 8px; border-right: 4px solid #dc3545; margin-bottom: 15px;">
+            <i class="fas fa-boxes"></i> المنتجات المرتجعة
+        </h5>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم المنتج</th>
+                    <th>الكمية</th>
+                    <th>السعر</th>
+                    <th>خصم %</th>
+                    <th>المبلغ</th>
+                    <th>الحالة</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int itemNumber = 1;
+                }
+                @foreach (var item in Model.ReturnItems)
+                {
+                    var subtotal = item.ReturnedQuantity * item.UnitPrice;
+                    var discount = subtotal * (item.DiscountPercentage / 100);
+                    var total = subtotal - discount;
+                    <tr>
+                        <td>@itemNumber</td>
+                        <td>@item.Product?.Name</td>
+                        <td>@item.ReturnedQuantity</td>
+                        <td>@item.UnitPrice.ToString("N2") ج.م</td>
+                        <td>@item.DiscountPercentage%</td>
+                        <td>@total.ToString("N2") ج.م</td>
+                        <td>
+                            @if (item.Condition == "جديد")
+                            {
+                                <span class="badge bg-success">@item.Condition</span>
+                            }
+                            else if (item.Condition == "مستخدم")
+                            {
+                                <span class="badge bg-warning">@item.Condition</span>
+                            }
+                            else if (item.Condition == "تالف")
+                            {
+                                <span class="badge bg-danger">@item.Condition</span>
+                            }
+                        </td>
+                    </tr>
+                    itemNumber++;
+                }
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-section">
+            <table>
+                <tr>
+                    <td><strong>إجمالي المبلغ المسترجع:</strong></td>
+                    <td style="text-align: left;"><strong>@Model.TotalRefundAmount.ToString("N2") ج.م</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>المبلغ المسترد:</strong></td>
+                    <td style="text-align: left;" class="text-success"><strong>@Model.RefundedAmount.ToString("N2") ج.م</strong></td>
+                </tr>
+                <tr>
+                    <td><strong>المتبقي:</strong></td>
+                    <td style="text-align: left;" class="text-danger"><strong>@((Model.TotalRefundAmount - Model.RefundedAmount).ToString("N2")) ج.م</strong></td>
+                </tr>
+                @if (Model.RefundedAmount > 0)
+                {
+                    <tr class="total-row">
+                        <td>طريقة الاسترداد:</td>
+                        <td style="text-align: left;">@Model.RefundMethod</td>
+                    </tr>
+                }
+            </table>
+        </div>
+
+        <div style="clear: both;"></div>
+
+        <!-- Notes -->
+        @if (!string.IsNullOrEmpty(Model.Notes))
+        {
+            <div class="notes-section">
+                <h6><i class="fas fa-sticky-note"></i> ملاحظات:</h6>
+                <p>@Model.Notes</p>
+            </div>
+        }
+
+        <!-- Processing Info -->
+        <div style="margin-top: 30px; padding: 15px; background: #e9ecef; border-radius: 5px;">
+            <div style="display: flex; justify-content: space-between;">
+                <div>
+                    <p style="margin: 5px 0;"><strong>تم بواسطة:</strong> @Model.ProcessedBy</p>
+                    @if (Model.ApprovedBy != null)
+                    {
+                        <p style="margin: 5px 0;"><strong>تمت الموافقة بواسطة:</strong> @Model.ApprovedBy</p>
+                    }
+                </div>
+                <div style="text-align: left;">
+                    @if (Model.ApprovedDate.HasValue)
+                    {
+                        <p style="margin: 5px 0;"><strong>تاريخ الموافقة:</strong> @Model.ApprovedDate.Value.ToString("yyyy/MM/dd")</p>
+                    }
+                    @if (Model.RefundDate.HasValue)
+                    {
+                        <p style="margin: 5px 0;"><strong>تاريخ الاسترداد:</strong> @Model.RefundDate.Value.ToString("yyyy/MM/dd")</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>شكراً لتعاملكم معنا</strong></p>
+            <p>تم الطباعة في: @IMS.AppClock.UtcNow.ToString("yyyy/MM/dd HH:mm")</p>
+            <p style="margin-top: 10px; font-size: 11px;">
+                هذه الفاتورة صادرة من نظام @storeName - جميع الحقوق محفوظة
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Auto print on load (optional)
+        // window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>

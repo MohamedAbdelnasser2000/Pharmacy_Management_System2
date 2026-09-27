@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.0" />
+    <PackageReference Include="BarcodeLib" Version="2.4.0" />
+    <PackageReference Include="NPOI" Version="2.7.5" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="iTextSharp.LGPLv2.Core" Version="3.4.23" />
+    <PackageReference Include="EPPlus" Version="7.0.0" />
+    <PackageReference Include="QuestPDF" Version="2024.10.3" />
+    <PackageReference Include="xunit.abstractions" Version="2.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="IMS.Tests\**\*.cs" />
+    <None Remove="IMS.Tests\**\*" />
+    <EmbeddedResource Remove="IMS.Tests\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\logos\" />
+  </ItemGroup>
+
+</Project>

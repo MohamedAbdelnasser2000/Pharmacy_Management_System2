@@ -1,0 +1,562 @@
+@{
+    ViewData["Title"] = "مسح باركود الأدوية - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0">
+                    <i class="bi bi-upc-scan text-primary"></i>
+                    مسح باركود الأدوية
+                </h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item active">مسح الباركود</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <!-- Alert Messages -->
+        <div id="alertContainer"></div>
+
+        <!-- Barcode Scanner Section -->
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-upc-scan"></i>
+                            مسح باركود الدواء
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>تعليمات:</strong> استخدم قارئ الباركود لمسح المنتج، أو أدخل الباركود يدوياً واضغط Enter
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="barcodeInput" class="form-label">
+                                <i class="bi bi-upc"></i>
+                                الباركود
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">
+                                    <i class="bi bi-upc-scan"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="barcodeInput" 
+                                       placeholder="امسح الباركود أو أدخله يدوياً..."
+                                       autofocus>
+                                <button class="btn btn-success" type="button" id="cameraBtn" title="فتح الكاميرا">
+                                    <i class="bi bi-camera"></i>
+                                </button>
+                                <button class="btn btn-primary" type="button" id="searchBtn">
+                                    <i class="bi bi-search"></i>
+                                    بحث
+                                </button>
+                            </div>
+                            <small class="text-muted">سيتم البحث تلقائياً عند الضغط على Enter أو استخدم الكاميرا لمسح QR Code</small>
+                        </div>
+
+                        <!-- QR Code Scanner Modal -->
+                        <div class="modal fade" id="qrScannerModal" tabindex="-1" aria-labelledby="qrScannerModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-success text-white">
+                                        <h5 class="modal-title" id="qrScannerModalLabel">
+                                            <i class="bi bi-camera"></i>
+                                            مسح QR Code بالكاميرا
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i>
+                                            وجه الكاميرا نحو QR Code أو الباركود
+                                        </div>
+                                        <div id="qr-reader" style="width: 100%;"></div>
+                                        <div id="qr-reader-results" class="mt-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Info Display -->
+                        <div id="productInfo" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3">
+                                <i class="bi bi-box-seam"></i>
+                                معلومات المنتج
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">اسم المنتج:</dt>
+                                        <dd class="col-sm-8" id="productName"></dd>
+
+                                        <dt class="col-sm-4">الكود:</dt>
+                                        <dd class="col-sm-8" id="productCode"></dd>
+
+                                        <dt class="col-sm-4">الباركود:</dt>
+                                        <dd class="col-sm-8"><code id="productBarcode"></code></dd>
+                                    </dl>
+                                </div>
+                                <div class="col-md-6">
+                                    <dl class="row">
+                                        <dt class="col-sm-4">الفئة:</dt>
+                                        <dd class="col-sm-8" id="productCategory"></dd>
+
+                                        <dt class="col-sm-4">الوحدة:</dt>
+                                        <dd class="col-sm-8" id="productUnit"></dd>
+
+                                        <dt class="col-sm-4">إجمالي الكمية:</dt>
+                                        <dd class="col-sm-8">
+                                            <span class="badge bg-info fs-6" id="productTotalQty"></span>
+                                        </dd>
+                                    </dl>
+                                </div>
+                            </div>
+
+                            <!-- Warehouse Inventory -->
+                            <div id="warehouseInventory" class="mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Panel -->
+            <div class="col-md-4">
+                <div class="card" id="actionPanel" style="display: none;">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-arrow-left-right"></i>
+                            حركة المخزون
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="movementForm">
+                            <input type="hidden" id="productId">
+
+                            <div class="mb-3">
+                                <label for="warehouseSelect" class="form-label">المستودع</label>
+                                <select class="form-select" id="warehouseSelect" required>
+                                    <option value="">اختر المستودع...</option>
+                                    @foreach (var warehouse in ViewData["WarehouseId"] as SelectList)
+                                    {
+                                        <option value="@warehouse.Value">@warehouse.Text</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="quantityInput" class="form-label">الكمية</label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="quantityInput" 
+                                       min="0.01" 
+                                       step="0.01" 
+                                       value="1"
+                                       required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="reasonInput" class="form-label">السبب (اختياري)</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="reasonInput" 
+                                       placeholder="سبب الحركة...">
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-success btn-lg" id="stockInBtn">
+                                    <i class="bi bi-box-arrow-in-down"></i>
+                                    إدخال بضاعة
+                                </button>
+                                <button type="button" class="btn btn-danger btn-lg" id="stockOutBtn">
+                                    <i class="bi bi-box-arrow-up"></i>
+                                    إخراج بضاعة
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="card mt-3">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-graph-up"></i>
+                            إحصائيات اليوم
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>عمليات الإدخال:</span>
+                            <span class="badge bg-success" id="todayStockIn">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>عمليات الإخراج:</span>
+                            <span class="badge bg-danger" id="todayStockOut">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Movements -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clock-history"></i>
+                            آخر الحركات
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped" id="recentMovements">
+                                <thead>
+                                    <tr>
+                                        <th>الوقت</th>
+                                        <th>المنتج</th>
+                                        <th>المستودع</th>
+                                        <th>النوع</th>
+                                        <th>الكمية</th>
+                                        <th>السبب</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">لا توجد حركات بعد</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- html5-qrcode library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    
+    <script>
+        let currentProduct = null;
+        let recentMovements = [];
+        let todayStats = { stockIn: 0, stockOut: 0 };
+        let html5QrCode = null;
+
+        $(document).ready(function() {
+            // Focus on barcode input
+            $('#barcodeInput').focus();
+
+            // Search on Enter key
+            $('#barcodeInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    searchProduct();
+                }
+            });
+
+            // Search button click
+            $('#searchBtn').on('click', function() {
+                searchProduct();
+            });
+
+            // Stock In button
+            $('#stockInBtn').on('click', function() {
+                processMovement('in');
+            });
+
+            // Stock Out button
+            $('#stockOutBtn').on('click', function() {
+                processMovement('out');
+            });
+
+            // Camera button - Open QR Scanner Modal
+            $('#cameraBtn').on('click', function() {
+                $('#qrScannerModal').modal('show');
+            });
+
+            // Initialize QR Scanner when modal is shown
+            $('#qrScannerModal').on('shown.bs.modal', function() {
+                startQrScanner();
+            });
+
+            // Stop QR Scanner when modal is hidden
+            $('#qrScannerModal').on('hidden.bs.modal', function() {
+                stopQrScanner();
+            });
+        });
+
+        function searchProduct() {
+            const barcode = $('#barcodeInput').val().trim();
+            
+            if (!barcode) {
+                showAlert('warning', 'الرجاء إدخال الباركود');
+                return;
+            }
+
+            // Show loading
+            $('#searchBtn').html('<span class="spinner-border spinner-border-sm"></span> جاري البحث...');
+            $('#searchBtn').prop('disabled', true);
+
+            $.post('@Url.Action("SearchByBarcode")', { barcode: barcode })
+                .done(function(response) {
+                    if (response.success) {
+                        displayProduct(response.product);
+                        playSuccessSound();
+                    } else {
+                        showAlert('danger', response.message);
+                        playErrorSound();
+                        hideProductInfo();
+                    }
+                })
+                .fail(function() {
+                    showAlert('danger', 'حدث خطأ أثناء البحث');
+                    playErrorSound();
+                })
+                .always(function() {
+                    $('#searchBtn').html('<i class="bi bi-search"></i> بحث');
+                    $('#searchBtn').prop('disabled', false);
+                    $('#barcodeInput').val('').focus();
+                });
+        }
+
+        function displayProduct(product) {
+            currentProduct = product;
+
+            $('#productName').text(product.name);
+            $('#productCode').text(product.code || '-');
+            $('#productBarcode').text(product.barcode);
+            $('#productCategory').text(product.categoryName || '-');
+            $('#productUnit').text(product.unit || '-');
+            $('#productTotalQty').text(product.totalQuantity);
+            $('#productId').val(product.id);
+
+            // Display warehouse inventory
+            let inventoryHtml = '<h6>المخزون في المستودعات:</h6><ul class="list-group">';
+            if (product.inventories && product.inventories.length > 0) {
+                product.inventories.forEach(inv => {
+                    inventoryHtml += `
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${inv.warehouseName}
+                            <span class="badge bg-primary rounded-pill">${inv.quantity}</span>
+                        </li>`;
+                });
+            } else {
+                inventoryHtml += '<li class="list-group-item text-muted">لا يوجد مخزون</li>';
+            }
+            inventoryHtml += '</ul>';
+            $('#warehouseInventory').html(inventoryHtml);
+
+            $('#productInfo').slideDown();
+            $('#actionPanel').slideDown();
+        }
+
+        function hideProductInfo() {
+            $('#productInfo').slideUp();
+            $('#actionPanel').slideUp();
+            currentProduct = null;
+        }
+
+        function processMovement(type) {
+            if (!currentProduct) {
+                showAlert('warning', 'الرجاء مسح منتج أولاً');
+                return;
+            }
+
+            const warehouseId = $('#warehouseSelect').val();
+            const quantity = $('#quantityInput').val();
+            const reason = $('#reasonInput').val();
+
+            if (!warehouseId) {
+                showAlert('warning', 'الرجاء اختيار المستودع');
+                return;
+            }
+
+            if (!quantity || quantity <= 0) {
+                showAlert('warning', 'الرجاء إدخال كمية صحيحة');
+                return;
+            }
+
+            const url = type === 'in'
+                ? '@Url.Action("StockIn", "BarcodeScan")'
+                : '@Url.Action("StockOut", "BarcodeScan")';
+            const btn = type === 'in' ? '#stockInBtn' : '#stockOutBtn';
+
+            $(btn).prop('disabled', true);
+
+            $.post(url, {
+                productId: currentProduct.id,
+                warehouseId: warehouseId,
+                quantity: quantity,
+                reason: reason,
+                __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+            })
+            .done(function(response) {
+                if (response.success) {
+                    showAlert('success', response.message);
+                    playSuccessSound();
+                    
+                    // Update stats
+                    if (type === 'in') {
+                        todayStats.stockIn++;
+                        $('#todayStockIn').text(todayStats.stockIn);
+                    } else {
+                        todayStats.stockOut++;
+                        $('#todayStockOut').text(todayStats.stockOut);
+                    }
+
+                    // Add to recent movements
+                    addRecentMovement(type, quantity, reason);
+
+                    // Reset form
+                    $('#quantityInput').val('1');
+                    $('#reasonInput').val('');
+                    
+                    // Refresh product info
+                    searchProduct();
+                } else {
+                    showAlert('danger', response.message);
+                    playErrorSound();
+                }
+            })
+            .fail(function() {
+                showAlert('danger', 'حدث خطأ أثناء تسجيل الحركة');
+                playErrorSound();
+            })
+            .always(function() {
+                $(btn).prop('disabled', false);
+            });
+        }
+
+        function addRecentMovement(type, quantity, reason) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ar-EG');
+            const warehouseName = $('#warehouseSelect option:selected').text();
+            const movementType = type === 'in' ? 'إدخال' : 'إخراج';
+            const badgeClass = type === 'in' ? 'bg-success' : 'bg-danger';
+
+            const row = `
+                <tr>
+                    <td>${timeStr}</td>
+                    <td>${currentProduct.name}</td>
+                    <td>${warehouseName}</td>
+                    <td><span class="badge ${badgeClass}">${movementType}</span></td>
+                    <td>${quantity}</td>
+                    <td>${reason || '-'}</td>
+                </tr>`;
+
+            if ($('#recentMovements tbody tr td[colspan]').length) {
+                $('#recentMovements tbody').html(row);
+            } else {
+                $('#recentMovements tbody').prepend(row);
+            }
+
+            // Keep only last 10 movements
+            $('#recentMovements tbody tr').slice(10).remove();
+        }
+
+        function showAlert(type, message) {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'danger' ? 'x-circle' : 'exclamation-triangle'}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>`;
+            
+            $('#alertContainer').html(alertHtml);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut();
+            }, 5000);
+        }
+
+        function playSuccessSound() {
+            // Optional: Add success sound
+            // const audio = new Audio('/sounds/success.mp3');
+            // audio.play();
+        }
+
+        function playErrorSound() {
+            // Optional: Add error sound
+            // const audio = new Audio('/sounds/error.mp3');
+            // audio.play();
+        }
+
+        // QR Code Scanner Functions
+        function startQrScanner() {
+            if (html5QrCode) {
+                return; // Already initialized
+            }
+
+            html5QrCode = new Html5Qrcode("qr-reader");
+            
+            const config = {
+                fps: 10,
+                qrbox: { width: 250, height: 250 },
+                aspectRatio: 1.0
+            };
+
+            html5QrCode.start(
+                { facingMode: "environment" }, // Use back camera
+                config,
+                onScanSuccess,
+                onScanError
+            ).catch(err => {
+                console.error("Unable to start scanning", err);
+                showAlert('danger', 'فشل في تشغيل الكاميرا. تأكد من السماح بالوصول للكاميرا');
+                $('#qrScannerModal').modal('hide');
+            });
+        }
+
+        function stopQrScanner() {
+            if (html5QrCode) {
+                html5QrCode.stop().then(() => {
+                    html5QrCode.clear();
+                    html5QrCode = null;
+                }).catch(err => {
+                    console.error("Unable to stop scanning", err);
+                });
+            }
+        }
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`QR Code detected: ${decodedText}`);
+            
+            // Set the barcode value
+            $('#barcodeInput').val(decodedText);
+            
+            // Close the modal
+            $('#qrScannerModal').modal('hide');
+            
+            // Auto search
+            searchProduct();
+            
+            // Play success sound
+            playSuccessSound();
+        }
+
+        function onScanError(errorMessage) {
+            // Handle scan error silently (camera is still scanning)
+            // console.log(errorMessage);
+        }
+    </script>
+
+    @Html.AntiForgeryToken()
+}

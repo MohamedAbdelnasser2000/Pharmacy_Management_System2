@@ -1,0 +1,663 @@
+@model IMS.Models.Order
+@{
+    ViewData["Title"] = "نقطة البيع - الصيدلية";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-cash-register text-success"></i> نقطة البيع - POS</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المبيعات</a></li>
+                    <li class="breadcrumb-item active">بيع جديد</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-gradient-success text-white">
+                <h5 class="card-title mb-0"><i class="fas fa-shopping-basket"></i> عملية بيع جديدة</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" id="orderForm">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="CustomerId" class="control-label"><i class="fas fa-user-injured"></i> العميل/المريض</label>
+                                <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.CustomerId" id="customerSelect" required>
+                                    <option value="">-- اختر العميل/المريض --</option>
+                                </select>
+                                <span asp-validation-for="CustomerId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="InsurancePolicyId" class="control-label">
+                                    <i class="fas fa-shield-alt text-primary"></i> البوليصة التأمينية (اختياري)
+                                </label>
+                                <select asp-for="InsurancePolicyId" class="form-control" id="insurancePolicySelect" disabled>
+                                    <option value="">-- لا يوجد تأمين --</option>
+                                </select>
+                                <small class="text-muted">اختر العميل أولاً لعرض البوليصات المتاحة</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4" />
+                    <h5 class="text-primary"><i class="fas fa-pills"></i> الأدوية المباعة</h5>
+                    
+                    <!-- Barcode Scanner -->
+                    <div class="alert alert-info mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <label for="barcodeInput" class="form-label mb-2">
+                                    <i class="fas fa-barcode"></i>
+                                    <strong>مسح باركود الدواء</strong>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-barcode"></i>
+                                    </span>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="barcodeInput" 
+                                           placeholder="امسح الباركود أو أدخله يدوياً واضغط Enter..."
+                                           autocomplete="off">
+                                    <button class="btn btn-primary" type="button" id="searchBarcodeBtn">
+                                        <i class="fas fa-search"></i>
+                                        بحث
+                                    </button>
+                                </div>
+                                <small class="text-muted">سيتم إضافة الدواء تلقائياً عند المسح</small>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div id="barcodeStatus" class="mt-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="productsContainer">
+                        <div class="product-row mb-3" data-index="0">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label class="control-label"><i class="fas fa-pills"></i> الدواء</label>
+                                    <select name="OrderItems[0].ProductId" class="form-control product-select" required>
+                                        <option value="">-- اختر الدواء --</option>
+                                        @foreach (var product in ViewBag.Products)
+                                        {
+                                            <option value="@product.Value" data-price="@product.Text.Split('|')[1]">@product.Text.Split('|')[0]</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="control-label"><i class="fas fa-sort-numeric-up"></i> الكمية</label>
+                                    <input type="number" name="OrderItems[0].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="control-label"><i class="fas fa-tag"></i> السعر</label>
+                                    <input type="number" name="OrderItems[0].UnitPrice" class="form-control price-input" step="0.01" min="0" required />
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="control-label"><i class="fas fa-percent"></i> خصم</label>
+                                    <input type="number" name="OrderItems[0].DiscountPercentage" class="form-control discount-input" step="0.01" min="0" max="100" value="0" />
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="control-label"><i class="fas fa-calculator"></i> قبل</label>
+                                    <input type="text" class="form-control item-subtotal" readonly />
+                                </div>  
+                                <div class="col-md-2">
+                                    <label class="control-label"><i class="fas fa-money-bill-wave"></i> بعد</label>
+                                    <input type="text" class="form-control item-total" readonly />
+                                </div>
+                                <div class="col-md-1">
+                                    <label class="control-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-block remove-product" style="display:none;"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn btn-primary mb-3" id="addProduct"><i class="fas fa-plus-circle"></i> إضافة دواء آخر</button>
+
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <strong><i class="fas fa-calculator"></i> الإجمالي قبل الخصم:</strong>
+                                        <span id="subtotalAmount" class="fs-5 text-muted">0.00 جنيه</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2 text-success">
+                                        <strong><i class="fas fa-gift"></i> خصومات الروشتة:</strong>
+                                        <span id="totalDiscountAmount" class="fs-5">0.00 جنيه</span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <div class="input-group input-group-sm">
+                                            <input type="text" id="discountCodeInput" class="form-control" placeholder="كود خصم (اختياري)" />
+                                            <button type="button" class="btn btn-outline-primary" id="applyDiscountBtn">تفعيل</button>
+                                        </div>
+                                        <div id="discountMessage" class="small mt-1"></div>
+                                    </div>
+                                    <div id="couponDiscountRow" class="d-flex justify-content-between mb-2 text-success" style="display:none !important;">
+                                        <strong><i class="fas fa-ticket-alt"></i> خصم الكوبون:</strong>
+                                        <span id="couponDiscountAmountDisplay" class="fs-5">0.00 جنيه</span>
+                                    </div>
+                                    <input type="hidden" asp-for="DiscountCodeId" id="hiddenDiscountCodeId" />
+                                    <input type="hidden" asp-for="DiscountAmount" id="hiddenDiscountAmount" />
+                                    <hr>
+                                    <div class="d-flex justify-content-between mb-3">
+                                        <strong class="fs-4 text-primary"><i class="fas fa-money-check-alt"></i> المبلغ الإجمالي:</strong>
+                                        <strong id="totalAmount" class="text-primary fs-3">0.00 جنيه</strong>
+                                    </div>
+                                    <div id="insuranceSection" style="display:none;">
+                                        <div class="d-flex justify-content-between mb-2 text-primary">
+                                            <strong><i class="fas fa-shield-alt"></i> التغطية التأمينية:</strong>
+                                            <span id="insuranceCoverageAmount" class="fs-5">0.00 جنيه</span>
+                                        </div>
+                                        <hr>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <strong class="fs-4 text-success"><i class="fas fa-user-check"></i> المبلغ على العميل:</strong>
+                                            <strong id="customerPayableAmount" class="text-success fs-3">0.00 جنيه</strong>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mb-2">
+                                        <label><i class="fas fa-hand-holding-usd"></i> المبلغ المدفوع</label>
+                                        <input asp-for="PaidAmount" class="form-control form-control-lg" type="number" step="0.01" min="0" value="0" placeholder="أدخل المبلغ المدفوع" />
+                                    </div>
+                                    <div class="d-flex justify-content-between text-muted small">
+                                        <span><i class="fas fa-info-circle"></i> المتبقي:</span>
+                                        <span id="remainingAmount">0.00 جنيه</span>
+                                    </div>
+                                    <input type="hidden" asp-for="TotalAmount" id="hiddenTotalAmount" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-3 text-end">
+                        <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-times"></i> إلغاء
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check-circle"></i> إتمام عملية البيع
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let productIndex = 1;
+
+        // Barcode Scanner Functions
+        $(document).ready(function() {
+            // Search on Enter key
+            $('#barcodeInput').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    searchProductByBarcode();
+                }
+            });
+
+            // Search button click
+            $('#searchBarcodeBtn').on('click', function() {
+                searchProductByBarcode();
+            });
+        });
+
+        function searchProductByBarcode() {
+            const barcode = $('#barcodeInput').val().trim();
+            
+            if (!barcode) {
+                showBarcodeStatus('warning', 'الرجاء إدخال الباركود');
+                return;
+            }
+
+            // Show loading
+            $('#searchBarcodeBtn').html('<span class="spinner-border spinner-border-sm"></span> جاري البحث...');
+            $('#searchBarcodeBtn').prop('disabled', true);
+
+            $.post('@Url.Action("SearchByBarcode", "BarcodeScan")', { barcode: barcode })
+                .done(function(response) {
+                    if (response.success) {
+                        addProductFromBarcode(response.product);
+                        showBarcodeStatus('success', '✓ تمت الإضافة: ' + response.product.name);
+                        playBeep();
+                    } else {
+                        showBarcodeStatus('danger', '✗ ' + response.message);
+                    }
+                })
+                .fail(function() {
+                    showBarcodeStatus('danger', '✗ حدث خطأ أثناء البحث');
+                })
+                .always(function() {
+                    $('#searchBarcodeBtn').html('<i class="fas fa-search"></i> بحث');
+                    $('#searchBarcodeBtn').prop('disabled', false);
+                    $('#barcodeInput').val('').focus();
+                });
+        }
+
+        function addProductFromBarcode(product) {
+            // Check if the first row is empty (default row)
+            const firstRow = $('.product-row').first();
+            const firstSelect = firstRow.find('.product-select');
+            const isFirstRowEmpty = !firstSelect.val() || firstSelect.val() === '';
+
+            if (isFirstRowEmpty) {
+                // Fill the first empty row with product data
+                firstSelect.empty().append(`<option value="${product.id}" selected data-price="${product.salePrice}">${product.name}</option>`);
+                firstRow.find('.quantity-input').val(1);
+                firstRow.find('.price-input').val(product.salePrice);
+                firstRow.find('.discount-input').val(10);
+                firstRow.find('.item-subtotal').val(product.salePrice);
+                firstRow.find('.item-total').val(product.salePrice);
+                calculateTotals();
+                // Highlight the row briefly
+                firstRow.addClass('bg-success bg-opacity-25');
+                setTimeout(() => firstRow.removeClass('bg-success bg-opacity-25'), 1000);
+                return;
+            }
+
+            // Check if product already exists in the list
+            let existingRow = null;
+            $('.product-row').each(function() {
+                const select = $(this).find('.product-select');
+                if (select.val() == product.id) {
+                    existingRow = $(this);
+                    return false;
+                }
+            });
+
+            if (existingRow) {
+                // Increment quantity if product already exists
+                const qtyInput = existingRow.find('.quantity-input');
+                const currentQty = parseFloat(qtyInput.val()) || 0;
+                qtyInput.val(currentQty + 1);
+                calculateTotals();
+                // Highlight the row briefly
+                existingRow.addClass('bg-warning bg-opacity-25');
+                setTimeout(() => existingRow.removeClass('bg-warning bg-opacity-25'), 1000);
+            } else {
+                // Add new product row
+                const newRow = `
+                    <div class="product-row mb-3" data-index="${productIndex}">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label class="control-label"><i class="fas fa-pills"></i> الدواء</label>
+                                <select name="OrderItems[${productIndex}].ProductId" class="form-control product-select" required>
+                                    <option value="${product.id}" selected data-price="${product.salePrice}">${product.name}</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1">
+                                <label class="control-label"><i class="fas fa-sort-numeric-up"></i> الكمية</label>
+                                <input type="number" name="OrderItems[${productIndex}].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="control-label"><i class="fas fa-tag"></i> السعر</label>
+                                <input type="number" name="OrderItems[${productIndex}].UnitPrice" class="form-control price-input" step="0.01" min="0" value="${product.salePrice}" required />
+                            </div>
+                            <div class="col-md-1">
+                                <label class="control-label"><i class="fas fa-percent"></i> خصم</label>
+                                <input type="number" name="OrderItems[${productIndex}].DiscountPercentage" class="form-control discount-input" step="0.01" min="0" max="100" value="10" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="control-label"><i class="fas fa-calculator"></i> قبل</label>
+                                <input type="text" class="form-control item-subtotal" readonly value="${product.salePrice}" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="control-label"><i class="fas fa-money-bill-wave"></i> بعد</label>
+                                <input type="text" class="form-control item-total" readonly value="${product.salePrice}" />
+                            </div>
+                            <div class="col-md-1">
+                                <label class="control-label">&nbsp;</label>
+                                <button type="button" class="btn btn-danger btn-block remove-product"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#productsContainer').append(newRow);
+                productIndex++;
+                updateRemoveButtons();
+                calculateTotals();
+            }
+        }
+
+        function showBarcodeStatus(type, message) {
+            const iconClass = type === 'success' ? 'fa-check-circle' : type === 'danger' ? 'fa-times-circle' : 'fa-exclamation-triangle';
+            const alertClass = type === 'success' ? 'alert-success' : type === 'danger' ? 'alert-danger' : 'alert-warning';
+            
+            $('#barcodeStatus').html(`
+                <div class="alert ${alertClass} py-2 mb-0">
+                    <i class="fas ${iconClass}"></i> ${message}
+                </div>
+            `);
+            
+            setTimeout(function() {
+                $('#barcodeStatus').fadeOut(function() {
+                    $(this).html('').show();
+                });
+            }, 3000);
+        }
+
+        function playBeep() {
+            // Simple beep sound using Web Audio API
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.1);
+            } catch (e) {
+                // Silently fail if audio not supported
+            }
+        }
+
+        // Calculate totals
+        function calculateTotals() {
+            let grandSubtotal = 0;
+            let grandTotal = 0;
+            let grandDiscount = 0;
+            
+            $('.product-row').each(function() {
+                const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                const price = parseFloat($(this).find('.price-input').val()) || 0;
+                const discountPercentage = parseFloat($(this).find('.discount-input').val()) || 0;
+                
+                // حساب المبلغ قبل الخصم
+                const subtotal = quantity * price;
+                
+                // حساب قيمة الخصم
+                const discountAmount = (subtotal * discountPercentage) / 100;
+                
+                // حساب المبلغ بعد الخصم
+                const itemTotal = subtotal - discountAmount;
+                
+                // عرض القيم في الحقول
+                $(this).find('.item-subtotal').val(subtotal.toFixed(2));
+                $(this).find('.item-total').val(itemTotal.toFixed(2));
+                
+                // إضافة للمجاميع الكلية
+                grandSubtotal += subtotal;
+                grandDiscount += discountAmount;
+                grandTotal += itemTotal;
+            });
+            
+            // حساب قيمة خصم الكود (Coupon Discount)
+            let couponDiscount = parseFloat($('#hiddenDiscountAmount').val()) || 0;
+            if (couponDiscount > 0) {
+                $('#couponDiscountRow').css('display', 'flex').show();
+                $('#couponDiscountAmountDisplay').text(couponDiscount.toFixed(2) + ' جنيه');
+                grandTotal -= couponDiscount;
+                if (grandTotal < 0) grandTotal = 0;
+            } else {
+                $('#couponDiscountRow').hide();
+            }
+
+            // عرض المجاميع الكلية
+            $('#subtotalAmount').text(grandSubtotal.toFixed(2) + ' جنيه');
+            $('#totalDiscountAmount').text(grandDiscount.toFixed(2) + ' جنيه');
+            $('#totalAmount').text(grandTotal.toFixed(2) + ' جنيه');
+            $('#hiddenTotalAmount').val(grandTotal.toFixed(2));
+            
+            // إعادة حساب التأمين إذا كان محدداً
+            if ($('#insurancePolicySelect').val()) {
+                calculateInsurance();
+            }
+            
+            // حساب المتبقي
+            const paidAmount = parseFloat($('#PaidAmount').val()) || 0;
+            const remaining = grandTotal - paidAmount;
+            $('#remainingAmount').text(remaining.toFixed(2) + ' جنيه');
+        }
+
+        // Discount Code Validation
+        $('#applyDiscountBtn').click(function() {
+            const code = $('#discountCodeInput').val().trim();
+            const currentTotal = calculateCurrentSubtotal(); // Total before coupon but after item discounts
+
+            if (!code) {
+                $('#discountMessage').removeClass('text-success').addClass('text-danger').text('الرجاء إدخال الكود');
+                return;
+            }
+
+            $('#applyDiscountBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+
+            $.get('@Url.Action("ValidateCode", "DiscountCodes")', { code: code, currentTotal: currentTotal })
+                .done(function(result) {
+                    if (result.success) {
+                        $('#hiddenDiscountCodeId').val(result.discountId);
+                        $('#hiddenDiscountAmount').val(result.discountAmount);
+                        $('#discountMessage').removeClass('text-danger').addClass('text-success').text(result.message);
+                        $('#discountCodeInput').prop('readonly', true);
+                        $('#applyDiscountBtn').removeClass('btn-outline-primary').addClass('btn-success').html('<i class="fas fa-check"></i> تم التفعيل');
+                        calculateTotals();
+                    } else {
+                        $('#discountMessage').removeClass('text-success').addClass('text-danger').text(result.message);
+                        $('#hiddenDiscountCodeId').val('');
+                        $('#hiddenDiscountAmount').val(0);
+                        $('#applyDiscountBtn').prop('disabled', false).text('تفعيل');
+                        calculateTotals();
+                    }
+                })
+                .fail(function() {
+                    $('#discountMessage').removeClass('text-success').addClass('text-danger').text('حدث خطأ أثناء التحقق');
+                    $('#applyDiscountBtn').prop('disabled', false).text('تفعيل');
+                });
+        });
+
+        function calculateCurrentSubtotal() {
+            let total = 0;
+            $('.product-row').each(function() {
+                const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                const price = parseFloat($(this).find('.price-input').val()) || 0;
+                const discountPercentage = parseFloat($(this).find('.discount-input').val()) || 0;
+                const subtotal = quantity * price;
+                const discountAmount = (subtotal * discountPercentage) / 100;
+                total += (subtotal - discountAmount);
+            });
+            return total;
+        }
+
+        // Product selection change
+        $(document).on('change', '.product-select', function() {
+            const selectedOption = $(this).find('option:selected');
+            const price = selectedOption.data('price') || 0;
+            $(this).closest('.product-row').find('.price-input').val(price);
+            calculateTotals();
+        });
+
+        // Quantity change
+        $(document).on('input', '.quantity-input', function() {
+            calculateTotals();
+        });
+
+        // Price change (manual edit by admin)
+        $(document).on('input', '.price-input', function() {
+            calculateTotals();
+        });
+
+        // Discount percentage change for each product
+        $(document).on('input', '.discount-input', function() {
+            calculateTotals();
+        });
+
+        // Paid amount change
+        $(document).on('input', '#PaidAmount', function() {
+            calculateTotals();
+        });
+
+        // Add product
+        $('#addProduct').click(function() {
+            const newRow = `
+                <div class="product-row mb-3" data-index="${productIndex}">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="control-label"><i class="fas fa-pills"></i> الدواء</label>
+                            <select name="OrderItems[${productIndex}].ProductId" class="form-control product-select" required>
+                                <option value="">-- اختر الدواء --</option>
+                                @foreach (var product in ViewBag.Products)
+                                {
+                                    <option value="@product.Value" data-price="@product.Text.Split('|')[1]">@product.Text.Split('|')[0]</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="control-label"><i class="fas fa-sort-numeric-up"></i> الكمية</label>
+                            <input type="number" name="OrderItems[${productIndex}].Quantity" class="form-control quantity-input" min="1" value="1" required />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label"><i class="fas fa-tag"></i> السعر</label>
+                            <input type="number" name="OrderItems[${productIndex}].UnitPrice" class="form-control price-input" step="0.01" min="0" required />
+                        </div>
+                        <div class="col-md-1">
+                            <label class="control-label"><i class="fas fa-percent"></i> خصم</label>
+                            <input type="number" name="OrderItems[${productIndex}].DiscountPercentage" class="form-control discount-input" step="0.01" min="0" max="100" value="10" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label"><i class="fas fa-calculator"></i> قبل</label>
+                            <input type="text" class="form-control item-subtotal" readonly />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label"><i class="fas fa-money-bill-wave"></i> بعد</label>
+                            <input type="text" class="form-control item-total" readonly />
+                        </div>
+                        <div class="col-md-1">
+                            <label class="control-label">&nbsp;</label>
+                            <button type="button" class="btn btn-danger btn-block remove-product"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            $('#productsContainer').append(newRow);
+            productIndex++;
+            updateRemoveButtons();
+        });
+
+        // Remove product
+        $(document).on('click', '.remove-product', function() {
+            $(this).closest('.product-row').remove();
+            calculateTotals();
+            updateRemoveButtons();
+        });
+
+        // Update remove buttons visibility
+        function updateRemoveButtons() {
+            const rowCount = $('.product-row').length;
+            if (rowCount > 1) {
+                $('.remove-product').show();
+            } else {
+                $('.remove-product').hide();
+            }
+        }
+
+        // Customer change - load insurance policies
+        $('#customerSelect').change(function() {
+            const customerId = $(this).val();
+            const policySelect = $('#insurancePolicySelect');
+            
+            if (!customerId) {
+                policySelect.html('<option value="">-- لا يوجد تأمين --</option>').prop('disabled', true);
+                $('#insuranceSection').hide();
+                calculateTotals();
+                return;
+            }
+            
+            // Load customer policies
+            $.get('@Url.Action("GetCustomerPolicies", "Orders")', { customerId: customerId })
+                .done(function(policies) {
+                    policySelect.html('<option value="">-- لا يوجد تأمين --</option>');
+                    
+                    if (policies && policies.length > 0) {
+                        policies.forEach(function(policy) {
+                            policySelect.append(`<option value="${policy.id}" data-coverage="${policy.coveragePercentage}">${policy.text}</option>`);
+                        });
+                        policySelect.prop('disabled', false);
+                    } else {
+                        policySelect.prop('disabled', true);
+                    }
+                })
+                .fail(function() {
+                    console.error('فشل تحميل البوليصات التأمينية');
+                    policySelect.prop('disabled', true);
+                });
+        });
+
+        // Insurance policy change - calculate coverage
+        $('#insurancePolicySelect').change(function() {
+            calculateInsurance();
+        });
+
+        function calculateInsurance() {
+            const policyId = $('#insurancePolicySelect').val();
+            const totalAmount = parseFloat($('#hiddenTotalAmount').val()) || 0;
+            
+            if (!policyId || totalAmount <= 0) {
+                $('#insuranceSection').hide();
+                return;
+            }
+            
+            $.post('@Url.Action("CalculateInsurance", "Orders")', {
+                policyId: policyId,
+                totalAmount: totalAmount
+            })
+            .done(function(result) {
+                if (result.success) {
+                    $('#insuranceCoverageAmount').text(result.insuranceCoverageAmount.toFixed(2) + ' جنيه');
+                    $('#customerPayableAmount').text(result.customerPayableAmount.toFixed(2) + ' جنيه');
+                    $('#insuranceSection').show();
+                } else {
+                    $('#insuranceSection').hide();
+                    if (result.errorMessage) {
+                        alert('تنبيه: ' + result.errorMessage);
+                    }
+                }
+            })
+            .fail(function() {
+                $('#insuranceSection').hide();
+                console.error('فشل حساب التغطية التأمينية');
+            });
+        }
+
+        // Form submission
+        $('#orderForm').submit(function(e) {
+            const rowCount = $('.product-row').length;
+            console.log('عدد المنتجات:', rowCount);
+            
+            if (rowCount === 0) {
+                e.preventDefault();
+                alert('⚠️ يجب إضافة دواء واحد على الأقل لإتمام عملية البيع');
+                return false;
+            }
+            
+            // Log form data for debugging
+            const formData = $(this).serializeArray();
+            console.log('بيانات النموذج:', formData);
+            
+            return true;
+        });
+    </script>
+}

@@ -1,0 +1,148 @@
+@model IMS.Models.MedicationRequest
+
+@{
+    ViewData["Title"] = "حذف طلب الدواء";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-trash"></i> حذف طلب الدواء</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-left">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">طلبات الأدوية</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title">تأكيد الحذف</h3>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <h5><i class="icon fas fa-exclamation-triangle"></i> تحذير!</h5>
+                            هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.
+                        </div>
+
+                        <h5 class="mb-3">معلومات الطلب المراد حذفه:</h5>
+
+                        <dl class="row">
+                            <dt class="col-sm-4">رقم الطلب:</dt>
+                            <dd class="col-sm-8">#@Model.Id</dd>
+
+                            <dt class="col-sm-4">اسم الدواء:</dt>
+                            <dd class="col-sm-8"><strong>@Model.MedicationName</strong></dd>
+
+                            @if (!string.IsNullOrEmpty(Model.ScientificName))
+                            {
+                                <dt class="col-sm-4">الاسم العلمي:</dt>
+                                <dd class="col-sm-8">@Model.ScientificName</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Strength))
+                            {
+                                <dt class="col-sm-4">التركيز:</dt>
+                                <dd class="col-sm-8">@Model.Strength</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.DosageForm))
+                            {
+                                <dt class="col-sm-4">الشكل الدوائي:</dt>
+                                <dd class="col-sm-8">@Model.DosageForm</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.PatientName))
+                            {
+                                <dt class="col-sm-4">اسم المريض:</dt>
+                                <dd class="col-sm-8">@Model.PatientName</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.PatientPhone))
+                            {
+                                <dt class="col-sm-4">رقم الهاتف:</dt>
+                                <dd class="col-sm-8">@Model.PatientPhone</dd>
+                            }
+
+                            <dt class="col-sm-4">تاريخ الطلب:</dt>
+                            <dd class="col-sm-8">@Model.RequestDate.ToString("dd/MM/yyyy")</dd>
+
+                            <dt class="col-sm-4">الحالة:</dt>
+                            <dd class="col-sm-8">
+                                @switch (Model.Status)
+                                {
+                                    case IMS.Models.RequestStatus.Pending:
+                                        <span class="badge badge-warning">قيد الانتظار</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Ordered:
+                                        <span class="badge badge-info">تم الطلب من المورد</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Received:
+                                        <span class="badge badge-primary">تم الاستلام</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Delivered:
+                                        <span class="badge badge-success">تم التسليم للمريض</span>
+                                        break;
+                                    case IMS.Models.RequestStatus.Cancelled:
+                                        <span class="badge badge-danger">ملغي</span>
+                                        break;
+                                }
+                            </dd>
+
+                            <dt class="col-sm-4">الأولوية:</dt>
+                            <dd class="col-sm-8">
+                                @switch (Model.Priority)
+                                {
+                                    case IMS.Models.Priority.Emergency:
+                                        <span class="badge badge-danger">طارئ</span>
+                                        break;
+                                    case IMS.Models.Priority.Urgent:
+                                        <span class="badge badge-warning">عاجل</span>
+                                        break;
+                                    default:
+                                        <span class="badge badge-secondary">عادي</span>
+                                        break;
+                                }
+                            </dd>
+
+                            @if (Model.Branch != null)
+                            {
+                                <dt class="col-sm-4">الفرع:</dt>
+                                <dd class="col-sm-8">@Model.Branch.Name</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Notes))
+                            {
+                                <dt class="col-sm-4">ملاحظات:</dt>
+                                <dd class="col-sm-8">@Model.Notes</dd>
+                            }
+                        </dl>
+                    </div>
+
+                    <div class="card-footer">
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> تأكيد الحذف
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

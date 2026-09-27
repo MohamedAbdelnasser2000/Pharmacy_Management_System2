@@ -1,0 +1,197 @@
+@{
+    ViewData["Title"] = "التحقق من الاستعلامات";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">التحقق من الاستعلامات</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="CheckDuplicates">تنظيف البيانات</a></li>
+                    <li class="breadcrumb-item active">التحقق</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header bg-info">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-search"></i> أداة التحقق من الاستعلامات
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>الهدف:</strong> التحقق من عدد السجلات المُرجعة من الاستعلامات للتأكد من عدم وجود تكرار.
+                </div>
+
+                <form method="get" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Order ID (طلب بيع)</label>
+                                <input type="number" name="orderId" class="form-control" value="@ViewBag.OrderId" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Purchase Order ID (أمر شراء)</label>
+                                <input type="number" name="purchaseOrderId" class="form-control" value="@ViewBag.PurchaseOrderId" />
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Product ID (منتج)</label>
+                                <input type="number" name="productId" class="form-control" value="@ViewBag.ProductId" />
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> فحص
+                    </button>
+                </form>
+
+                <hr />
+
+                @if (ViewBag.OrderId != null)
+                {
+                    <div class="alert alert-primary">
+                        <h5><i class="fas fa-shopping-cart"></i> نتائج Order #@ViewBag.OrderId</h5>
+                        <p><strong>عدد OrderItems المُرجعة:</strong> @ViewBag.OrderItemsCount</p>
+                        
+                        @if (ViewBag.OrderItems != null)
+                        {
+                            <table class="table table-sm table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>UnitPrice</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in ViewBag.OrderItems)
+                                    {
+                                        <tr>
+                                            <td>@item.Id</td>
+                                            <td>@item.Product?.Name</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@item.UnitPrice.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                }
+
+                @if (ViewBag.PurchaseOrderId != null)
+                {
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-truck"></i> نتائج Purchase Order #@ViewBag.PurchaseOrderId</h5>
+                        <p><strong>عدد PurchaseOrderItems المُرجعة:</strong> @ViewBag.PurchaseOrderItemsCount</p>
+                        
+                        @if (ViewBag.PurchaseOrderItems != null)
+                        {
+                            <table class="table table-sm table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>UnitPrice</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in ViewBag.PurchaseOrderItems)
+                                    {
+                                        <tr>
+                                            <td>@item.Id</td>
+                                            <td>@item.Product?.Name</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@item.UnitPrice.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                }
+
+                @if (ViewBag.ProductId != null)
+                {
+                    <div class="alert alert-warning">
+                        <h5><i class="fas fa-box"></i> نتائج Product #@ViewBag.ProductId</h5>
+                        <p><strong>عدد Inventories المُرجعة:</strong> @ViewBag.InventoriesCount</p>
+                        
+                        @if (ViewBag.Inventories != null)
+                        {
+                            <table class="table table-sm table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Warehouse</th>
+                                        <th>OnHandQuantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in ViewBag.Inventories)
+                                    {
+                                        <tr>
+                                            <td>@item.Id</td>
+                                            <td>@item.Warehouse?.Name</td>
+                                            <td>@item.OnHandQuantity</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-warning">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-lightbulb"></i> كيفية استخدام الأداة
+                </h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li>اذهب إلى إحدى الصفحات التالية:
+                        <ul>
+                            <li><code>/Orders/Index</code> - للحصول على Order ID</li>
+                            <li><code>/PurchaseOrders/Index</code> - للحصول على Purchase Order ID</li>
+                            <li><code>/Products/Index</code> - للحصول على Product ID</li>
+                        </ul>
+                    </li>
+                    <li>انسخ الـ ID من الصفحة</li>
+                    <li>الصقه في الحقل المناسب أعلاه</li>
+                    <li>اضغط على "فحص"</li>
+                    <li>تحقق من العدد المُرجع - يجب أن يكون مطابقاً للعدد الفعلي</li>
+                </ol>
+
+                <div class="alert alert-success mt-3">
+                    <strong>✅ إذا كان العدد صحيحاً:</strong> الكود يعمل بشكل سليم
+                </div>
+                <div class="alert alert-danger mt-3">
+                    <strong>❌ إذا كان العدد مضاعفاً:</strong> هناك بيانات مكررة في قاعدة البيانات
+                    <br>
+                    <a href="@Url.Action("CheckDuplicates")" class="btn btn-sm btn-danger mt-2">
+                        <i class="fas fa-broom"></i> اذهب لحذف البيانات المكررة
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

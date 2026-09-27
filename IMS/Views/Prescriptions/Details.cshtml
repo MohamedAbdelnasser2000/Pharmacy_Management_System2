@@ -1,0 +1,234 @@
+@model IMS.Models.Prescription
+
+@{
+    ViewData["Title"] = "تفاصيل الوصفة";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-prescription text-info"></i> تفاصيل الوصفة</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">الوصفات الطبية</a></li>
+                    <li class="breadcrumb-item active">التفاصيل</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card card-primary">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-info-circle"></i> معلومات الوصفة</h3>
+                        <div class="card-tools">
+                            @if (Model.IsDispensed)
+                            {
+                                <span class="badge bg-success"><i class="fas fa-check"></i> مصروفة</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning"><i class="fas fa-clock"></i> قيد الانتظار</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-4"><i class="fas fa-hashtag"></i> رقم الوصفة:</dt>
+                            <dd class="col-sm-8"><strong class="text-primary">@Model.PrescriptionNumber</strong></dd>
+
+                            <dt class="col-sm-4"><i class="fas fa-calendar"></i> تاريخ الوصفة:</dt>
+                            <dd class="col-sm-8">@Model.PrescriptionDate.ToString("yyyy-MM-dd")</dd>
+
+                            @if (Model.Doctor != null)
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-user-md"></i> الطبيب:</dt>
+                                <dd class="col-sm-8">
+                                    <a asp-controller="Doctors" asp-action="Details" asp-route-id="@Model.Doctor.Id">
+                                        @Model.Doctor.Name
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(Model.Doctor.Specialization))
+                                    {
+                                        <br /><small class="text-muted">@Model.Doctor.Specialization</small>
+                                    }
+                                </dd>
+                            }
+
+                            @if (Model.Customer != null)
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-user"></i> العميل:</dt>
+                                <dd class="col-sm-8">
+                                    <a asp-controller="Customers" asp-action="Details" asp-route-id="@Model.Customer.Id">
+                                        @Model.Customer.Name
+                                    </a>
+                                </dd>
+                            }
+
+                            <dt class="col-sm-4"><i class="fas fa-user-injured"></i> اسم المريض:</dt>
+                            <dd class="col-sm-8"><strong>@Model.PatientName</strong></dd>
+
+                            @if (Model.PatientAge.HasValue)
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-birthday-cake"></i> العمر:</dt>
+                                <dd class="col-sm-8">@Model.PatientAge سنة</dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Diagnosis))
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-diagnoses"></i> التشخيص:</dt>
+                                <dd class="col-sm-8">
+                                    <div class="alert alert-info mb-0">@Model.Diagnosis</div>
+                                </dd>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.DoctorNotes))
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-notes-medical"></i> ملاحظات الطبيب:</dt>
+                                <dd class="col-sm-8">
+                                    <div class="alert alert-warning mb-0">@Model.DoctorNotes</div>
+                                </dd>
+                            }
+
+                            @if (Model.IsDispensed)
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-check-circle"></i> تاريخ الصرف:</dt>
+                                <dd class="col-sm-8">@Model.DispensedDate?.ToString("yyyy-MM-dd hh:mm tt")</dd>
+
+                                @if (!string.IsNullOrEmpty(Model.PharmacistNotes))
+                                {
+                                    <dt class="col-sm-4"><i class="fas fa-comment"></i> ملاحظات الصيدلي:</dt>
+                                    <dd class="col-sm-8">
+                                        <div class="alert alert-success mb-0">@Model.PharmacistNotes</div>
+                                    </dd>
+                                }
+                            }
+
+                            @if (Model.TotalAmount.HasValue)
+                            {
+                                <dt class="col-sm-4"><i class="fas fa-money-bill"></i> المبلغ الإجمالي:</dt>
+                                <dd class="col-sm-8">
+                                    <h4 class="text-primary mb-0">@Model.TotalAmount.Value.ToString("N2") ج.م</h4>
+                                </dd>
+
+                                @if (Model.InsurancePolicyId.HasValue && Model.InsuranceCoverageAmount > 0)
+                                {
+                                    <dt class="col-sm-4 text-primary"><i class="fas fa-shield-alt"></i> التغطية التأمينية:</dt>
+                                    <dd class="col-sm-8">
+                                        <h5 class="text-primary mb-0">
+                                            @Model.InsuranceCoverageAmount.ToString("N2") ج.م
+                                            @if (Model.AppliedCoveragePercentage.HasValue)
+                                            {
+                                                <small>(@Model.AppliedCoveragePercentage.Value%)</small>
+                                            }
+                                        </h5>
+                                        <small class="text-muted">
+                                            <i class="fas fa-file-contract"></i> البوليصة: @Model.InsurancePolicy?.PolicyNumber
+                                            <br/>
+                                            <i class="fas fa-building"></i> @Model.InsurancePolicy?.Insurance?.Name
+                                        </small>
+                                    </dd>
+
+                                    <dt class="col-sm-4"><i class="fas fa-user-check"></i> المبلغ على العميل:</dt>
+                                    <dd class="col-sm-8">
+                                        <h4 class="text-success mb-0">@Model.CustomerPayableAmount.ToString("N2") ج.م</h4>
+                                    </dd>
+                                }
+                            }
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        @if (!Model.IsDispensed)
+                        {
+                            <a asp-action="AddItems" asp-route-id="@Model.Id" class="btn btn-primary">
+                                <i class="fas fa-pills"></i> إضافة/تعديل الأدوية
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> حذف
+                            </a>
+                        }
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> رجوع
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card card-success">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-pills"></i> الأدوية المصروفة</h3>
+                    </div>
+                    <div class="card-body p-0">
+                        @if (Model.PrescriptionItems != null && Model.PrescriptionItems.Any())
+                        {
+                            <table class="table table-sm">
+                                <tbody>
+                                    @foreach (var item in Model.PrescriptionItems)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>@item.Product.Name</strong>
+                                                <br />
+                                                <small class="text-muted">
+                                                    <i class="fas fa-sort-numeric-up"></i> الكمية: @item.Quantity
+                                                </small>
+                                                @if (!string.IsNullOrEmpty(item.Dosage))
+                                                {
+                                                    <br />
+                                                    <small><i class="fas fa-prescription-bottle"></i> @item.Dosage</small>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.Frequency))
+                                                {
+                                                    <br />
+                                                    <small><i class="fas fa-redo"></i> @item.Frequency</small>
+                                                }
+                                                @if (item.Duration.HasValue)
+                                                {
+                                                    <br />
+                                                    <small><i class="fas fa-clock"></i> لمدة @item.Duration أيام</small>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.Instructions))
+                                                {
+                                                    <br />
+                                                    <small class="text-info"><i class="fas fa-info-circle"></i> @item.Instructions</small>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <strong class="text-success">@item.Total?.ToString("N2")</strong>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="table-success">
+                                        <th>الإجمالي:</th>
+                                        <th class="text-end">
+                                            <strong>@Model.PrescriptionItems.Sum(i => i.Total ?? 0).ToString("N2") ج.م</strong>
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning m-3">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                لم يتم إضافة أي أدوية لهذه الوصفة
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

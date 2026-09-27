@@ -1,0 +1,67 @@
+@model IMS.Models.Insurance
+
+@{
+    ViewData["Title"] = "حذف شركة التأمين";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0"><i class="fas fa-trash text-danger"></i> حذف شركة التأمين</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-start">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">شركات التأمين</a></li>
+                    <li class="breadcrumb-item active">حذف</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-8 offset-md-2">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-exclamation-triangle"></i> تأكيد الحذف</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            <h5><i class="icon fas fa-ban"></i> تحذير!</h5>
+                            هل أنت متأكد من حذف شركة التأمين هذه؟ هذا الإجراء لا يمكن التراجع عنه.
+                        </div>
+
+                        <dl class="row">
+                            <dt class="col-sm-4">اسم الشركة:</dt>
+                            <dd class="col-sm-8"><strong>@Model.Name</strong></dd>
+
+                            <dt class="col-sm-4">الرمز:</dt>
+                            <dd class="col-sm-8">@Model.Code</dd>
+
+                            <dt class="col-sm-4">الهاتف:</dt>
+                            <dd class="col-sm-8">@Model.Phone</dd>
+
+                            <dt class="col-sm-4">البريد الإلكتروني:</dt>
+                            <dd class="col-sm-8">@Model.Email</dd>
+                        </dl>
+                    </div>
+                    <div class="card-footer">
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" asp-for="Id" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> نعم، احذف
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

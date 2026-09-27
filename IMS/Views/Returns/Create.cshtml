@@ -1,0 +1,363 @@
+@model IMS.Controllers.ReturnCreateViewModel
+@using IMS.Models
+@{
+    ViewData["Title"] = "إضافة مرتجع";
+}
+
+<div class="content-header">
+    <div class="container-fluid">
+        <div class="row mb-2">
+            <div class="col-sm-6">
+                <h1 class="m-0 text-dark">إضافة مرتجع جديد</h1>
+            </div>
+            <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-end">
+                    <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">الرئيسية</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">المرتجعات</a></li>
+                    <li class="breadcrumb-item active">إضافة</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="content">
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">بيانات المرتجع</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" id="returnForm">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="OrderId" class="control-label">رقم الطلب</label>
+                                <select asp-for="OrderId" class="form-control" id="orderSelect" asp-items="@(ViewData["OrderId"] as SelectList)">
+                                    <option value="">-- اختر الطلب --</option>
+                                </select>
+                                <span asp-validation-for="OrderId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label class="control-label">العميل</label>
+                                <input type="text" id="customerName" class="form-control" readonly placeholder="سيتم تحديده تلقائياً" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="ReturnType" class="control-label">نوع المرتجع</label>
+                                <select asp-for="ReturnType" class="form-control" required>
+                                    <option value="">-- اختر النوع --</option>
+                                    <option value="@ReturnTypeConstants.Full">@ReturnTypeConstants.Full</option>
+                                    <option value="@ReturnTypeConstants.Partial">@ReturnTypeConstants.Partial</option>
+                                </select>
+                                <span asp-validation-for="ReturnType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="Reason" class="control-label">سبب المرتجع</label>
+                                <input asp-for="Reason" class="form-control" required />
+                                <span asp-validation-for="Reason" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="Notes" class="control-label">ملاحظات</label>
+                        <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>يتم معالجة عمليات الاسترداد المالي بعد الموافقة على المرتجع من خلال شاشة التفاصيل.</span>
+                    </div>
+
+                    <hr class="my-4" />
+                    <h5 class="text-primary"><i class="fas fa-boxes"></i> المنتجات المرتجعة</h5>
+
+                    <div id="orderItemsContainer" class="mb-3">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> اختر الطلب أولاً لعرض المنتجات والكمية المتاحة للمرتجع
+                        </div>
+                    </div>
+
+                    <div id="productsContainer"></div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="text-primary">إجمالي المبلغ المسترجع</h5>
+                                    <h3 id="totalRefund" class="text-danger">0.00 ج.م</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> حفظ المرتجع
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> إلغاء
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        let productIndex = 0;
+        let orderItems = [];
+        const existingItems = @Html.Raw(ViewBag.InitialItemsJson ?? "[]");
+
+        $(document).ready(function () {
+            $('#orderSelect').change(function () {
+                const orderId = $(this).val();
+                if (orderId) {
+                    loadOrderDetails(orderId);
+                } else {
+                    resetOrderData();
+                }
+            });
+
+            $(document).on('input change', '.quantity-input', function () {
+                const available = parseFloat($(this).closest('.product-row').data('available')) || 0;
+                let value = parseFloat($(this).val()) || 0;
+                if (value < 0) value = 0;
+                if (value > available) value = available;
+                $(this).val(value);
+                calculateTotal();
+            });
+
+            $(document).on('change', '.restock-checkbox', function () {
+                const isChecked = $(this).is(':checked');
+                $(this).closest('.product-row').find('input[type="hidden"][name$=".RestockItem"]').val(isChecked ? 'true' : 'false');
+                calculateTotal();
+            });
+            $(document).on('click', '.remove-product', function () {
+                $(this).closest('.product-row').remove();
+                calculateTotal();
+            });
+
+            $('#returnForm').on('submit', function (e) {
+                if ($('.product-row').length === 0) {
+                    alert('يجب اختيار منتج واحد على الأقل للمرتجع');
+                    e.preventDefault();
+                    return false;
+                }
+
+                let hasQuantity = false;
+                let invalidQuantity = false;
+
+                $('.product-row').each(function () {
+                    const available = parseFloat($(this).data('available')) || 0;
+                    const quantity = parseFloat($(this).find('.quantity-input').val()) || 0;
+                    if (quantity > 0) {
+                        hasQuantity = true;
+                    }
+                    if (quantity > available) {
+                        invalidQuantity = true;
+                    }
+                });
+
+                if (!hasQuantity) {
+                    alert('يجب إدخال كمية مرتجعة واحدة على الأقل');
+                    e.preventDefault();
+                    return false;
+                }
+
+                if (invalidQuantity) {
+                    alert('الكمية المرتجعة تتجاوز المتاح لبعض المنتجات');
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            const initialOrderId = $('#orderSelect').val();
+            if (initialOrderId) {
+                loadOrderDetails(initialOrderId);
+            }
+        });
+
+        function resetOrderData() {
+            $('#customerName').val('');
+            $('#orderItemsContainer').html('<div class="alert alert-info"><i class="fas fa-info-circle"></i> اختر الطلب أولاً لعرض المنتجات والكمية المتاحة للمرتجع</div>');
+            $('#productsContainer').empty();
+            $('#totalRefund').text('0.00 ج.م');
+        }
+
+        function loadOrderDetails(orderId) {
+            $.get('@Url.Action("GetOrderDetails", "Returns")', { orderId: orderId }, function (data) {
+                if (!data.success) {
+                    alert(data.message);
+                    resetOrderData();
+                    return;
+                }
+
+                $('#customerName').val(data.customerName);
+                orderItems = data.items;
+
+                const totalAmount = parseFloat(data.totalAmount) || 0;
+                const fullyReturned = orderItems.filter(i => i.availableQuantity === 0);
+
+                let infoHtml = `
+                    <div class="alert alert-success">
+                        <strong>تفاصيل الطلب:</strong><br>
+                        تاريخ الطلب: ${data.orderDate}<br>
+                        إجمالي الطلب: ${totalAmount.toFixed(2)} ج.م
+                    </div>`;
+
+                if (fullyReturned.length > 0) {
+                    infoHtml += `
+                        <div class="alert alert-warning mt-2">
+                            <i class="fas fa-exclamation-circle"></i>
+                            بعض المنتجات تم إرجاعها بالكامل مسبقاً ولن تظهر أدناه.
+                        </div>`;
+                }
+
+                $('#orderItemsContainer').html(infoHtml);
+
+                renderOrderItems();
+            });
+        }
+
+        function renderOrderItems() {
+            $('#productsContainer').empty();
+            productIndex = 0;
+
+            if (!orderItems.length) {
+                $('#productsContainer').html('<div class="alert alert-info"><i class="fas fa-info-circle"></i> لا توجد عناصر في هذا الطلب</div>');
+                calculateTotal();
+                return;
+            }
+
+            const presetLookup = new Map();
+            if (Array.isArray(existingItems)) {
+                existingItems.forEach(item => {
+                    if (item && item.OrderItemId) {
+                        presetLookup.set(item.OrderItemId, item);
+                    }
+                });
+            }
+
+            orderItems.forEach(item => {
+                if (item.availableQuantity <= 0) {
+                    return;
+                }
+                const preset = presetLookup.get(item.id);
+                addProductRow(item, preset);
+            });
+
+            calculateTotal();
+        }
+
+        function addProductRow(item, preset) {
+            const quantity = Math.min(preset ? preset.Quantity || preset.quantity || item.availableQuantity : Math.min(1, item.availableQuantity), item.availableQuantity);
+            const reason = preset ? (preset.ItemReason || preset.itemReason || '') : '';
+            const condition = preset ? (preset.Condition || preset.condition || 'جديد') : 'جديد';
+            const restock = preset ? (preset.RestockItem === true || preset.RestockItem === 'true' || preset.restockItem === true || preset.restockItem === 'true') : true;
+
+            const row = $(`
+                <div class="product-row mb-3 border p-3 rounded" data-index="${productIndex}" data-available="${item.availableQuantity}" data-unit-price="${item.unitPrice}" data-discount="${item.discountPercentage}">
+                    <input type="hidden" name="Items.Index" value="${productIndex}" />
+                    <input type="hidden" name="Items[${productIndex}].OrderItemId" value="${item.id}" />
+                    <input type="hidden" name="Items[${productIndex}].ProductId" value="${item.productId}" />
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label class="control-label">المنتج</label>
+                            <input type="text" class="form-control" value="${item.productName}" readonly />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">الكمية الأصلية</label>
+                            <input type="number" class="form-control" value="${item.quantity}" readonly />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">المتاح للمرتجع</label>
+                            <input type="number" class="form-control" value="${item.availableQuantity}" readonly />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">الكمية المرتجعة</label>
+                            <input type="number" name="Items[${productIndex}].Quantity" class="form-control quantity-input" min="0" max="${item.availableQuantity}" value="${quantity}" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="control-label">قيمة السطر</label>
+                            <input type="text" class="form-control item-total" readonly />
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-3">
+                            <label class="control-label">سعر الوحدة</label>
+                            <input type="text" class="form-control" value="${item.unitPrice.toFixed(2)}" readonly />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">الخصم %</label>
+                            <input type="text" class="form-control" value="${item.discountPercentage.toFixed(2)}" readonly />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="control-label">سبب إرجاع المنتج</label>
+                            <input type="text" name="Items[${productIndex}].ItemReason" class="form-control" value="${reason}" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">حالة المنتج</label>
+                            <select name="Items[${productIndex}].Condition" class="form-control">
+                                <option value="جديد" ${condition === 'جديد' ? 'selected' : ''}>جديد</option>
+                                <option value="مستخدم" ${condition === 'مستخدم' ? 'selected' : ''}>مستخدم</option>
+                                <option value="تالف" ${condition === 'تالف' ? 'selected' : ''}>تالف</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="control-label">إعادة للمخزن</label>
+                            <div class="form-check mt-2">
+                                <input type="checkbox" class="form-check-input restock-checkbox" ${restock ? 'checked' : ''} />
+                                <input type="hidden" name="Items[${productIndex}].RestockItem" value="${restock ? 'true' : 'false'}" />
+                                <label class="form-check-label">نعم</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12 d-flex justify-content-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-product">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+
+            $('#productsContainer').append(row);
+            productIndex++;
+        }
+
+        function calculateTotal() {
+            let total = 0;
+
+            $('.product-row').each(function () {
+                const available = parseFloat($(this).data('available')) || 0;
+                const unitPrice = parseFloat($(this).data('unit-price')) || 0;
+                const discount = parseFloat($(this).data('discount')) || 0;
+                const quantity = Math.min(parseFloat($(this).find('.quantity-input').val()) || 0, available);
+
+                const subtotal = quantity * unitPrice;
+                const discountAmount = subtotal * (discount / 100);
+                const itemTotal = subtotal - discountAmount;
+
+                $(this).find('.item-total').val(itemTotal.toFixed(2) + ' ج.م');
+                total += itemTotal;
+            });
+
+            $('#totalRefund').text(total.toFixed(2) + ' ج.م');
+        }
+    </script>
+}
